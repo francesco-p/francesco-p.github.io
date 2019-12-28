@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects | Francesco P.</title>
+    <link>https://francesco-p.github.io/project/</link>
+      <atom:link href="https://francesco-p.github.io/project/index.xml" rel="self" type="application/rss+xml" />
+    <description>Projects</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>made with </copyright><lastBuildDate>Fri, 27 Dec 2019 11:01:01 +0100</lastBuildDate>
+    <image>
+      <url>https://francesco-p.github.io/img/icon-192.png</url>
+      <title>Projects</title>
+      <link>https://francesco-p.github.io/project/</link>
+    </image>
+    
+    <item>
+      <title>Copernicus Hackathon Training</title>
+      <link>https://francesco-p.github.io/project/copernicus-training/</link>
+      <pubDate>Fri, 27 Dec 2019 11:01:01 +0100</pubDate>
+      <guid>https://francesco-p.github.io/project/copernicus-training/</guid>
+      <description>&lt;p&gt;I&#39;ve been part of the team which organized the &lt;a href=&#34;https://copernicus.digitalinnovationhubvicenza.it/copernicus-training/&#34;&gt;Copernicus Hackathon Training @ Ca&amp;rsquo; Foscari&lt;/a&gt;. I also lectured partecipants, in particular I gave an introduction to unsupervised learning and geospatial data wrangling. All the material is in Italian language.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

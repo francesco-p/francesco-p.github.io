@@ -5,12 +5,28 @@
     <link>https://francesco-p.github.io/publication_types/</link>
       <atom:link href="https://francesco-p.github.io/publication_types/index.xml" rel="self" type="application/rss+xml" />
     <description>Publication_types</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>made with </copyright><lastBuildDate>Wed, 20 Nov 2019 00:52:19 +0100</lastBuildDate>
     <image>
       <url>https://francesco-p.github.io/img/icon-192.png</url>
       <title>Publication_types</title>
       <link>https://francesco-p.github.io/publication_types/</link>
     </image>
+    
+    <item>
+      <title>2</title>
+      <link>https://francesco-p.github.io/publication_types/2/</link>
+      <pubDate>Wed, 20 Nov 2019 00:52:19 +0100</pubDate>
+      <guid>https://francesco-p.github.io/publication_types/2/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>7</title>
+      <link>https://francesco-p.github.io/publication_types/7/</link>
+      <pubDate>Wed, 20 Nov 2019 00:17:39 +0100</pubDate>
+      <guid>https://francesco-p.github.io/publication_types/7/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>
