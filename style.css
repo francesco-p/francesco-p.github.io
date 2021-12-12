@@ -1,0 +1,38 @@
+
+
+/* Nintendoid font from https://www.splintered.co.uk/experiments/132/ */
+
+html { background: #111;
+    padding: 1em;
+    font-family: 'Roboto Mono', monospace;
+    font-size: .85rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #eee;
+    font-size: 1em;
+    line-height: 1;
+    text-shadow: 0.06rem 0 0.06rem #ea36af, -0.125rem 0 0.06rem #75fa69;
+    letter-spacing: 0.125em;
+    animation-duration: 0.01s;
+    animation-name: textflicker;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+h1 { font-size: 5em; }
+pre { font-size: 1.3em; }
+li {padding: 0.7em;}
+a {color: #0f0;}
+div {margin: 1em;
+  padding: 1em;
+ }
+
+@keyframes textflicker {
+from {
+ text-shadow: 1px 0 0 #ea36af, -2px 0 0 #75fa69;
+}
+to {
+ text-shadow: 2px 0.5px 2px #ea36af, -1px -0.5px 2px #75fa69;
+}
+}
+
+
