@@ -1,49 +1,19 @@
 
-
-/* Nintendoid font from https://www.splintered.co.uk/experiments/132/ */
-
-@font-face {
-  font-family: 'title'; /*a name to be used later*/
-  src: url('myfont.ttf'); /*URL to font*/
-}
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&display=swap');
 
-
-html { background: #111;
+html {
+    background-color: white;
     padding: 1em;
     font-family: 'Inconsolata', monospace;
-    line-height: 1.5;
-    font-size: larger;
-    color: #fff;
+    line-height: 1.3;
+    color: black;
 }
-
-h1{
-  font-family: 'title';
-  color: rgb(255, 191, 94);
-}
-
 
 a {
-  color: rgb(94, 191, 255);
-  font-weight: bold;
+    color: rgb(51, 99, 255);
+    text-decoration: none;
+    font-weight: bold;
 }
 
-pre{
-  color: rgb(255, 191, 94);
-
-}
-
-b{
-  color: rgb(172, 255, 94);
-  }
-
-@keyframes textflicker {
-from {
- text-shadow: 1px 0 0 #ea36af, -2px 0 0 #75fa69;
-}
-to {
- text-shadow: 2px 0.5px 2px #ea36af, -1px -0.5px 2px #75fa69;
-}
-}
 
 
