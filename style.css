@@ -2,29 +2,40 @@
 
 /* Nintendoid font from https://www.splintered.co.uk/experiments/132/ */
 
+@font-face {
+  font-family: 'title'; /*a name to be used later*/
+  src: url('myfont.ttf'); /*URL to font*/
+}
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&display=swap');
+
+
 html { background: #111;
     padding: 1em;
-    font-family: 'Roboto Mono', monospace;
-    font-size: .85rem;
-    font-weight: 400;
+    font-family: 'Inconsolata', monospace;
     line-height: 1.5;
-    color: #eee;
-    font-size: 1em;
-    line-height: 1;
-    text-shadow: 0.06rem 0 0.06rem #ea36af, -0.125rem 0 0.06rem #75fa69;
-    letter-spacing: 0.125em;
-    animation-duration: 0.01s;
-    animation-name: textflicker;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
+    font-size: larger;
+    color: #fff;
 }
-h1 { font-size: 5em; }
-pre { font-size: 3em; }
-li {padding: 0.7em;}
-a {color: #0f0;}
-div {margin: 1em;
-  padding: 1em;
- }
+
+h1{
+  font-family: 'title';
+  color: rgb(255, 191, 94);
+}
+
+
+a {
+  color: rgb(94, 191, 255);
+  font-weight: bold;
+}
+
+pre{
+  color: rgb(255, 191, 94);
+
+}
+
+b{
+  color: rgb(172, 255, 94);
+  }
 
 @keyframes textflicker {
 from {
