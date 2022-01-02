@@ -15,5 +15,10 @@ a {
     font-weight: bold;
 }
 
+@media (min-width:1000px){
+    div {
+      max-width: 720px;
 
+    }
 
+}
