@@ -15,10 +15,13 @@ a {
     font-weight: bold;
 }
 
+
+
 @media (min-width:1000px){
-    div {
+    html {
       max-width: 720px;
 
     }
+
 
 }
