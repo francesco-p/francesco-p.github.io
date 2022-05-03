@@ -18,6 +18,7 @@ a {
 @media (min-width:1000px){
     body {
       max-width: 720px;
+      margin: auto;
 
     }
 
