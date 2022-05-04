@@ -14,9 +14,15 @@ h3{
     margin-bottom: 1em;
 }
 
-span{
+span.title{
     font-weight: bold;
     padding: 0.1em;
+}
+span.authors{
+    font-size: 90%;
+}
+span.venue{
+    font-style: oblique;
 }
 
 pre{
@@ -32,13 +38,30 @@ pre{
     <a href='./index.html'>whoami</a> | <a href='./publications.html'>publications</a> | <a href='./resources.html'>resources</a>
 <h1>Publications</h1>
 
-
-<h2>2022</h2>
 <p>
-    3rd CVPR Workshop of Continual Learning<br />
-    <span>Towards Exemplar-Free Continual Learning in Vision Transformers: an Account of Attention, Functional and Weight Regularization</span> <br />
-    Francesco Pelosin, Saurav Jha, Andrea Torsello, Bogdan Raducanu, Joost van de Weijer<br />
-    <a  href='https://arxiv.org/pdf/2203.13167'>.pdf</a>
+    <span class="title">Simpler Is Better: off-the-shelf Continual Learning Through Pretrained Backbones, </span><span class="venue">arxiv (2022)</span><br />
+    <span class="authors">Francesco Pelosin</span><br />
+   
+    <a  href='https://arxiv.org/abs/2205.01586'><img  src="./img/pdf.png" /></a>
+    <a href='https://github.com/francesco-p/off-the-shelf-cl'><img  src="./img/python.png" /></a>
+    <button onclick="show('towards')">cite</button>
+</p>
+<pre id='towards' style="display: none;">
+@misc{https://doi.org/10.48550/arxiv.2205.01586,
+    doi = {10.48550/ARXIV.2205.01586},
+    url = {https://arxiv.org/abs/2205.01586},
+    author = {Pelosin, Francesco},
+    title = {Simpler is Better: off-the-shelf Continual Learning Through Pretrained Backbones},
+    publisher = {arXiv},
+    year = {2022},
+    }
+</pre>
+
+<p>
+    <span class="title">Towards Exemplar-Free Continual Learning in Vision Transformers: an Account of Attention, Functional and Weight Regularization, </span><span class="venue">Workshop CLVISION (CVPR 2022)</span><br />
+    <span class="authors">Francesco Pelosin, Saurav Jha, Andrea Torsello, Bogdan Raducanu, Joost van de Weijer</span><br />
+   
+    <a  href='https://arxiv.org/pdf/2203.13167'><img  src="./img/pdf.png" /></a>
     <button onclick="show('towards')">cite</button>
 </p>
 <pre id='towards' style="display: none;">
@@ -51,11 +74,11 @@ pre{
 </pre>
 
 <p>
-    IJCNN<br />
-    <span>Smaller is Better: An Analysis of Instance Quantity/Quality Trade-off in Rehearsal-based Continual Learning</span> <br />
-    Francesco Pelosin, Andrea Torsello<br />
-    <a  href='https://arxiv.org/abs/2105.14106'>.pdf</a>
-    <a href='https://git.io/JG1Yo'>code</a>
+    <span class="title">Smaller is Better: An Analysis of Instance Quantity/Quality Trade-off in Rehearsal-based Continual Learning, </span><span class="venue">IJCNN (2022)</span> <br />
+    <span class="authors">Francesco Pelosin, Andrea Torsello</span><br />
+
+    <a  href='https://arxiv.org/abs/2105.14106'><img  src="./img/pdf.png" /></a>
+    <a href='https://git.io/JG1Yo'><img  src="./img/python.png" /></a>
     <button onclick="show('moreisbetter')">cite</button>
 </p>
 <pre id='moreisbetter' style="display: none;">
@@ -68,13 +91,12 @@ pre{
 </pre>
 
 
-<h2>2020</h2>
 <p>
-    S+SSPR<br />
-    <span>Unsupervised semantic discovery through visual patterns detection</span><br />
-    Francesco Pelosin, Andrea Gasparetto, Andrea Albarelli, Andrea Torsello <br />
-    <a href='https://arxiv.org/pdf/2102.12213.pdf'>.pdf</a>
-    <a href='https://github.com/francesco-p/semantic-discovery'>code</a>
+    <span class="title">Unsupervised semantic discovery through visual patterns detection, </span><span class="venue">S+SSPR (2022)</span> <br />
+    <span class="authors">Francesco Pelosin, Andrea Gasparetto, Andrea Albarelli, Andrea Torsello</span><br />
+
+    <a href='https://arxiv.org/pdf/2102.12213.pdf'><img  src="./img/pdf.png" /></a>
+    <a href='https://github.com/francesco-p/semantic-discovery'><img  src="./img/python.png" /></a>
     <button onclick="show('unsup-discovery')">cite</button>
 </p>
 <pre id='unsup-discovery' style="display: none;">
@@ -99,11 +121,11 @@ pre{
 
 
 <p>
-    Pattern Recognition<br />
-    <span>Separating Structure from Noise in Large Graphs Using the Regularity Lemma</span><br />
-    Marco Fiorucci, Francesco Pelosin, Marcello Pelillo <br />
-    <a href='https://arxiv.org/pdf/1905.06917.pdf'>.pdf</a>
-    <a href='https://github.com/MarcoFiorucci/graph-summarization-using-regular-partitions'>code</a>
+    <span class="title">Separating Structure from Noise in Large Graphs Using the Regularity Lemma, </span><span class="venue">Pattern Recognition (2020)</span><br />
+    <span class="authors">Marco Fiorucci, Francesco Pelosin, Marcello Pelillo</span><br />
+    
+    <a href='https://arxiv.org/pdf/1905.06917.pdf'><img  src="./img/pdf.png" /></a>
+    <a href='https://github.com/MarcoFiorucci/graph-summarization-using-regular-partitions'><img  src="./img/python.png" /></a>
     <button onclick="show('pr1')">cite</button>
 </p>
 <pre id='pr1' style="display: none;">
@@ -123,11 +145,11 @@ pre{
 </pre>
    
 <p>
-    arxiv<br />
-    <span>Graph Compression Using The Regularity Method</span> <br />
-    Francesco Pelosin<br />
-    <a href='https://arxiv.org/pdf/1810.07275.pdf'>.pdf</a>
-    <a href='https://github.com/francesco-p/CoDec'>code</a>
+    <span class="title">Graph Compression Using The Regularity Method, </span><span class="venue">arxiv (2019)</span><br />
+    <span class="authors">Francesco Pelosin</span><br />
+
+    <a href='https://arxiv.org/pdf/1810.07275.pdf'><img  src="./img/pdf.png" /></a>
+    <a href='https://github.com/francesco-p/CoDec'><img  src="./img/python.png" /></a>
     <button onclick="show('mscthesis')">cite</button>
 </p>
 <pre id='mscthesis' style="display: none;">
