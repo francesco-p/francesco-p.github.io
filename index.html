@@ -5,6 +5,7 @@
 
 <link rel="stylesheet" href="./style.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 </head>
 <body>
 
@@ -13,16 +14,16 @@
 <h1>Francesco Pelosin</h1>
 
 <div>
-Hi! I'm a Ph.D. <a href='./studies.html'>student</a> @ the KIIS Lab in Ca' Foscari University of Venice working on Computer Vision / Continual Learning. I consider myself a script kiddie. 
+Hi! I'm a Ph.D. <a href='./studies.html'>student</a> @ the KIIS Lab in Ca' Foscari University of Venice working on Computer Vision / Continual Learning. I consider myself a script k1ddie. 
 </div>
 <pre>
-     *           .          
+     <span class="colored">*</span>           .          
      .    .                        .
-.             *             *.          
-*     *                 *                         
-.                  .         .       *
-          *                   
-          .  *              lakj
+.             <span class="colored">*</span>             <span class="colored">*</span>.          
+<span class="colored">*</span>     <span class="colored">*</span>                 <span class="colored">*</span>                         
+.                  .         .       <span class="colored">*</span>
+          <span class="colored">*</span>                   
+          .  <span class="colored">*</span>              <span class="colored"> lakj </span>
 </pre>
 <a href='https://github.com/francesco-p'><img width="16px" height="16px"  src="./img/github.png" /> </a>
 <a href='https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en'><img width="16px" height="16px" src="./img/scholar.png" /> </a>
@@ -30,4 +31,18 @@ Hi! I'm a Ph.D. <a href='./studies.html'>student</a> @ the KIIS Lab in Ca' Fosca
 <a href='https://twitter.com/lakjfr'><img width="16px" height="16px" src="./img/twitter.png" /> </a>
 <a href='https://it.linkedin.com/in/francesco-pelosin-97533111a'><img width="16px" height="16px" src="./img/linkedin.png" /> </a>
 
+
+<script>
+$(document).ready(function(){
+
+var colors = ['rgb(255, 226, 226)','rgb(238, 255, 226)','rgb(226, 255, 250)','rgb(231, 226, 255)','rgb(255, 226, 227)','rgb(252, 226, 255)'];
+
+$('.colored').each(function(){
+  var new_color = colors[Math.floor(Math.random()*colors.length)];
+  $(this).css('background-color',new_color);
+});
+
+});
+</script>
 </body> 
+</html>
