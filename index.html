@@ -30,14 +30,10 @@
       background-color: rgba(255, 233, 66, 0.548);
     }
 
-
     h1 {
       font-family: 'Inconsolata', monospace;
-
       margin-top: 30px;
       margin-bottom: 30px;
-
-
     }
 
     .row {
@@ -87,17 +83,46 @@
     .gallery-wrapper div {
       display: inline-block;
       width: 300px;
-      /* Set the width of the images */
       height: auto;
-      margin-right: 10 px;
-      /* Add some spacing between the images */
+      margin-right: 10px;
     }
 
     .path {
       margin-bottom: 50px;
     }
-  </style>
 
+    .project-card {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .project-card:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .project-title {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    .project-description {
+      color: #6c757d;
+      margin-bottom: 15px;
+    }
+
+    .project-links a {
+      margin-right: 15px;
+      text-decoration: none;
+    }
+
+    .project-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
 
 </head>
 
@@ -112,6 +137,9 @@
       <ul class="navbar-nav">
         <li class="nav-item active">
           <a class="nav-link" href="#whoami">whoami</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#projects">projects</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#publications">publications</a>
@@ -132,13 +160,10 @@
 
     <hr />
 
-
-
     <p>Hey there! I'm Francesco Pelosin, I'm Italian and I'm from Bassano del Grappa (north-east). I got a Ph.D. (july
       2022) from Ca' Foscari University of Venice where I focused my studies on Continual Learning for Computer Vision.
       I'm passionate about my work and consider myself an "advanced script k1ddie" :D. If you need to contact me, drop
       an e-mail here: <code>pelosinf[at]gmail</code></p>
-
 
     <p>My path of <b>studies/work</b> 🎓</p>
 
@@ -173,7 +198,6 @@
         <td>Covision Lab</td>
         <td><i>Brixen - South Tyrol, Italy</i></td>
         </tr>
-
       </tbody>
     </table>
 
@@ -194,11 +218,9 @@
             </tr>
           </tbody>
         </table>
-
       </div>
       <div class="col">
         <p>My <b>skills</b> 🛠</p>
-
 
         <table>
           <tbody>
@@ -222,68 +244,24 @@
               <td>Rust / OpenAI API / Agentic Systems</td>
               <td>Wanna learn!</td>
             </tr>
-
           </tbody>
         </table>
-
-
       </div>
     </div>
 
-    <!--
-    <h1 id="resources">resources</h1>
+    <h1 id="projects">projects</h1>
     <hr />
 
-    <table>
-      <tbody>
-        <tr>
-          <td><a href='./res/unsup.html'>Introduzione Unsupervised Learning</a></td>
-          <td>&#10143;</td>
-          <td>IPython Notebook with exercices (in Italian)</td>
-        </tr>
-        <tr>
-          <td><a href='./res/geosp.html'>Geospatial data wrangling</a></td>
-          <td>&#10143;</td>
-          <td>IPython Notebook with exercices (in Italian)</td>
-        </tr>
-        <tr>
-          <td><a href='https://www.youtube.com/watch?v=nAQLwwU5Dp8&list=PLTlGUQDkR92-QWZ3HltyuGYVwUytT3_hK'>Tutorato di
-              architettura degli elaboratori</a></td>
-          <td>&#10143;</td>
-          <td>YouTube Video Lectures (in Italian)</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="project-card">
+      <div class="project-title">🎙️ PodXiv - AI-Powered Academic Podcast Generator</div>
+      <div class="project-description">
+        Transform arXiv papers into engaging podcast conversations! PodXiv uses advanced AI to convert academic papers into natural, informative audio discussions between virtual hosts. Perfect for consuming research content on the go.
+      </div>
+      <div class="project-links">
+        <a href="https://huggingface.co/spaces/lakj7/podXiv" target="_blank">🚀 Try it live</a>
+      </div>
+    </div>
 
-      <h1>Projects</h1>
-      <hr />
-      <div class="image-gallery">
-          <div class="gallery-wrapper">
-            
-            <div>
-              <img src="imgs/projects/vit.png" class="img-fluid" alt="Project 1">
-              <p>Intro to ViTs</p>
-            </div>
-
-            <div>
-              <img src="imgs/projects/clustering.png" class="img-fluid" alt="Project 2">
-              <p>IPython Notebook on clustering</p>
-            </div>
-          
-            <div>
-              <img src="imgs/projects/geospatial.png" class="img-fluid" alt="Project 2">
-              <p>IPython Notebook on geospatial data</p>
-            </div>
-          
-            <div>
-              <img src="imgs/projects/architettura.png" class="img-fluid" alt="Project 2">
-              <p>Architecture of</p>
-            </div>
-
-          
-          </div>
-        </div>
-      -->
     <h1 id="publications">publications</h1>
     <hr />
 
@@ -555,7 +533,7 @@
             </div>
 
             <div id="paper2-abstract" class="collapse">
-How can we separate structural information from noise in large graphs? To address this fundamental question, we propose a graph summarization approach based on Szemerédi’s Regularity Lemma, a well-known result in graph theory, which roughly states that every graph can be approximated by the union of a small number of random-like bipartite graphs called “regular pairs”. Hence, the Regularity Lemma provides us with a principled way to describe the essential structure of large graphs using a small amount of data. Our paper has several contributions: (i) We present our summarization algorithm which is able to reveal the main structural patterns in large graphs. (ii) We discuss how to use our summarization framework to efficiently retrieve from a database the top-k graphs that are most similar to a query graph. (iii) Finally, we evaluate the noise robustness of our approach in terms of the reconstruction error and the usefulness of the summaries in addressing the graph search task.
+How can we separate structural information from noise in large graphs? To address this fundamental question, we propose a graph summarization approach based on Szemerédi's Regularity Lemma, a well-known result in graph theory, which roughly states that every graph can be approximated by the union of a small number of random-like bipartite graphs called "regular pairs". Hence, the Regularity Lemma provides us with a principled way to describe the essential structure of large graphs using a small amount of data. Our paper has several contributions: (i) We present our summarization algorithm which is able to reveal the main structural patterns in large graphs. (ii) We discuss how to use our summarization framework to efficiently retrieve from a database the top-k graphs that are most similar to a query graph. (iii) Finally, we evaluate the noise robustness of our approach in terms of the reconstruction error and the usefulness of the summaries in addressing the graph search task.
             </div>
           </div>
       </li>
@@ -620,40 +598,4 @@ How can we separate structural information from noise in large graphs? To addres
       .    .                        .
   .             <span class="colored">*</span>             <span class="colored">*</span>.          
   <span class="colored">*</span>     <span class="colored">*</span>                 <span class="colored">*</span>                         
-  .                  .         .       <span class="colored">*</span>
-           <span class="colored">*</span>                   
-           .  <span class="colored">*</span>              <span class="colored"> lakj </span>
-  </pre>
-
-
-    </center>
-    </p>
-
-
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-      crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-      crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-      integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
-      crossorigin="anonymous"></script>
-    <script>
-      $(document).ready(function () {
-
-        var colors = ['rgb(255, 226, 226)', 'rgb(238, 255, 226)', 'rgb(226, 255, 250)', 'rgb(231, 226, 255)', 'rgb(255, 226, 227)', 'rgb(252, 226, 255)'];
-
-        $('.colored').each(function () {
-          var new_color = colors[Math.floor(Math.random() * colors.length)];
-          $(this).css('background-color', new_color);
-        });
-
-      });
-    </script>
-
-
-</body>
-
-</html>
+  .
