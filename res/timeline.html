@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario di Rodolfo Pelosin – Carabiniere 1930–1943</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: linear-gradient(135deg, #c9b89a 0%, #a89976 50%, #8b7355 100%);
+    min-height: 100vh;
+    padding: 60px 20px;
+    color: #2d2416;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 60px;
+    color: #3d3226;
+}
+
+.header h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 1px;
+}
+
+.header .subtitle {
+    font-size: 1.3rem;
+    opacity: 0.95;
+    font-weight: 300;
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
+.header .period {
+    font-size: 1.1rem;
+    opacity: 0.85;
+    margin-top: 10px;
+    letter-spacing: 3px;
+}
+
+.timeline {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    background: linear-gradient(180deg, 
+        rgba(107, 68, 35, 0.2), 
+        rgba(107, 68, 35, 0.6) 20%, 
+        rgba(107, 68, 35, 0.6) 80%, 
+        rgba(107, 68, 35, 0.2));
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px;
+    box-shadow: 0 0 20px rgba(107, 68, 35, 0.3);
+}
+
+.entry {
+    position: relative;
+    margin-bottom: 60px;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.entry.left {
+    justify-content: flex-start;
+}
+
+.entry.right {
+    justify-content: flex-end;
+}
+
+.content {
+    background: linear-gradient(135deg, #f5f1e8 0%, #e8e0d0 100%);
+    padding: 28px 32px;
+    border-radius: 8px;
+    box-shadow: 
+        0 8px 24px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+    width: 46%;
+    position: relative;
+    border: 1px solid rgba(139, 115, 85, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+        0 12px 32px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.entry.left .content {
+    margin-right: 54%;
+}
+
+.entry.right .content {
+    margin-left: 54%;
+}
+
+.date {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #6b4423;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-bottom: 2px solid #8b7355;
+    padding-bottom: 8px;
+}
+
+.description {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #3d3226;
+    margin-bottom: 14px;
+}
+
+.quote {
+    font-style: italic;
+    color: #5a4a3a;
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-left: 3px solid #8b7355;
+    background: rgba(139, 115, 85, 0.1);
+    border-radius: 4px;
+    font-size: 0.98rem;
+    line-height: 1.7;
+}
+
+.quote::before {
+    content: '"';
+    font-size: 1.8rem;
+    color: #8b7355;
+    margin-right: 6px;
+    vertical-align: -6px;
+}
+
+.quote::after {
+    content: '"';
+    font-size: 1.8rem;
+    color: #8b7355;
+    margin-left: 4px;
+    vertical-align: -6px;
+}
+
+.location {
+    font-size: 0.9rem;
+    color: #6b4423;
+    font-weight: 600;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+}
+
+.entry::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: #f5f1e8;
+    border: 5px solid #6b4423;
+    border-radius: 50%;
+    top: 32px;
+    left: 50%;
+    margin-left: -12px;
+    z-index: 2;
+    box-shadow: 0 0 0 6px rgba(107, 68, 35, 0.15);
+    transition: all 0.3s ease;
+}
+
+.entry:hover::after {
+    background: #6b4423;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 10px rgba(107, 68, 35, 0.25);
+}
+
+.final-note {
+    max-width: 800px;
+    margin: 80px auto 40px;
+    padding: 40px;
+    background: linear-gradient(135deg, #f5f1e8 0%, #e8e0d0 100%);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    border: 1px solid rgba(139, 115, 85, 0.3);
+    text-align: center;
+}
+
+.final-note .quote {
+    font-size: 1.15rem;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.signature {
+    margin-top: 30px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #6b4423;
+    font-family: 'Brush Script MT', cursive;
+}
+
+.tag {
+    display: inline-block;
+    background: rgba(107, 68, 35, 0.15);
+    color: #5a4a3a;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+.portrait-section {
+    max-width: 400px;
+    margin: 0 auto 60px;
+    text-align: center;
+}
+
+.portrait-section img {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    border: 6px solid #f5f1e8;
+}
+
+.portrait-caption {
+    margin-top: 15px;
+    font-size: 1.1rem;
+    color: #3d3226;
+    font-style: italic;
+}
+
+.photo-gallery {
+    display: flex;
+    gap: 15px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.photo-gallery img {
+    width: calc(50% - 8px);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border: 3px solid #f5f1e8;
+    transition: transform 0.3s ease;
+}
+
+.photo-gallery img:hover {
+    transform: scale(1.05);
+}
+
+@media screen and (max-width: 768px) {
+    .photo-gallery img {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .header .subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .timeline::before {
+        left: 30px;
+    }
+    
+    .entry {
+        justify-content: flex-start !important;
+        padding-left: 75px;
+    }
+    
+    .content {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    .entry::after {
+        left: 30px !important;
+        margin-left: 0;
+    }
+    
+    .entry.left .content,
+    .entry.right .content {
+        margin: 0;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Diario di Rodolfo Pelosin</h1>
+    <div class="subtitle">Carabiniere Reale – Una vita al servizio dell'Italia</div>
+    <div class="period">1930 – 1943</div>
+</div>
+
+<div class="portrait-section">
+    <img src="rodolfo.jpg" alt="Rodolfo Pelosin">
+    <div class="portrait-caption">Rodolfo Pelosin</div>
+</div>
+
+<div class="timeline">
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">14 Aprile 1930</div>
+        <div class="description">
+            Chiamata di leva al Distretto Militare di Padova. Idoneo per i Bersaglieri, ma presenta domanda per entrare nell'Arma dei Reali Carabinieri. Viene rimandato a casa in attesa del richiamo.
+        </div>
+        <div class="location">Padova</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">15 Maggio 1930</div>
+        <div class="description">
+            Partenza da Loreggia accompagnato dal padre fino alla stazione di Piombino Dese. Arrivo a Torino verso mezzanotte. Prima notte alla Caserma Cernaia, in una grande camerata con altri giovani arrivati prima di lui.
+        </div>
+        <div class="location">Torino – Caserma Cernaia</div>
+        <div class="tag">Inizio servizio</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">17 Maggio 1930</div>
+        <div class="description">
+            Consegna del corredo completo e vestizione da allievo carabiniere.
+        </div>
+        <div class="quote">
+            Vestito che fui, provai una grande commozione e me ne affezionai subito.
+        </div>
+        <div class="location">Torino – Legione Allievi</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">30 Novembre 1930</div>
+        <div class="description">
+            Promosso Carabiniere. Indossa per la prima volta gli alamari d'argento e le bande rosse nei pantaloni.
+        </div>
+        <div class="quote">
+            Mi sentivo forte come una torre. Molte corse e marce, non mi sentivo mai stanco. Non ricordo di essere stato mai ammalato. Torino è una delle più belle città d'Italia, degna di essere visitata.
+        </div>
+        <div class="location">Torino</div>
+        <div class="tag">Promozione</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">27 Dicembre 1930</div>
+        <div class="description">
+            Destinato alla Legione di Bologna (Regione Emiliana). Lascia Torino con amarezza dopo mesi di formazione e vita intensa nella città.
+        </div>
+        <div class="quote">
+            Lascio con amarezza la bella Torino.
+        </div>
+        <div class="location">Bologna</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">1933</div>
+        <div class="description">
+            Servizio in zona malsana. Soffre di febbri ricorrenti e gonfiori alle gambe. La sua resistenza fisica viene messa alla prova dalle condizioni difficili del territorio.
+        </div>
+        <div class="location">Papozze</div>
+        <div class="tag">Servizio difficile</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">1938</div>
+        <div class="description">
+            Servizio d'ordine pubblico durante una visita ufficiale. Ammira i monumenti storici e le opere d'arte della città rinascimentale, restando affascinato dalla bellezza artistica.
+        </div>
+        <div class="location">Firenze</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">Giugno 1940</div>
+        <div class="description">
+            Mobilitazione generale. Parte con l'amico Di Rodi Carlantonio. Durante il viaggio in treno passa la notte dormendo su cassette nel corridoio, soffrendo di forti dolori alla schiena.
+        </div>
+        <div class="location">Partenza per il fronte</div>
+        <div class="tag">Mobilitazione</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">Estate 1940</div>
+        <div class="description">
+            Addestramento intensivo in preparazione della campagna militare. Notti segnate dai bombardamenti aerei. Si rifugia nei sotterranei della caserma durante gli allarmi.
+        </div>
+        <div class="location">Torino</div>
+        <div class="tag">Guerra</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">Agosto 1940</div>
+        <div class="description">
+            Marcia notturna estenuante di 28 chilometri senza possibilità di dormire. Alloggi di fortuna in stalle e segherie. Le condizioni sono sempre più difficili.
+        </div>
+        <div class="location">Confine Orientale</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">Novembre 1940</div>
+        <div class="description">
+            Imbarco per l'Albania durante un allarme aereo. Attraversa l'Adriatico verso Durazzo con il salvagente indossato per tutta la traversata, in costante allerta.
+        </div>
+        <div class="location">Imbarco per l'Albania</div>
+        <div class="tag">Campagna d'Albania</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">Dicembre 1940</div>
+        <div class="description">
+            Freddo estremo nelle montagne albanesi. Dorme su fieno coperto da teli militari. Pattugliamenti continui in montagna in condizioni climatiche proibitive.
+        </div>
+        <div class="location">Peshkopi – Albania</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">24 Dicembre 1940</div>
+        <div class="description">
+            La vigilia di Natale al fronte. Riceve la Comunione, momento di profondo raccoglimento spirituale in mezzo alla guerra. Un momento di pace interiore nel caos del conflitto.
+        </div>
+        <div class="location">Fronte Greco-Albanese</div>
+        <div class="tag">Natale al fronte</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">Gennaio 1941</div>
+        <div class="description">
+            Addestramento continuo a Tirana. Riceve la tragica notizia della distruzione quasi totale di un battaglione amico. La guerra mostra il suo volto più crudele.
+        </div>
+        <div class="location">Tirana – Albania</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">Maggio 1941</div>
+        <div class="description">
+            Servizio al posto di blocco a Polazzo. Turni estenuanti: dalle 3 alle 6, dalle 12 alle 15, dalle 21 alle 24. Si fa fotografare lungo la costa del mare, cercando momenti di normalità.
+        </div>
+        <div class="photo-gallery">
+            <img src="grecia1.jpg" alt="Rodolfo in Grecia - Foto 1">
+            <img src="grecia2.jpg" alt="Rodolfo in Grecia - Foto 2">
+        </div>
+        <div class="location">Polazzo (Valona) – Albania</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">5 Giugno 1941</div>
+        <div class="description">
+            Festa dell'Arma: celebrato il 127° anniversario della fondazione dei Carabinieri. Pranzo speciale. Il Colonnello Meuli tiene un discorso commemorativo.
+        </div>
+        <div class="quote">
+            Il colonnello Meuli, comandante del 1° Battaglione fece un discorso, esaltando il contributo di sangue versato dall'Arma durante la guerra in Albania.
+        </div>
+        <div class="location">Albania</div>
+        <div class="tag">Festa dell'Arma</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">15 Giugno 1941</div>
+        <div class="description">
+            Partenza da Itea alle ore 5 del mattino. Lungo viaggio con tutte e tre le compagnie verso la capitale greca. Arrivo ad Atene alle ore 17. Sistemazione in un palazzo che diventerà la sua base.
+        </div>
+        <div class="location">Atene – Grecia</div>
+        <div class="tag">Trasferimento</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">19 Giugno 1941</div>
+        <div class="description">
+            Il Tenente Gallo Germano lo sceglie come dattilografo nel suo ufficio. Rimane in questa mansione fino all'armistizio dell'8 settembre 1943, assistendo da questa posizione agli eventi finali della guerra.
+        </div>
+        <div class="location">Atene – Comando Piazza Militare</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">21 Giugno 1941</div>
+        <div class="description">
+            Visita l'Acropoli di Atene. Nelle ore libere prende il sole sulla terrazza della caserma per alleviare i dolori reumatici contratti dormendo sotto la tenda durante i mesi al fronte greco-albanese.
+        </div>
+        <div class="location">Atene – Acropoli</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">22-23 Giugno 1941</div>
+        <div class="description">
+            Testimone della tragedia della popolazione greca. Osserva persone di ogni età cercare cibo nei contenitori dei rifiuti degli alberghi. Vede gente cadere a terra sfinita, con sangue che esce dalla bocca, morire di fame per le strade.
+        </div>
+        <div class="quote">
+            Camminando per le vie della città di Atene incontrai gente che cadevano a per terra perché sfiniti, uscendo dalla bocca sangue, tanto che molti morivano di fame e quindi venivano raccolti e portati via.
+        </div>
+        <div class="location">Atene</div>
+        <div class="tag">Testimonianza</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">Giugno 1941 – Settembre 1943</div>
+        <div class="description">
+            Due anni come dattilografo presso il Comando Piazza Militare di Atene. Un periodo relativamente tranquillo dopo i mesi difficili del fronte, durante il quale assiste ai cambiamenti della guerra e all'avvicinarsi della fine.
+        </div>
+        <div class="location">Atene</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">6 Settembre 1943</div>
+        <div class="description">
+            Parte per la licenza verso casa. Sosta a Lubiana per la contumacia sanitaria, procedura obbligatoria per evitare la diffusione di malattie infettive prima del rientro in Italia.
+        </div>
+        <div class="location">Lubiana – Jugoslavia</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">8 Settembre 1943</div>
+        <div class="description">
+            Armistizio. Il periodo di contumacia viene interrotto. Alle ore 5 del mattino del giorno 9, viene fatto prigioniero dai tedeschi insieme a molti colleghi, ma viene rilasciato poco dopo. Circolano voci che chi prende il treno per tornare a casa viene deportato in Germania come prigioniero di guerra.
+        </div>
+        <div class="quote">
+            Armistizio avvenuto l'8 settembre 1943. Da tale data fino il giorno 9 successivo fui fatto prigioniero dai Tedeschi, e precisamente verso le ore 5 del mattino, ora in cui fui lasciato libero, assieme a molti altri colleghi.
+        </div>
+        <div class="location">Lubiana – Jugoslavia</div>
+        <div class="tag">Armistizio</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">9-19 Settembre 1943</div>
+        <div class="description">
+            Insieme al paesano Vittorio Milani decide di prendere la via della montagna per evitare la cattura tedesca. Dieci giorni di cammino a piedi da Lubiana fino a casa. Le famiglie lungo il percorso offrono cibo e rifugio nei fienili.
+        </div>
+        <div class="quote">
+            Assieme al paesano Vittorio Milani, abbiamo preso la via della montagna, in modo di non farsi prendere anche noi prigionieri dai tedeschi. Abbiamo in tali giorni assistiti dalle famiglie, offrendoci a noi da mangiare e da dormire nei fienili.
+        </div>
+        <div class="location">Da Lubiana a Loreggia</div>
+        <div class="tag">Ritorno a casa</div>
+    </div>
+</div>
+
+<div class="entry left">
+    <div class="content">
+        <div class="date">19 Settembre 1943</div>
+        <div class="description">
+            Arrivo a casa dopo il lungo viaggio a piedi attraverso le montagne. Fine del servizio militare attivo. Lavora in campagna fino alla fine della guerra.
+        </div>
+        <div class="location">Loreggia</div>
+    </div>
+</div>
+
+<div class="entry right">
+    <div class="content">
+        <div class="date">25 Aprile 1945</div>
+        <div class="description">
+            Fine della guerra. Si presenta alla Legione Carabinieri di Padova per essere nuovamente assunto in servizio nell'Arma, concludendo così il suo percorso militare iniziato quindici anni prima.
+        </div>
+        <div class="location">Padova</div>
+        <div class="tag">Fine guerra</div>
+    </div>
+</div>
+
+</div>
+
+<div class="final-note">
+    <div class="quote">
+        Avrei molto da scrivere della mia vita trascorsa nell'Arma, ma poiché questo diario non verrà mai letto mi soffermo quì.
+    </div>
+    <div class="signature">
+        Pelosin Rodolfo
+    </div>
+    <div style="margin-top: 30px; font-size: 0.95rem; color: #5a4a3a; font-style: italic;">
+        19 Settembre 1943
+    </div>
+</div>
+
+</body>
+</html>
