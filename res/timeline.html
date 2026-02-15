@@ -269,10 +269,142 @@ body {
     transform: scale(1.05);
 }
 
+.memory-section {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 40px;
+    background: linear-gradient(135deg, #f5f1e8 0%, #e8e0d0 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    border: 1px solid rgba(139, 115, 85, 0.3);
+}
+
+.memory-section h2 {
+    text-align: center;
+    color: #6b4423;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 3px solid #8b7355;
+    padding-bottom: 15px;
+}
+
+.memory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.memory-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.memory-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.memory-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: 4px solid #f5f1e8;
+}
+
+.memory-item.featured {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.memory-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    color: #f5f1e8;
+    padding: 20px 15px 12px;
+    font-size: 0.95rem;
+    font-style: italic;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.memory-item:hover .memory-caption {
+    transform: translateY(0);
+}
+
+.document-showcase {
+    max-width: 600px;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.document-showcase img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    border: 6px solid #f5f1e8;
+    transition: transform 0.3s ease;
+}
+
+.document-showcase img:hover {
+    transform: scale(1.02);
+}
+
+.document-caption {
+    margin-top: 15px;
+    font-size: 1.1rem;
+    color: #3d3226;
+    font-weight: 600;
+    font-style: italic;
+}
+
+.companions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.companions-grid img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    border: 4px solid #f5f1e8;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.companions-grid img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+
 @media screen and (max-width: 768px) {
     .photo-gallery img {
         width: 100%;
     }
+    
+    .memory-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .memory-item.featured {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+    
+    .companions-grid {
+        grid-template-columns: 1fr;
+    }
+}
 }
 
 @media screen and (max-width: 768px) {
@@ -323,6 +455,11 @@ body {
     <div class="portrait-caption">Rodolfo Pelosin</div>
 </div>
 
+<div class="document-showcase">
+    <img src="carta_identita.jpg" alt="Carta d'identità di Rodolfo Pelosin">
+    <div class="document-caption">Carta d'Identità</div>
+</div>
+
 <div class="timeline">
 
 <div class="entry left">
@@ -368,6 +505,9 @@ body {
         <div class="quote">
             Mi sentivo forte come una torre. Molte corse e marce, non mi sentivo mai stanco. Non ricordo di essere stato mai ammalato. Torino è una delle più belle città d'Italia, degna di essere visitata.
         </div>
+        <div style="margin-top: 16px;">
+            <img src="torino_ricordo.jpg" alt="Ricordo di Torino" style="width: 100%; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 3px solid #f5f1e8;">
+        </div>
         <div class="location">Torino</div>
         <div class="tag">Promozione</div>
     </div>
@@ -412,6 +552,12 @@ body {
         <div class="date">Giugno 1940</div>
         <div class="description">
             Mobilitazione generale. Parte con l'amico Di Rodi Carlantonio. Durante il viaggio in treno passa la notte dormendo su cassette nel corridoio, soffrendo di forti dolori alla schiena.
+        </div>
+        <div class="companions-grid">
+            <img src="1940_compagni_1.jpg" alt="Con i compagni - 1940">
+            <img src="1940_compagni_2.jpg" alt="Con i compagni - 1940">
+            <img src="1940_compagni_3.jpg" alt="Con i compagni - 1940">
+            <img src="1940_compagni_4.jpg" alt="Con i compagni - 1940">
         </div>
         <div class="location">Partenza per il fronte</div>
         <div class="tag">Mobilitazione</div>
