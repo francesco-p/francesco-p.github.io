@@ -1,59 +1,73 @@
 {{- $siteAuthorName := or .Site.Params.author.name .Site.Title -}}
-{{ if .IsHome -}}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "{{ .Site.Title | safeJS }}",
-    "url": "{{ (site.GetPage "/").Permalink | safeURL }}",
-    {{- with .Site.LanguageCode -}}
-      "inLanguage": "{{ . }}",
-    {{- end -}}
-    {{- with $siteAuthorName -}}
-      "author": {
-        "@type": "Person",
-        "name": "{{ . | safeJS }}"
-      },
-    {{- end -}}
-    {{- with .Site.Params.description -}}
-      "description": {{ . | safeJS }},
-    {{- end -}}
-    {{- with .Site.Params.logo -}}
-      "thumbnailUrl": "{{ . | absURL }}",
-    {{- end -}}
-    {{- with .Site.Copyright -}}
-      "license": "{{ . | safeJS }}",
-    {{- end -}}
-  }
-  </script>
-{{ else if .IsPage }}
-  {{- $author := or (.Params.author) (.Site.Params.author.name) (.Site.Title) -}}
+{{- if .IsHome -}}
+  {{- $schema := dict
+    "@context" "https://schema.org"
+    "@type" "WebSite"
+    "name" .Site.Title
+    "url" ((site.GetPage "/").Permalink)
+  -}}
+  {{- with .Site.LanguageCode -}}
+    {{- $schema = merge $schema (dict "inLanguage" .) -}}
+  {{- end -}}
+  {{- with $siteAuthorName -}}
+    {{- $schema = merge $schema (dict "author" (dict "@type" "Person" "name" .)) -}}
+  {{- end -}}
+  {{- with .Site.Params.description -}}
+    {{- $schema = merge $schema (dict "description" .) -}}
+  {{- end -}}
+  {{- with .Site.Params.logo -}}
+    {{- $schema = merge $schema (dict "thumbnailUrl" (. | absURL)) -}}
+  {{- end -}}
+  {{- with .Site.Copyright -}}
+    {{- $schema = merge $schema (dict "license" .) -}}
+  {{- end -}}
+  <script type="application/ld+json">{{ $schema | jsonify }}</script>
+{{- else if .IsPage -}}
+  {{- $author := or .Params.author .Site.Params.author.name .Site.Title -}}
   {{- $iso8601 := "2006-01-02T15:04:05-07:00" -}}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "articleSection": "{{ (site.GetPage .Section).Title }}",
-    "name": "{{ .Title | safeJS }}",
-    "headline": "{{ .Title | safeJS }}",
-    "description": "{{ with .Description | safeJS }}{{ . }}{{ else }}{{ if .IsPage }}{{ .Summary | safeJS }}{{ else }}{{ with .Site.Params.description }}{{ . | safeJS }}{{ end }}{{ end }}{{ end }}",
-    {{ with .Site.LanguageCode }}"inLanguage": {{ . }},{{ end }}
-    "author" : {
-      "@type": "Person",
-      "name": "{{ $author | safeJS }}"
-    },
-    "creator" : {
-      "@type": "Person",
-      "name": "{{ $author | safeJS }}"
-    },
-    "copyrightHolder": "{{ $author | safeJS }}",
-    {{ with .PublishDate }}"copyrightYear": "{{ .Format "2006" }}",{{ end }}
-    {{ with .PublishDate }}"dateCreated": "{{ .Format $iso8601 }}",{{ end }}
-    {{ with .PublishDate }}"datePublished": "{{ .Format $iso8601 }}",{{ end }}
-    {{ with .Lastmod }}"dateModified": "{{ .Format $iso8601 }}",{{ end }}
-    "url" : "{{ .Permalink }}",
-    "wordCount": "{{ .WordCount }}",
-    "keywords": [{{ if .IsPage }}{{ range $index, $tag := .Params.tags }}{{ $tag }},{{ end }}{{ else }}{{ range $plural, $terms := .Site.Taxonomies }}{{ range $term, $val := $terms }}{{ printf "%s," $term }}{{ end }}{{ end }}{{ end }}]
-  }
-  </script>
-{{ end }}
+  {{- $sectionTitle := .Section -}}
+  {{- with (site.GetPage .Section) -}}
+    {{- $sectionTitle = .Title -}}
+  {{- end -}}
+  {{- $description := .Site.Params.description -}}
+  {{- with .Summary -}}
+    {{- $description = . -}}
+  {{- end -}}
+  {{- with .Description -}}
+    {{- $description = . -}}
+  {{- end -}}
+  {{- $keywords := slice -}}
+  {{- range .Params.tags -}}
+    {{- $keywords = $keywords | append . -}}
+  {{- end -}}
+  {{- $schema := dict
+    "@context" "https://schema.org"
+    "@type" "BlogPosting"
+    "articleSection" $sectionTitle
+    "name" .Title
+    "headline" .Title
+    "description" $description
+    "author" (dict "@type" "Person" "name" $author)
+    "creator" (dict "@type" "Person" "name" $author)
+    "copyrightHolder" $author
+    "url" .Permalink
+    "wordCount" .WordCount
+  -}}
+  {{- with .Site.LanguageCode -}}
+    {{- $schema = merge $schema (dict "inLanguage" .) -}}
+  {{- end -}}
+  {{- with .PublishDate -}}
+    {{- $schema = merge $schema (dict
+      "copyrightYear" (.Format "2006")
+      "dateCreated" (.Format $iso8601)
+      "datePublished" (.Format $iso8601)
+    ) -}}
+  {{- end -}}
+  {{- with .Lastmod -}}
+    {{- $schema = merge $schema (dict "dateModified" (.Format $iso8601)) -}}
+  {{- end -}}
+  {{- if gt (len $keywords) 0 -}}
+    {{- $schema = merge $schema (dict "keywords" $keywords) -}}
+  {{- end -}}
+  <script type="application/ld+json">{{ $schema | jsonify }}</script>
+{{- end -}}
