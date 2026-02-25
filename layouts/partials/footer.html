@@ -10,13 +10,6 @@
           {{ or .Site.Params.author.name .Site.Title }}
         {{- end -}}
       </p>
-      {{- if .Site.Params.attribution | default true }}
-        <p class="text-sm">
-          {{- $hugo := `<a class="hover:underline hover:text-primary-500" href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a>` }}
-          {{ $compost := printf `<a class="hover:underline hover:text-primary-500" href="https://canstand.github.io/compost" target="_blank" rel="noopener noreferrer">Compost</a>` }}
-          {{ i18n "footer.powered_by" (dict "Hugo" $hugo "Theme" $compost) | safeHTML }}
-        </p>
-      {{ end }}
     </div>
     <div class="flex-1">
       {{- if templates.Exists "partials/extend-footer.html" }}

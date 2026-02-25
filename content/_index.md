@@ -4,7 +4,7 @@ description: "Francesco Pelosin"
 ---
 
 {{< lead >}}
-Hey 👋 I am Francesco, a computer vision researcher/engineer from Bassano del Grappa (north-east Italy)!
+Hi! I am Francesco, a computer vision researcher/engineer from Bassano del Grappa (north-east Italy)!
 {{< /lead >}}
 
 <div class="hero-panel">
