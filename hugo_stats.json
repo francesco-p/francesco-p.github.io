@@ -8,6 +8,7 @@
       "button",
       "code",
       "div",
+      "figure",
       "footer",
       "h1",
       "h2",
@@ -271,6 +272,7 @@
       "switchTheme",
       "the-code",
       "the-explanation",
+      "the-idea",
       "timeline"
     ]
   }
