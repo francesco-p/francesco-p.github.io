@@ -1,0 +1,81 @@
+baseURL = "https://francesco-p.github.io/"
+languageCode = "en"
+defaultContentLanguage = "en"
+title = "Francesco Pelosin"
+theme = "github.com/canstand/compost"
+enableEmoji = true
+enableRobotsTXT = true
+
+[build]
+  _merge = "deep"
+
+[markup]
+  _merge = "deep"
+[markup.goldmark.renderer]
+  unsafe = true
+
+[minify]
+  _merge = "deep"
+
+[module]
+[[module.mounts]]
+  source = "assets"
+  target = "assets"
+[[module.mounts]]
+  source = "hugo_stats.json"
+  target = "assets/watching/hugo_stats.json"
+[[module.imports]]
+  path = "github.com/canstand/compost"
+
+[params]
+  logo = ""
+  colorScheme = "light"
+  description = "Personal website of Francesco Pelosin"
+  mainSections = ["posts"]
+
+[author]
+  name = "Francesco Pelosin"
+  bio = "Computer Vision / Machine Learning Engineer"
+  links = [
+    { github = "https://github.com/francesco-p" },
+    { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
+    { mastodon = "https://infosec.exchange/@lakj" },
+    { twitter = "https://twitter.com/lakjfr" },
+    { linkedin = "https://it.linkedin.com/in/francesco-pelosin-97533111a" },
+  ]
+
+[params.author]
+  name = "Francesco Pelosin"
+  bio = "Computer Vision / Machine Learning Engineer"
+  links = [
+    { github = "https://github.com/francesco-p" },
+    { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
+    { mastodon = "https://infosec.exchange/@lakj" },
+    { twitter = "https://twitter.com/lakjfr" },
+    { linkedin = "https://it.linkedin.com/in/francesco-pelosin-97533111a" },
+  ]
+
+[params.homepage]
+  layout = "profile"
+  showRecent = true
+
+[params.article]
+  showDate = false
+  showAuthor = false
+  showReadingTime = false
+  showTOC = true
+  showBreadcrumbs = true
+  showEdit = false
+
+[params.list]
+  showSummary = true
+
+[[menu.main]]
+  name = "Home"
+  pageRef = "/"
+  weight = 1
+
+[[menu.main]]
+  name = "Blog"
+  pageRef = "posts"
+  weight = 2

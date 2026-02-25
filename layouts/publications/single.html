@@ -1,0 +1,42 @@
+{{ define "main" }}
+  <article class="mx-auto min-w-0 max-w-5xl flex-grow">
+    <header class="mb-8">
+      {{- if .Site.Params.article.showBreadcrumbs | default false }}
+        {{- partial "breadcrumbs.html" . }}
+      {{- end }}
+      <h1 class="my-3 text-3xl font-semibold text-neutral-800 dark:text-neutral-200">
+        {{- .Title | emojify }}
+      </h1>
+      {{ with .Content }}
+        <section class="prose max-w-none text-base dark:prose-invert">{{ . | emojify }}</section>
+      {{ end }}
+    </header>
+
+    <section class="pub-grid">
+      {{ range site.Data.publications }}
+        <article class="pub-card">
+          <div>
+            <img class="pub-thumb" src="{{ .image | relURL }}" alt="Preview for {{ .title }}" loading="lazy" />
+          </div>
+          <div>
+            <h2 class="pub-title">{{ .title }}</h2>
+            <p class="pub-authors">{{ .authors }}</p>
+            <p class="pub-venue">
+              {{ .venue }}
+              {{ with .award }}<span class="pub-award">{{ . }}</span>{{ end }}
+            </p>
+            <div class="pub-links">
+              {{ with .code }}
+                <a class="pub-link" href="{{ . }}" target="_blank" rel="noopener noreferrer">💻 Code</a>
+              {{ end }}
+              {{ with .pdf }}
+                <a class="pub-link" href="{{ . }}" target="_blank" rel="noopener noreferrer">📄 PDF</a>
+              {{ end }}
+            </div>
+          </div>
+        </article>
+      {{ end }}
+    </section>
+  </article>
+  {{ partial "aside.html" . }}
+{{ end }}
