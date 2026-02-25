@@ -1,5 +1,5 @@
 ---
-title: "Blog"
+title: "Human-Blog"
 description: "Notes, experiments, and project updates"
 ---
 

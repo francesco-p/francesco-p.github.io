@@ -8,6 +8,7 @@ Hi! I am Francesco, a computer vision researcher/engineer from Bassano del Grapp
 {{< /lead >}}
 
 <div class="hero-panel">
+  <p><strong>tldr;</strong></p>
   <p>I got a Ph.D. (July 2022) from Ca' Foscari University of Venice, where I focused on Continual Learning for Computer Vision. I like building practical tools, shipping research prototypes, and turning papers into working systems!</p>
   <p><strong>Interests</strong></p>
   <pre><code>├─ 🧠 Continual Learning

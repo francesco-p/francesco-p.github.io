@@ -9,11 +9,13 @@
       {{ with $author.image }}
         <img class="mb-2 h-36 w-36 rounded-full" alt="Avatar" src="{{ . | relURL }}" />
       {{ end }}
-      <div class="flex w-full flex-wrap items-center gap-3">
-        <h1 class="text-4xl font-extrabold">
+      <div class="w-full">
+        <h1 class="terminal-title text-4xl font-extrabold">
           {{ .Title | default "whoami" | emojify }}
         </h1>
-        {{ partialCached "author-links.html" . }}
+        <div class="mt-2">
+          {{ partialCached "author-links.html" . }}
+        </div>
       </div>
     </header>
     <section class="prose max-w-none dark:prose-invert">{{ .Content | emojify }}</section>

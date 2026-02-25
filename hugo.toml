@@ -31,7 +31,7 @@ enableRobotsTXT = true
   logo = ""
   colorScheme = "light"
   description = "Personal website of Francesco Pelosin"
-  mainSections = ["posts"]
+  mainSections = ["posts", "writeups"]
 
 [author]
   name = "Francesco Pelosin"
@@ -76,6 +76,11 @@ enableRobotsTXT = true
   weight = 1
 
 [[menu.main]]
-  name = "Blog"
+  name = "Human-Blog"
   pageRef = "posts"
   weight = 2
+
+[[menu.main]]
+  name = "AI-Writeups"
+  pageRef = "writeups"
+  weight = 3
