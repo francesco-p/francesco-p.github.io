@@ -1,0 +1,1785 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neural Gas Playground</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --grid: #d9e1ec;
+      --ink: #12233b;
+      --muted: #607188;
+      --data: #e8a2aa;
+      --edge: #111111;
+      --proto: #2f6fe4;
+      --winner: #184aa8;
+      --sample: #d62839;
+      --motion: #0f3a82;
+      --soft: #f7f9fc;
+      --panel-strong: #ffffff;
+      --kbd-border: #cad5e2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+      background: #f8fafc;
+    }
+
+    .app {
+      width: min(1380px, calc(100vw - 28px));
+      margin: 16px auto 28px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--grid);
+      border-radius: 24px;
+      box-shadow: 0 10px 28px rgba(18, 35, 59, 0.045);
+    }
+
+    .hero {
+      padding: 24px 26px 20px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-size: clamp(30px, 4vw, 48px);
+      letter-spacing: -0.04em;
+      line-height: 0.98;
+    }
+
+    .byline {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .byline a {
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid var(--grid);
+    }
+
+    .shortcuts {
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: #fbfcfe;
+      border: 1px solid var(--grid);
+    }
+
+    .shortcut-title {
+      color: var(--ink);
+      font-weight: 600;
+      margin-right: 2px;
+    }
+
+    .shortcut-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .shortcuts kbd {
+      min-width: 26px;
+      height: 24px;
+      padding: 0 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid var(--kbd-border);
+      background: #ffffff;
+      box-shadow: none;
+      color: var(--ink);
+      font: 700 12px/1 "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+      gap: 16px;
+    }
+
+    .main-stack {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .viz-wrap {
+      display: grid;
+      gap: 4px;
+      align-content: start;
+    }
+
+    .viz-wrap h2 {
+      margin: 0;
+      line-height: 1.05;
+    }
+
+    canvas {
+      width: 100%;
+      display: block;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid var(--grid);
+    }
+
+    #scatter {
+      aspect-ratio: 16 / 11;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .label-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-badge {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--grid);
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 12px;
+      cursor: help;
+      flex: 0 0 auto;
+    }
+
+    .info-badge::after {
+      content: attr(data-tip);
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 240px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--grid);
+      background: #ffffff;
+      color: var(--ink);
+      line-height: 1.45;
+      font-size: 12px;
+      box-shadow: 0 8px 20px rgba(16, 36, 62, 0.08);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 120ms ease, transform 120ms ease;
+      z-index: 10;
+    }
+
+    .info-badge:hover::after,
+    .info-badge:focus-visible::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      align-self: start;
+    }
+
+    .controls > h2 {
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--grid);
+      margin-bottom: 2px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tab {
+      border: 1px solid var(--grid);
+      border-radius: 999px;
+      min-height: 38px;
+      padding: 8px 14px;
+      background: #ffffff;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      line-height: 1.1;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+    }
+
+    .tab.active {
+      background: var(--ink);
+      color: #f7fbff;
+      border-color: var(--ink);
+    }
+
+    .tab:hover {
+      transform: translateY(-1px);
+    }
+
+    .dataset-panel[hidden] {
+      display: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input[type="number"],
+    input[type="range"],
+    select {
+      width: 100%;
+    }
+
+    input[type="number"],
+    select {
+      background: #ffffff;
+      color: var(--ink);
+      border: 1px solid var(--grid);
+      border-radius: 14px;
+      min-height: 40px;
+      padding: 10px 12px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--proto);
+    }
+
+    input[type="number"]:focus,
+    select:focus,
+    .buttons button:focus-visible,
+    .tab:focus-visible,
+    .info-badge:focus-visible {
+      outline: 2px solid rgba(92, 164, 255, 0.45);
+      outline-offset: 2px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .buttons button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      min-height: 40px;
+      cursor: pointer;
+      color: #f8fbff;
+      background: var(--ink);
+      box-shadow: none;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    .buttons button.secondary {
+      background: #ffffff;
+      color: var(--ink);
+      border: 1px solid var(--grid);
+      box-shadow: none;
+    }
+
+    .buttons button:hover {
+      transform: translateY(-1px);
+    }
+
+    .buttons button:not(.secondary):hover {
+      background: #1a3557;
+    }
+
+    .buttons button.secondary:hover {
+      background: #f5f7fa;
+      border-color: #c7d3e0;
+    }
+
+    .buttons button:active,
+    .tab:active {
+      transform: translateY(0);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid var(--grid);
+      background: #ffffff;
+    }
+
+    .stat .label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .stat .value {
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .notes {
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+      margin: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--grid);
+      border-radius: 16px;
+      background: var(--panel-strong);
+    }
+
+    .notes code {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e9f2ff;
+      color: var(--sample);
+      border: 1px solid var(--grid);
+    }
+
+    .explain-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .explain-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .explain-lead {
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: none;
+    }
+
+    .explain-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .explain-item {
+      border: 1px solid var(--grid);
+      border-radius: 16px;
+      background: #fcfdff;
+      padding: 14px 15px;
+    }
+
+    .explain-item strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .math-block {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--grid);
+      border-radius: 12px;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+
+    .math-block math {
+      font-size: 13px;
+    }
+
+    .status {
+      border-radius: 16px;
+      border: 1px solid var(--grid);
+      background: #ffffff;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      min-height: 76px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: min(100vw - 14px, 1380px);
+        margin: 7px auto 18px;
+      }
+
+      .hero,
+      .panel {
+        border-radius: 18px;
+      }
+
+      .hero-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .byline {
+        text-align: left;
+        white-space: normal;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .grid,
+      .stats,
+      .explain-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-head">
+        <h1>Neural Gas Playground</h1>
+        <p class="byline">made w/ AI by <a href="https://francesco-p.github.io/" target="_blank" rel="noreferrer">lakj</a></p>
+      </div>
+      <div class="shortcuts" aria-label="Keyboard shortcuts">
+        <span class="shortcut-title">⌨️ Shortcuts</span>
+        <span class="shortcut-item"><kbd>Space</kbd> play/pause</span>
+        <span class="shortcut-item"><kbd>T</kbd> step</span>
+        <span class="shortcut-item"><kbd>I</kbd> initialize</span>
+        <span class="shortcut-item"><kbd>D</kbd> random data</span>
+        <span class="shortcut-item"><kbd>S</kbd> random seed</span>
+        <span class="shortcut-item"><kbd>A</kbd> run all</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="main-stack">
+        <section class="panel viz-wrap">
+          <h2>Prototype Graph</h2>
+          <canvas id="scatter" width="960" height="660" aria-label="Two moons neural gas scatter plot"></canvas>
+          <div class="legend">
+            <span><i class="dot" style="background: var(--data)"></i>data</span>
+            <span><i class="dot" style="background: var(--edge)"></i>active edges</span>
+            <span><i class="dot" style="background: var(--proto)"></i>prototypes</span>
+            <span><i class="dot" style="background: var(--winner)"></i>top-ranked winners</span>
+            <span><i class="dot" style="background: var(--sample)"></i>current sample</span>
+          </div>
+          <div class="label-line">
+            <h2>Training Metrics</h2>
+            <span class="info-badge" tabindex="0" data-tip="These line charts track assignment loss, average prototype motion, and the number of active edges as the graph settles.">i</span>
+          </div>
+          <canvas id="metrics" width="960" height="320" aria-label="Training metrics"></canvas>
+          <div class="label-line">
+            <h2>Prototype Distance Histogram</h2>
+            <span class="info-badge" tabindex="0" data-tip="This bar plot sorts prototype distances from closest to farthest for the current step, normalized by the first-step maximum distance.">i</span>
+          </div>
+          <canvas id="histogram" width="960" height="220" aria-label="Prototype distance histogram"></canvas>
+        </section>
+
+        <section class="panel explain-card">
+          <h2>Notes</h2>
+          <div class="explain-grid">
+            <div class="explain-item">
+              <strong>Neural Gas</strong>
+              <p>Each update begins with one sampled datapoint. Neural gas ranks every prototype by distance to that sample, nudges the whole set toward it with rank-weighted strength, and refreshes the edge between the two closest prototypes.</p>
+            </div>
+            <div class="explain-item">
+              <strong>Scoring Systems</strong>
+              <p>The original paper uses an exponential neighborhood, so the update strength decays as <code>exp(-rank / lambda)</code>. The modified variant in this app uses a stronger inverse-square decay, which concentrates motion more aggressively on the closest ranks.</p>
+              <div class="math-block">
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <msubsup>
+                    <mrow>
+                      <mi mathvariant="bold">w</mi>
+                    </mrow>
+                    <mi>i</mi>
+                    <mrow>
+                      <mi>n</mi>
+                      <mi>e</mi>
+                      <mi>w</mi>
+                    </mrow>
+                  </msubsup>
+                  <mo>=</mo>
+                  <msubsup>
+                    <mrow>
+                      <mi mathvariant="bold">w</mi>
+                    </mrow>
+                    <mi>i</mi>
+                    <mrow>
+                      <mi>o</mi>
+                      <mi>l</mi>
+                      <mi>d</mi>
+                    </mrow>
+                  </msubsup>
+                  <mo>+</mo>
+                  <mi>&#x3F5;</mi>
+                  <mo>&#x22C5;</mo>
+                  <mrow>
+                    <mo>(</mo>
+                    <mfrac>
+                      <mn>1</mn>
+                      <msubsup>
+                        <mi>k</mi>
+                        <mi>i</mi>
+                        <mn>2</mn>
+                      </msubsup>
+                    </mfrac>
+                    <mo>)</mo>
+                  </mrow>
+                  <mo>&#x22C5;</mo>
+                  <mo stretchy="false">(</mo>
+                  <mrow>
+                    <mi mathvariant="bold">v</mi>
+                  </mrow>
+                  <mo>&#x2212;</mo>
+                  <msubsup>
+                    <mrow>
+                      <mi mathvariant="bold">w</mi>
+                    </mrow>
+                    <mi>i</mi>
+                    <mrow>
+                      <mi>o</mi>
+                      <mi>l</mi>
+                      <mi>d</mi>
+                    </mrow>
+                  </msubsup>
+                  <mo stretchy="false">)</mo>
+                </math>
+              </div>
+            </div>
+            <div class="explain-item">
+              <strong>Using The App</strong>
+              <p>Choose a dataset, tune the algorithm controls, then initialize and either step, play, or run the full trajectory. Use the scrubber to inspect any recorded state.</p>
+            </div>
+          </div>
+          <p class="notes">
+            Data-generation controls rebuild the sampled cloud. Algorithm controls change the neural gas update itself. After changing either set, use <strong>Initialize</strong> to start a fresh run.
+          </p>
+          <p class="notes">
+            Original reference: <strong>A “Neural-Gas” Network Learns Topologies</strong>, Martinetz, T. and Schulten, K., 1991, in <em>Artificial Neural Networks</em>, Elsevier.
+          </p>
+        </section>
+      </div>
+
+      <aside class="sidebar">
+        <section class="panel controls">
+          <h2>Data Generation</h2>
+
+          <div class="tabs" role="tablist" aria-label="dataset type">
+            <button id="tabTwoMoons" class="tab active" type="button" role="tab" aria-selected="true">Two Moons</button>
+            <button id="tabBlobs" class="tab" type="button" role="tab" aria-selected="false">Blobs</button>
+          </div>
+
+          <div id="twoMoonsPanel" class="dataset-panel">
+            <div class="grid">
+              <label>
+                Seed
+                <input id="seed" type="number" min="0" max="999999" step="1" value="7">
+              </label>
+              <label>
+                Data Points
+                <input id="numPoints" type="number" min="64" max="4096" step="32" value="512">
+              </label>
+              <label>
+                Noise
+                <input id="noise" type="number" min="0" max="0.5" step="0.01" value="0.08">
+              </label>
+              <label>
+                Scale
+                <input id="scale" type="number" min="0.5" max="5" step="0.1" value="2.2">
+              </label>
+              <label>
+                Moon Gap
+                <input id="gap" type="number" min="-2" max="3" step="0.1" value="1.0">
+              </label>
+              <label>
+                Vertical Offset
+                <input id="verticalOffset" type="number" min="-3" max="1" step="0.1" value="-0.5">
+              </label>
+              <label>
+                Upper Moon Share
+                <input id="upperShare" type="number" min="0.1" max="0.9" step="0.05" value="0.5">
+              </label>
+            </div>
+          </div>
+
+          <div id="blobsPanel" class="dataset-panel" hidden>
+            <div class="grid">
+              <label>
+                Seed
+                <input id="blobSeed" type="number" min="0" max="999999" step="1" value="11">
+              </label>
+              <label>
+                Data Points
+                <input id="blobNumPoints" type="number" min="64" max="4096" step="32" value="512">
+              </label>
+              <label>
+                Blob Count
+                <input id="blobCount" type="number" min="2" max="10" step="1" value="5">
+              </label>
+              <label>
+                Spread
+                <input id="blobSpread" type="number" min="0.05" max="2.5" step="0.05" value="0.45">
+              </label>
+              <label>
+                Layout Scale
+                <input id="blobScale" type="number" min="0.5" max="5" step="0.1" value="2.5">
+              </label>
+              <label>
+                Center Jitter
+                <input id="blobJitter" type="number" min="0" max="2" step="0.05" value="0.35">
+              </label>
+            </div>
+          </div>
+
+          <div class="buttons">
+            <button id="initialize">Initialize</button>
+            <button id="randomizeData" class="secondary">Random Data</button>
+            <button id="randomize" class="secondary">Random Seed</button>
+          </div>
+
+        </section>
+
+        <section class="panel controls">
+          <h2>Algorithm Controls</h2>
+
+          <div class="grid">
+            <label>
+              <span class="label-line">Training Steps <span class="info-badge" tabindex="0" data-tip="Total number of online neural gas updates to run before the simulation stops.">i</span></span>
+              <input id="steps" type="number" min="8" max="6000" step="8" value="4000">
+            </label>
+            <label>
+              <span class="label-line">Prototypes <span class="info-badge" tabindex="0" data-tip="Number of prototype nodes maintained by the neural gas graph. More nodes can represent finer structure.">i</span></span>
+              <input id="maxNodes" type="number" min="4" max="256" step="1" value="32">
+            </label>
+            <label>
+              <span class="label-line">Learning Rate <span class="info-badge" tabindex="0" data-tip="Base step size for moving prototypes toward the current sample. Higher values adapt faster but can become unstable.">i</span></span>
+              <input id="lr" type="number" min="0.001" max="1" step="0.005" value="0.08">
+            </label>
+            <label>
+              <span class="label-line">Max Edge Age <span class="info-badge" tabindex="0" data-tip="Edges older than this threshold are removed, which keeps the graph responsive as the geometry changes.">i</span></span>
+              <input id="maxAge" type="number" min="1" max="512" step="1" value="96">
+            </label>
+            <label>
+              <span class="label-line">Sampling <span class="info-badge" tabindex="0" data-tip="Choose how training samples are drawn: ordered repeats the dataset sequence each pass, random redraws a sample index every update.">i</span></span>
+              <select id="sampling">
+                <option value="ordered">ordered</option>
+                <option value="random">random</option>
+              </select>
+            </label>
+            <label>
+              <span class="label-line">Distance <span class="info-badge" tabindex="0" data-tip="Metric used to rank prototypes against the current sample. This affects both competition and the displayed distance profile.">i</span></span>
+              <select id="metric">
+                <option value="euclidean" selected>l2</option>
+                <option value="cosine">cosine</option>
+              </select>
+            </label>
+            <label>
+              <span class="label-line">Competitive Scoring <span class="info-badge" tabindex="0" data-tip="Controls how strongly lower-ranked prototypes still move toward the sample after ranking is computed. The original paper uses the exponential neighborhood exp(-rank / lambda); the inverse-square option makes the winner set more aggressive.">i</span></span>
+              <select id="scoring">
+                <option value="inverse_square">modified inverse-square</option>
+                <option value="paper_exp" selected>original paper exponential</option>
+              </select>
+            </label>
+            <label>
+              <span class="label-line">Paper Lambda <span class="info-badge" tabindex="0" data-tip="Neighborhood width for the original exponential scoring. Smaller values concentrate updates on the closest ranks.">i</span></span>
+              <input id="paperLambda" type="number" min="0.1" max="64" step="0.1" value="1.0">
+            </label>
+          </div>
+
+          <div class="buttons">
+            <button id="stepOnce" class="secondary">Step</button>
+            <button id="playPause">Play</button>
+            <button id="runAll" class="secondary">⚡ Run All</button>
+          </div>
+
+          <label class="full">
+            History Scrubber
+            <input id="historySlider" type="range" min="0" max="0" value="0">
+          </label>
+
+          <label class="full">
+            Playback Speed (<span id="speedValue">80</span> ms/frame)
+            <input id="speed" type="range" min="20" max="240" step="10" value="80">
+          </label>
+
+          <div class="stats">
+            <div class="stat"><div class="label">visible step</div><div class="value" id="stepValue">0</div></div>
+            <div class="stat"><div class="label">recorded states</div><div class="value" id="historyValue">1</div></div>
+            <div class="stat"><div class="label">assignment loss</div><div class="value" id="mseValue">0.0000</div></div>
+            <div class="stat"><div class="label">active edges</div><div class="value" id="edgesValue">0</div></div>
+            <div class="stat"><div class="label">mean update norm</div><div class="value" id="movementValue">0.0000</div></div>
+            <div class="stat"><div class="label">sampling mode</div><div class="value" id="samplingValue">-</div></div>
+          </div>
+
+          <div id="status" class="status"></div>
+
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const palette = {
+        bg: "#f4f7fb",
+        grid: "#d9e1ec",
+        data: "#e8a2aa",
+        edge: "#111111",
+        proto: "#2f6fe4",
+        winner: "#184aa8",
+        winner2: "#4d8fff",
+        winner3: "#8bbcff",
+        sample: "#d62839",
+        motion: "#0f3a82",
+        ink: "#12233b",
+        muted: "#607188",
+        panel: "#ffffff",
+      };
+
+      const scatterCanvas = document.getElementById("scatter");
+      const scatterCtx = scatterCanvas.getContext("2d");
+      const metricsCanvas = document.getElementById("metrics");
+      const metricsCtx = metricsCanvas.getContext("2d");
+      const histogramCanvas = document.getElementById("histogram");
+      const histogramCtx = histogramCanvas.getContext("2d");
+
+      const controls = {
+        datasetType: "two_moons",
+        seed: document.getElementById("seed"),
+        numPoints: document.getElementById("numPoints"),
+        blobSeed: document.getElementById("blobSeed"),
+        blobNumPoints: document.getElementById("blobNumPoints"),
+        blobCount: document.getElementById("blobCount"),
+        blobSpread: document.getElementById("blobSpread"),
+        blobScale: document.getElementById("blobScale"),
+        blobJitter: document.getElementById("blobJitter"),
+        steps: document.getElementById("steps"),
+        maxNodes: document.getElementById("maxNodes"),
+        lr: document.getElementById("lr"),
+        maxAge: document.getElementById("maxAge"),
+        sampling: document.getElementById("sampling"),
+        metric: document.getElementById("metric"),
+        scoring: document.getElementById("scoring"),
+        paperLambda: document.getElementById("paperLambda"),
+        noise: document.getElementById("noise"),
+        scale: document.getElementById("scale"),
+        gap: document.getElementById("gap"),
+        verticalOffset: document.getElementById("verticalOffset"),
+        upperShare: document.getElementById("upperShare"),
+        speed: document.getElementById("speed"),
+      };
+
+      const statusEl = document.getElementById("status");
+      const slider = document.getElementById("historySlider");
+      const speedValue = document.getElementById("speedValue");
+      const stepValue = document.getElementById("stepValue");
+      const historyValue = document.getElementById("historyValue");
+      const mseValue = document.getElementById("mseValue");
+      const edgesValue = document.getElementById("edgesValue");
+      const movementValue = document.getElementById("movementValue");
+      const samplingValue = document.getElementById("samplingValue");
+
+      const initializeButton = document.getElementById("initialize");
+      const stepButton = document.getElementById("stepOnce");
+      const playPauseButton = document.getElementById("playPause");
+      const runAllButton = document.getElementById("runAll");
+      const randomizeDataButton = document.getElementById("randomizeData");
+      const randomizeButton = document.getElementById("randomize");
+      const tabTwoMoons = document.getElementById("tabTwoMoons");
+      const tabBlobs = document.getElementById("tabBlobs");
+      const twoMoonsPanel = document.getElementById("twoMoonsPanel");
+      const blobsPanel = document.getElementById("blobsPanel");
+
+      let app = null;
+      let playbackTimer = null;
+      let batchRunner = null;
+
+      function xmur3(text) {
+        let h = 1779033703 ^ text.length;
+        for (let i = 0; i < text.length; i += 1) {
+          h = Math.imul(h ^ text.charCodeAt(i), 3432918353);
+          h = (h << 13) | (h >>> 19);
+        }
+        return () => {
+          h = Math.imul(h ^ (h >>> 16), 2246822507);
+          h = Math.imul(h ^ (h >>> 13), 3266489909);
+          return (h ^= h >>> 16) >>> 0;
+        };
+      }
+
+      function mulberry32(seed) {
+        let t = seed >>> 0;
+        return () => {
+          t += 0x6d2b79f5;
+          let r = Math.imul(t ^ (t >>> 15), 1 | t);
+          r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+          return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function createRng(seed) {
+        const hash = xmur3(String(seed))();
+        return mulberry32(hash);
+      }
+
+      function randomInRange(min, max, step = 0) {
+        const raw = min + Math.random() * (max - min);
+        if (step <= 0) {
+          return raw;
+        }
+        const snapped = Math.round((raw - min) / step) * step + min;
+        return Math.max(min, Math.min(max, snapped));
+      }
+
+      function randomNormal(rng) {
+        let u = 0;
+        let v = 0;
+        while (u === 0) {
+          u = rng();
+        }
+        while (v === 0) {
+          v = rng();
+        }
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      }
+
+      function shuffle(values, rng) {
+        const out = values.slice();
+        for (let i = out.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(rng() * (i + 1));
+          const tmp = out[i];
+          out[i] = out[j];
+          out[j] = tmp;
+        }
+        return out;
+      }
+
+      function makeTwoMoons(numPoints, seed, noise, scale, gap, verticalOffset, upperShare) {
+        const rng = createRng(seed);
+        const upperCount = Math.max(1, Math.min(numPoints - 1, Math.round(numPoints * upperShare)));
+        const data = [];
+        for (let i = 0; i < upperCount; i += 1) {
+          const angle = rng() * Math.PI;
+          const x = Math.cos(angle);
+          const y = Math.sin(angle);
+          data.push([
+            scale * x + noise * randomNormal(rng),
+            scale * y + noise * randomNormal(rng),
+          ]);
+        }
+        for (let i = upperCount; i < numPoints; i += 1) {
+          const angle = rng() * Math.PI;
+          const x = gap - Math.cos(angle);
+          const y = -Math.sin(angle) + verticalOffset;
+          data.push([
+            scale * x + noise * randomNormal(rng),
+            scale * y + noise * randomNormal(rng),
+          ]);
+        }
+        return data;
+      }
+
+      function makeBlobs(numPoints, seed, blobCount, spread, layoutScale, centerJitter) {
+        const rng = createRng(seed);
+        const centers = [];
+        for (let i = 0; i < blobCount; i += 1) {
+          const angle = (2 * Math.PI * i) / Math.max(blobCount, 1);
+          centers.push([
+            layoutScale * Math.cos(angle) + centerJitter * randomNormal(rng),
+            layoutScale * Math.sin(angle) + centerJitter * randomNormal(rng),
+          ]);
+        }
+        const data = [];
+        for (let i = 0; i < numPoints; i += 1) {
+          const center = centers[Math.floor(rng() * centers.length)];
+          data.push([
+            center[0] + spread * randomNormal(rng),
+            center[1] + spread * randomNormal(rng),
+          ]);
+        }
+        return data;
+      }
+
+      function datasetBounds(data) {
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        data.forEach(([x, y]) => {
+          minX = Math.min(minX, x);
+          maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        });
+        const padX = Math.max((maxX - minX) * 0.15, 0.5);
+        const padY = Math.max((maxY - minY) * 0.15, 0.5);
+        return {
+          minX: minX - padX,
+          maxX: maxX + padX,
+          minY: minY - padY,
+          maxY: maxY + padY,
+        };
+      }
+
+      function project(point, bounds, width, height, padding) {
+        const drawW = width - 2 * padding;
+        const drawH = height - 2 * padding;
+        const px = padding + ((point[0] - bounds.minX) / Math.max(bounds.maxX - bounds.minX, 1e-9)) * drawW;
+        const py = height - padding - ((point[1] - bounds.minY) / Math.max(bounds.maxY - bounds.minY, 1e-9)) * drawH;
+        return [px, py];
+      }
+
+      function norm2(point) {
+        return Math.hypot(point[0], point[1]);
+      }
+
+      function distanceBetween(a, b, metric) {
+        if (metric === "cosine") {
+          const denom = Math.max(norm2(a) * norm2(b), 1e-12);
+          const similarity = ((a[0] * b[0]) + (a[1] * b[1])) / denom;
+          return 1 - Math.max(-1, Math.min(1, similarity));
+        }
+        const dx = a[0] - b[0];
+        const dy = a[1] - b[1];
+        return Math.hypot(dx, dy);
+      }
+
+      function deepCloneWeights(weights) {
+        return weights.map((point) => [point[0], point[1]]);
+      }
+
+      function buildEdgeList(adjacency, maxNodes) {
+        const edges = [];
+        let active = 0;
+        for (let i = 0; i < maxNodes; i += 1) {
+          for (let j = i + 1; j < maxNodes; j += 1) {
+            const age = adjacency[i * maxNodes + j];
+            if (age >= 0) {
+              active += 1;
+              edges.push([i, j]);
+            }
+          }
+        }
+        return { edges, active };
+      }
+
+      class NeuralGasApp {
+        constructor(config) {
+          this.config = config;
+          this.data = config.datasetType === "blobs"
+            ? makeBlobs(
+                config.numPoints,
+                config.seed,
+                config.blobCount,
+                config.blobSpread,
+                config.blobScale,
+                config.blobJitter,
+              )
+            : makeTwoMoons(
+                config.numPoints,
+                config.seed,
+                config.noise,
+                config.scale,
+                config.gap,
+                config.verticalOffset,
+                config.upperShare,
+              );
+          this.bounds = datasetBounds(this.data);
+          this.rng = createRng(config.seed + 1000);
+          this.maxNodes = config.maxNodes;
+          this.weights = [];
+          this.adjacency = new Array(this.maxNodes * this.maxNodes).fill(-1);
+          this.history = [];
+          this.viewIndex = 0;
+          this.step = 0;
+          this.distanceNormalizationMax = null;
+          this.passOrder = [...Array(this.data.length).keys()];
+          this.shuffleOnceOrder = shuffle(this.passOrder, this.rng);
+          this.previousPassIndex = -1;
+          this.completed = false;
+
+          for (let i = 0; i < this.maxNodes; i += 1) {
+            this.weights.push([
+              this.bounds.minX + this.rng() * (this.bounds.maxX - this.bounds.minX),
+              this.bounds.minY + this.rng() * (this.bounds.maxY - this.bounds.minY),
+            ]);
+          }
+
+          this.recordState({
+            sample: null,
+            ranked: [],
+            distances: [],
+            movement: 0,
+            quantizationMse: this.quantizationMse(),
+          });
+        }
+
+        quantizationMse() {
+          let total = 0;
+          for (let i = 0; i < this.data.length; i += 1) {
+            const point = this.data[i];
+            let best = Infinity;
+            for (let j = 0; j < this.weights.length; j += 1) {
+              const dist = distanceBetween(this.weights[j], point, this.config.metric);
+              if (dist < best) {
+                best = dist;
+              }
+            }
+            total += best;
+          }
+          return total / Math.max(this.data.length, 1);
+        }
+
+        sampleIndexForStep(step) {
+          const cycleIndex = (step - 1) % this.data.length;
+          const passIndex = Math.floor((step - 1) / this.data.length);
+          if (this.config.sampling === "ordered") {
+            return cycleIndex;
+          }
+          if (this.config.sampling === "shuffle_once") {
+            return this.shuffleOnceOrder[cycleIndex];
+          }
+          if (this.config.sampling === "reshuffle_each_pass") {
+            if (passIndex !== this.previousPassIndex) {
+              this.passOrder = shuffle([...Array(this.data.length).keys()], this.rng);
+              this.previousPassIndex = passIndex;
+            }
+            return this.passOrder[cycleIndex];
+          }
+          return Math.floor(this.rng() * this.data.length);
+        }
+
+        recordState({ sample, ranked, distances, movement, quantizationMse }) {
+          const { edges, active } = buildEdgeList(this.adjacency, this.maxNodes);
+          this.history.push({
+            step: this.step,
+            sample,
+            ranked: ranked.slice(0, 3),
+            distances: distances.slice(),
+            weights: deepCloneWeights(this.weights),
+            edges,
+            activeEdges: active,
+            movement,
+            quantizationMse,
+          });
+          this.viewIndex = this.history.length - 1;
+        }
+
+        stepOnce() {
+          if (this.completed) {
+            return false;
+          }
+
+          this.step += 1;
+          const sampleIndex = this.sampleIndexForStep(this.step);
+          const sample = this.data[sampleIndex];
+          const distances = this.weights.map((point) => distanceBetween(point, sample, this.config.metric));
+          if (this.distanceNormalizationMax === null) {
+            this.distanceNormalizationMax = Math.max(...distances, 1e-9);
+          }
+
+          const ranked = distances
+            .map((dist, index) => {
+              return { index, dist };
+            })
+            .sort((a, b) => a.dist - b.dist)
+            .map((entry) => entry.index);
+
+          const before = deepCloneWeights(this.weights);
+
+          for (let rank = 0; rank < ranked.length; rank += 1) {
+            const idx = ranked[rank];
+            let decay = 1 / ((rank + 1) * (rank + 1));
+            if (this.config.scoring === "paper_exp") {
+              decay = Math.exp(-rank / Math.max(this.config.paperLambda, 1e-6));
+            }
+            const w = this.weights[idx];
+            w[0] += this.config.lr * decay * (sample[0] - w[0]);
+            w[1] += this.config.lr * decay * (sample[1] - w[1]);
+          }
+
+          if (ranked.length > 1) {
+            const a = ranked[0];
+            const b = ranked[1];
+            this.adjacency[a * this.maxNodes + b] = 0;
+            this.adjacency[b * this.maxNodes + a] = 0;
+          }
+
+          for (let i = 0; i < this.adjacency.length; i += 1) {
+            if (this.adjacency[i] >= 0) {
+              this.adjacency[i] += 1;
+              if (this.adjacency[i] > this.config.maxAge) {
+                this.adjacency[i] = -1;
+              }
+            }
+          }
+
+          let movement = 0;
+          for (let i = 0; i < this.weights.length; i += 1) {
+            const dx = this.weights[i][0] - before[i][0];
+            const dy = this.weights[i][1] - before[i][1];
+            movement += Math.hypot(dx, dy);
+          }
+          movement /= Math.max(this.weights.length, 1);
+
+          const quantizationMse = this.quantizationMse();
+          this.recordState({ sample, ranked, distances, movement, quantizationMse });
+          this.completed = this.step >= this.config.steps;
+          return true;
+        }
+
+        currentState() {
+          return this.history[this.viewIndex];
+        }
+      }
+
+      function stopPlayback() {
+        if (playbackTimer !== null) {
+          window.clearInterval(playbackTimer);
+          playbackTimer = null;
+        }
+        playPauseButton.textContent = "Play";
+      }
+
+      function stopBatchRunner() {
+        if (batchRunner !== null) {
+          window.cancelAnimationFrame(batchRunner);
+          batchRunner = null;
+        }
+      }
+
+      function setStatus(lines) {
+        statusEl.innerHTML = lines.join("<br>");
+      }
+
+      function syncAlgorithmControlState() {
+        const paperMode = controls.scoring.value === "paper_exp";
+        controls.paperLambda.disabled = !paperMode;
+        controls.paperLambda.style.opacity = paperMode ? "1" : "0.55";
+      }
+
+      function syncDatasetTabs() {
+        const isBlobs = controls.datasetType === "blobs";
+        twoMoonsPanel.hidden = isBlobs;
+        blobsPanel.hidden = !isBlobs;
+        tabTwoMoons.classList.toggle("active", !isBlobs);
+        tabBlobs.classList.toggle("active", isBlobs);
+        tabTwoMoons.setAttribute("aria-selected", String(!isBlobs));
+        tabBlobs.setAttribute("aria-selected", String(isBlobs));
+      }
+
+      function getConfig() {
+        if (controls.datasetType === "blobs") {
+          return {
+            datasetType: "blobs",
+            seed: Number(controls.blobSeed.value),
+            numPoints: Number(controls.blobNumPoints.value),
+            blobCount: Number(controls.blobCount.value),
+            blobSpread: Number(controls.blobSpread.value),
+            blobScale: Number(controls.blobScale.value),
+            blobJitter: Number(controls.blobJitter.value),
+            steps: Number(controls.steps.value),
+            maxNodes: Number(controls.maxNodes.value),
+            lr: Number(controls.lr.value),
+            maxAge: Number(controls.maxAge.value),
+            sampling: controls.sampling.value,
+            metric: controls.metric.value,
+            scoring: controls.scoring.value,
+            paperLambda: Number(controls.paperLambda.value),
+          };
+        }
+        return {
+          datasetType: "two_moons",
+          seed: Number(controls.seed.value),
+          numPoints: Number(controls.numPoints.value),
+          steps: Number(controls.steps.value),
+          maxNodes: Number(controls.maxNodes.value),
+          lr: Number(controls.lr.value),
+          maxAge: Number(controls.maxAge.value),
+          sampling: controls.sampling.value,
+          metric: controls.metric.value,
+          scoring: controls.scoring.value,
+          paperLambda: Number(controls.paperLambda.value),
+          noise: Number(controls.noise.value),
+          scale: Number(controls.scale.value),
+          gap: Number(controls.gap.value),
+          verticalOffset: Number(controls.verticalOffset.value),
+          upperShare: Number(controls.upperShare.value),
+        };
+      }
+
+      function randomizeDataControls() {
+        if (controls.datasetType === "blobs") {
+          controls.blobNumPoints.value = String(randomInRange(128, 1536, 32));
+          controls.blobCount.value = String(randomInRange(2, 8, 1));
+          controls.blobSpread.value = randomInRange(0.12, 0.9, 0.05).toFixed(2);
+          controls.blobScale.value = randomInRange(1.2, 3.8, 0.1).toFixed(1);
+          controls.blobJitter.value = randomInRange(0.0, 0.8, 0.05).toFixed(2);
+          controls.blobSeed.value = String(Math.floor(Math.random() * 100000));
+          return;
+        }
+        controls.numPoints.value = String(randomInRange(128, 1536, 32));
+        controls.noise.value = randomInRange(0.02, 0.22, 0.01).toFixed(2);
+        controls.scale.value = randomInRange(1.4, 3.2, 0.1).toFixed(1);
+        controls.gap.value = randomInRange(0.4, 1.8, 0.1).toFixed(1);
+        controls.verticalOffset.value = randomInRange(-1.2, -0.1, 0.1).toFixed(1);
+        controls.upperShare.value = randomInRange(0.35, 0.65, 0.05).toFixed(2);
+        controls.seed.value = String(Math.floor(Math.random() * 100000));
+      }
+
+      function drawScatter(state) {
+        const width = scatterCanvas.width;
+        const height = scatterCanvas.height;
+        const padding = 48;
+
+        scatterCtx.clearRect(0, 0, width, height);
+
+        scatterCtx.fillStyle = "#ffffff";
+        scatterCtx.fillRect(0, 0, width, height);
+
+        scatterCtx.strokeStyle = palette.grid;
+        scatterCtx.lineWidth = 1;
+        for (let i = 0; i < 4; i += 1) {
+          const y = padding + ((height - 2 * padding) * i / 3);
+          scatterCtx.beginPath();
+          scatterCtx.moveTo(0, y);
+          scatterCtx.lineTo(width, y);
+          scatterCtx.stroke();
+        }
+
+        scatterCtx.strokeStyle = palette.edge;
+        scatterCtx.lineWidth = 1.5;
+        scatterCtx.globalAlpha = 0.85;
+        state.edges.forEach(([a, b]) => {
+          const p0 = project(state.weights[a], app.bounds, width, height, padding);
+          const p1 = project(state.weights[b], app.bounds, width, height, padding);
+          scatterCtx.beginPath();
+          scatterCtx.moveTo(p0[0], p0[1]);
+          scatterCtx.lineTo(p1[0], p1[1]);
+          scatterCtx.stroke();
+        });
+        scatterCtx.globalAlpha = 1;
+
+        scatterCtx.fillStyle = palette.data;
+        scatterCtx.globalAlpha = 0.82;
+        app.data.forEach((point) => {
+          const [x, y] = project(point, app.bounds, width, height, padding);
+          scatterCtx.beginPath();
+          scatterCtx.arc(x, y, 2, 0, Math.PI * 2);
+          scatterCtx.fill();
+        });
+        scatterCtx.globalAlpha = 1;
+
+        state.weights.forEach((point, index) => {
+          const [x, y] = project(point, app.bounds, width, height, padding);
+          let fill = palette.proto;
+          let radius = 4.8;
+          if (state.ranked[0] === index) {
+            fill = palette.winner;
+            radius = 7;
+          } else if (state.ranked[1] === index) {
+            fill = palette.winner2;
+            radius = 6.2;
+          } else if (state.ranked[2] === index) {
+            fill = palette.winner3;
+            radius = 5.5;
+          }
+          scatterCtx.fillStyle = fill;
+          scatterCtx.strokeStyle = palette.panel;
+          scatterCtx.lineWidth = 1.5;
+          scatterCtx.beginPath();
+          scatterCtx.arc(x, y, radius, 0, Math.PI * 2);
+          scatterCtx.fill();
+          scatterCtx.stroke();
+        });
+
+        if (state.sample) {
+          const [sx, sy] = project(state.sample, app.bounds, width, height, padding);
+          scatterCtx.fillStyle = palette.sample;
+          scatterCtx.beginPath();
+          scatterCtx.arc(sx, sy, 7.5, 0, Math.PI * 2);
+          scatterCtx.fill();
+          scatterCtx.strokeStyle = "#ffffff";
+          scatterCtx.lineWidth = 2;
+          scatterCtx.stroke();
+        }
+
+        scatterCtx.fillStyle = palette.ink;
+        scatterCtx.font = '13px "IBM Plex Mono", Consolas, monospace';
+        scatterCtx.fillText(`${app.config.datasetType} - step ${state.step} / ${app.config.steps}`, 18, 24);
+      }
+
+      function roundedRectPath(ctx, x, y, w, h, r) {
+        const radius = Math.min(r, w * 0.5, h * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      }
+
+      function drawSeries(values, x, y, w, h, color, title, activeIndex) {
+        metricsCtx.fillStyle = "#ffffff";
+        metricsCtx.strokeStyle = palette.grid;
+        metricsCtx.lineWidth = 1;
+        roundedRectPath(metricsCtx, x, y, w, h, 16);
+        metricsCtx.fill();
+        metricsCtx.stroke();
+
+        metricsCtx.fillStyle = palette.muted;
+        metricsCtx.font = '12px "IBM Plex Mono", Consolas, monospace';
+        metricsCtx.fillText(title, x + 14, y + 20);
+
+        const left = x + 14;
+        const top = y + 34;
+        const innerW = w - 28;
+        const innerH = h - 48;
+        const lo = Math.min(...values);
+        const hi = Math.max(...values);
+        const span = Math.max(hi - lo, 1e-9);
+
+        metricsCtx.strokeStyle = palette.grid;
+        for (let i = 0; i < 4; i += 1) {
+          const gy = top + (innerH * i / 3);
+          metricsCtx.beginPath();
+          metricsCtx.moveTo(left, gy);
+          metricsCtx.lineTo(left + innerW, gy);
+          metricsCtx.stroke();
+        }
+
+        metricsCtx.strokeStyle = color;
+        metricsCtx.lineWidth = 2.5;
+        metricsCtx.beginPath();
+        values.forEach((value, index) => {
+          const px = left + (innerW * index / Math.max(values.length - 1, 1));
+          const py = top + innerH - ((value - lo) / span) * innerH;
+          if (index === 0) {
+            metricsCtx.moveTo(px, py);
+          } else {
+            metricsCtx.lineTo(px, py);
+          }
+        });
+        metricsCtx.stroke();
+
+        if (values.length > 0) {
+          const clampedIndex = Math.min(activeIndex, values.length - 1);
+          const px = left + (innerW * clampedIndex / Math.max(values.length - 1, 1));
+          const py = top + innerH - ((values[clampedIndex] - lo) / span) * innerH;
+          metricsCtx.fillStyle = palette.sample;
+          metricsCtx.beginPath();
+          metricsCtx.arc(px, py, 4.5, 0, Math.PI * 2);
+          metricsCtx.fill();
+        }
+      }
+
+      function drawMetrics() {
+        const width = metricsCanvas.width;
+        const height = metricsCanvas.height;
+        metricsCtx.clearRect(0, 0, width, height);
+
+        const valuesMse = app.history.map((state) => state.quantizationMse);
+        const valuesMove = app.history.map((state) => state.movement);
+        const valuesEdges = app.history.map((state) => state.activeEdges);
+        const panelGap = 14;
+        const panelWidth = (width - panelGap * 4) / 3;
+        const activeIndex = app.viewIndex;
+
+        drawSeries(valuesMse, panelGap, 14, panelWidth, height - 28, palette.proto, "assignment loss", activeIndex);
+        drawSeries(valuesMove, panelGap * 2 + panelWidth, 14, panelWidth, height - 28, palette.motion, "mean update norm", activeIndex);
+        drawSeries(valuesEdges, panelGap * 3 + panelWidth * 2, 14, panelWidth, height - 28, palette.edge, "active edges", activeIndex);
+      }
+
+      function drawHistogram(state) {
+        const width = histogramCanvas.width;
+        const height = histogramCanvas.height;
+        histogramCtx.clearRect(0, 0, width, height);
+
+        histogramCtx.fillStyle = "#ffffff";
+        histogramCtx.fillRect(0, 0, width, height);
+
+        if (!state.sample || state.distances.length === 0) {
+          histogramCtx.fillStyle = palette.muted;
+          histogramCtx.font = '13px "IBM Plex Mono", Consolas, monospace';
+          histogramCtx.fillText("Ranked prototype distances appear after the first training step.", 18, 28);
+          return;
+        }
+
+        const padding = { left: 42, right: 18, top: 18, bottom: 34 };
+        const plotW = width - padding.left - padding.right;
+        const plotH = height - padding.top - padding.bottom;
+        const sortedDistances = state.distances.slice().sort((a, b) => a - b);
+        const maxDistance = Math.max(app.distanceNormalizationMax || 1e-9, 1e-9);
+
+        histogramCtx.strokeStyle = palette.grid;
+        histogramCtx.lineWidth = 1;
+        for (let i = 0; i < 4; i += 1) {
+          const y = padding.top + (plotH * i / 3);
+          histogramCtx.beginPath();
+          histogramCtx.moveTo(padding.left, y);
+          histogramCtx.lineTo(width - padding.right, y);
+          histogramCtx.stroke();
+        }
+
+        const barGap = 2;
+        const barCount = sortedDistances.length;
+        const barW = Math.max((plotW - barGap * Math.max(barCount - 1, 0)) / Math.max(barCount, 1), 1);
+        sortedDistances.forEach((distance, index) => {
+          const x = padding.left + index * (barW + barGap);
+          const h = (Math.min(distance / maxDistance, 1)) * plotH;
+          const y = padding.top + plotH - h;
+          histogramCtx.fillStyle = index === 0 ? palette.winner : palette.proto;
+          histogramCtx.fillRect(x, y, barW, h);
+        });
+
+        histogramCtx.fillStyle = palette.muted;
+        histogramCtx.font = '11px "IBM Plex Mono", Consolas, monospace';
+        histogramCtx.fillText(`metric: ${app.config.metric}`, padding.left, 13);
+        histogramCtx.fillText("closest", padding.left, height - 12);
+        histogramCtx.fillText("farthest", width - padding.right - 44, height - 12);
+        histogramCtx.fillText(`y max fixed to first step = ${maxDistance.toFixed(3)}`, width - 240, 13);
+      }
+
+      function refreshUi() {
+        const state = app.currentState();
+        slider.max = String(Math.max(app.history.length - 1, 0));
+        slider.value = String(app.viewIndex);
+        speedValue.textContent = controls.speed.value;
+        stepValue.textContent = String(state.step);
+        historyValue.textContent = String(app.history.length);
+        mseValue.textContent = state.quantizationMse.toFixed(4);
+        edgesValue.textContent = String(state.activeEdges);
+        movementValue.textContent = state.movement.toFixed(4);
+        samplingValue.textContent = app.config.sampling;
+
+        const completed = app.completed ? "yes" : "no";
+        const shown = app.viewIndex === app.history.length - 1 ? "latest" : "history";
+        const dataSummary = app.config.datasetType === "blobs"
+          ? `data: blobs, n=${app.data.length}, k=${app.config.blobCount}, spread=${app.config.blobSpread.toFixed(2)}, scale=${app.config.blobScale.toFixed(1)}`
+          : `data: two_moons, n=${app.data.length}, scale=${app.config.scale.toFixed(2)}, gap=${app.config.gap.toFixed(2)}, offset=${app.config.verticalOffset.toFixed(2)}`;
+        setStatus([
+          `showing: ${shown} state ${app.viewIndex + 1} / ${app.history.length}`,
+          `training complete: ${completed}`,
+          dataSummary,
+          state.sample
+            ? `current sample: (${state.sample[0].toFixed(2)}, ${state.sample[1].toFixed(2)})`
+            : app.config.datasetType === "blobs"
+              ? `current sample: none yet, jitter=${app.config.blobJitter.toFixed(2)}`
+              : `current sample: none yet, upper share=${app.config.upperShare.toFixed(2)}`,
+          `algorithm: ${app.config.metric} distance, ${app.config.sampling} sampling, ${app.config.scoring}${app.config.scoring === "paper_exp" ? ` (lambda=${app.config.paperLambda.toFixed(1)})` : ""}`,
+        ]);
+
+        drawScatter(state);
+        drawMetrics();
+        drawHistogram(state);
+      }
+
+      function initializeApp() {
+        stopPlayback();
+        stopBatchRunner();
+        app = new NeuralGasApp(getConfig());
+        refreshUi();
+      }
+
+      function advanceOneFrame() {
+        if (app.viewIndex < app.history.length - 1) {
+          app.viewIndex += 1;
+        } else if (!app.completed) {
+          app.stepOnce();
+        } else {
+          stopPlayback();
+        }
+        refreshUi();
+      }
+
+      function startPlayback() {
+        stopBatchRunner();
+        stopPlayback();
+        playPauseButton.textContent = "Pause";
+        playbackTimer = window.setInterval(() => {
+          advanceOneFrame();
+        }, Number(controls.speed.value));
+      }
+
+      function runAllInChunks() {
+        stopPlayback();
+        stopBatchRunner();
+
+        const tick = () => {
+          let iterations = 0;
+          while (!app.completed && iterations < 28) {
+            app.stepOnce();
+            iterations += 1;
+          }
+          refreshUi();
+          if (!app.completed) {
+            batchRunner = window.requestAnimationFrame(tick);
+          } else {
+            batchRunner = null;
+          }
+        };
+
+        tick();
+      }
+
+      initializeButton.addEventListener("click", () => {
+        initializeApp();
+      });
+
+      tabTwoMoons.addEventListener("click", () => {
+        controls.datasetType = "two_moons";
+        syncDatasetTabs();
+      });
+
+      tabBlobs.addEventListener("click", () => {
+        controls.datasetType = "blobs";
+        syncDatasetTabs();
+      });
+
+      stepButton.addEventListener("click", () => {
+        stopPlayback();
+        stopBatchRunner();
+        if (app.viewIndex < app.history.length - 1) {
+          app.viewIndex += 1;
+        } else {
+          app.stepOnce();
+        }
+        refreshUi();
+      });
+
+      playPauseButton.addEventListener("click", () => {
+        if (playbackTimer === null) {
+          startPlayback();
+        } else {
+          stopPlayback();
+        }
+      });
+
+      runAllButton.addEventListener("click", () => {
+        runAllInChunks();
+      });
+
+      randomizeButton.addEventListener("click", () => {
+        if (controls.datasetType === "blobs") {
+          controls.blobSeed.value = String(Math.floor(Math.random() * 100000));
+        } else {
+          controls.seed.value = String(Math.floor(Math.random() * 100000));
+        }
+        initializeApp();
+      });
+
+      randomizeDataButton.addEventListener("click", () => {
+        randomizeDataControls();
+        initializeApp();
+      });
+
+      slider.addEventListener("input", (event) => {
+        stopPlayback();
+        stopBatchRunner();
+        app.viewIndex = Number(event.target.value);
+        refreshUi();
+      });
+
+      controls.speed.addEventListener("input", () => {
+        speedValue.textContent = controls.speed.value;
+        if (playbackTimer !== null) {
+          startPlayback();
+        }
+      });
+
+      controls.scoring.addEventListener("change", () => {
+        syncAlgorithmControlState();
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (["INPUT", "SELECT"].includes(document.activeElement.tagName)) {
+          return;
+        }
+
+        if (event.code === "Space") {
+          event.preventDefault();
+          if (playbackTimer === null) {
+            startPlayback();
+          } else {
+            stopPlayback();
+          }
+          return;
+        }
+
+        if (event.key === "i") {
+          initializeApp();
+          return;
+        }
+
+        if (event.key === "t") {
+          stopPlayback();
+          stopBatchRunner();
+          if (app.viewIndex < app.history.length - 1) {
+            app.viewIndex += 1;
+          } else {
+            app.stepOnce();
+          }
+          refreshUi();
+          return;
+        }
+
+        if (event.key === "d") {
+          randomizeDataControls();
+          initializeApp();
+          return;
+        }
+
+        if (event.key === "s") {
+          if (controls.datasetType === "blobs") {
+            controls.blobSeed.value = String(Math.floor(Math.random() * 100000));
+          } else {
+            controls.seed.value = String(Math.floor(Math.random() * 100000));
+          }
+          initializeApp();
+          return;
+        }
+
+        if (event.key === "a") {
+          runAllInChunks();
+        }
+      });
+
+      syncAlgorithmControlState();
+      syncDatasetTabs();
+      initializeApp();
+    })();
+  </script>
+</body>
+</html>
