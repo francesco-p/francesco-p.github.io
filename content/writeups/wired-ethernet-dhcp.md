@@ -1,36 +1,23 @@
 ---
 title: "Fixing a Wired Ethernet Connection Stuck on Link-Local (169.254.x.x)"
 date: 2026-02-25
-summary: "Diagnosing an Ubuntu wired interface that falls back to link-local addressing and restoring DHCP via NetworkManager."
+summary: "Quick fix for Ubuntu Ethernet stuck on 169.254.x.x due to link-local-only configuration."
 tags: ["linux", "ubuntu", "networking", "dhcp", "nmcli", "writeup"]
 ---
 
 ## Problem
 
-On Ubuntu, the wired Ethernet interface (`eno1`) was not connecting to the internet while Wi-Fi worked fine.
-
-Symptoms observed:
-
-* `ip a` showed `eno1` with an IP in the `169.254.x.x` range, which is an automatic link-local address and usually means DHCP failed.
-* `nmcli device show eno1` confirmed no gateway and `ipv4.method: link-local`.
-* Physical link was fine (`ethtool` showed `Link detected: yes`), so cables and NIC were working.
-
-Root cause:
-
-* The wired connection was configured to use link-local addressing only, not DHCP.
-* As a result, Ubuntu never requested an IP from the router, so internet access failed.
-
----
+`eno1` had `169.254.x.x`, no gateway, and no internet access.
 
 ## Resolution
 
-1. Turn off Wi-Fi (to test wired independently):
+1. Optional: disable Wi-Fi while testing.
 
 ```bash
 nmcli radio wifi off
 ```
 
-2. Change the wired connection to use DHCP:
+2. Switch the Ethernet profile to DHCP:
 
 ```bash
 sudo nmcli connection modify netplan-eno1 ipv4.method auto
@@ -45,30 +32,25 @@ sudo nmcli connection down netplan-eno1
 sudo nmcli connection up netplan-eno1
 ```
 
-4. Verify the IP:
+4. Confirm `eno1` now has a router-range IP:
 
 ```bash
 ip a | grep eno1 -A3
 ```
 
-Expected result: `eno1` has a DHCP IP in the router range (for example `192.168.1.x`).
-
-5. Optional: make future wired connections use DHCP by default:
+5. Optional: make future Ethernet connections default to DHCP:
 
 ```bash
 sudo nmcli connection add type ethernet ifname "*" con-name "auto-eth" ipv4.method auto autoconnect yes
 ```
 
-6. Test connectivity:
+6. Quick connectivity check:
 
 ```bash
 ping -c 3 8.8.8.8    # internet reachability
 ping -c 3 google.com # DNS resolution
 ```
 
----
-
 ## Outcome
 
-* Wired interface now automatically requests DHCP and has full internet access.
-* Future wired interfaces default to DHCP, avoiding the `169.254.x.x` fallback.
+Wired networking works again, and `169.254.x.x` fallback is avoided.

@@ -9,6 +9,12 @@ Interactive browser-based playground for exploring the Neural Gas algorithm and 
 
 - 🚀 Live demo: </res/neural-gas/playground.html>
 
+## ngas-pytorch
+
+PyTorch library for Neural Gas models and training workflows.
+
+- {{< icon "github" >}} GitHub: <https://github.com/francesco-p/ngas-pytorch>
+
 ## 🎙️ PodXiv
 
 AI-powered academic podcast generator that transforms arXiv papers into conversational audio episodes between virtual hosts.
