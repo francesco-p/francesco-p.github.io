@@ -31,7 +31,7 @@ enableRobotsTXT = true
   logo = ""
   colorScheme = "light"
   description = "Personal website of Francesco Pelosin"
-  mainSections = ["posts", "writeups"]
+  mainSections = ["posts"]
 
 [author]
   name = "Francesco Pelosin"
@@ -40,7 +40,6 @@ enableRobotsTXT = true
     { github = "https://github.com/francesco-p" },
     { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
     { mastodon = "https://infosec.exchange/@lakj" },
-    { twitter = "https://twitter.com/lakjfr" },
     { linkedin = "https://it.linkedin.com/in/francesco-pelosin-97533111a" },
   ]
 
@@ -51,7 +50,6 @@ enableRobotsTXT = true
     { github = "https://github.com/francesco-p" },
     { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
     { mastodon = "https://infosec.exchange/@lakj" },
-    { twitter = "https://twitter.com/lakjfr" },
     { linkedin = "https://it.linkedin.com/in/francesco-pelosin-97533111a" },
   ]
 
@@ -76,11 +74,6 @@ enableRobotsTXT = true
   weight = 1
 
 [[menu.main]]
-  name = "Human-Blog"
+  name = "Blog"
   pageRef = "posts"
   weight = 2
-
-[[menu.main]]
-  name = "AI-Writeups"
-  pageRef = "writeups"
-  weight = 3
