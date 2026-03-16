@@ -1,28 +1,28 @@
 {{ with .Site.Params.author.links }}
-  <div class="flex flex-wrap items-center gap-2 text-neutral-400 dark:text-neutral-500">
+  {{- $scratch := newScratch -}}
+  {{- $scratch.Set "idx" 0 -}}
+  <div class="flex flex-wrap items-center text-sm text-neutral-600 dark:text-neutral-300">
     {{ range $links := . }}
       {{ range $name, $url := $links }}
-        {{- $emoji := "🔗" -}}
         {{- $label := ($name | title) -}}
-        {{- $icon := "" -}}
-        {{- if eq $name "github" }}{{ $emoji = "🐙" }}{{ $label = "GitHub" }}{{ $icon = "/imgs/github.jpg" }}{{ end -}}
-        {{- if eq $name "mastodon" }}{{ $emoji = "🐘" }}{{ $label = "Mastodon" }}{{ $icon = "/imgs/mastodon.jpg" }}{{ end -}}
-        {{- if eq $name "linkedin" }}{{ $emoji = "💼" }}{{ $label = "LinkedIn" }}{{ $icon = "/imgs/linkedin.jpg" }}{{ end -}}
-        {{- if eq $name "link" }}{{ $emoji = "🎓" }}{{ $label = "Scholar" }}{{ $icon = "/imgs/scholar.jpg" }}{{ end -}}
+        {{- if eq $name "github" }}{{ $label = "GitHub" }}{{ end -}}
+        {{- if eq $name "mastodon" }}{{ $label = "Mastodon" }}{{ end -}}
+        {{- if eq $name "linkedin" }}{{ $label = "LinkedIn" }}{{ end -}}
+        {{- if eq $name "link" }}{{ $label = "Scholar" }}{{ end -}}
+        {{- if gt ($scratch.Get "idx") 0 -}}
+          <span class="mx-2 text-neutral-400 dark:text-neutral-500">|</span>
+        {{- end -}}
         <a
-          class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300/80 bg-white p-1 hover:text-primary-700 dark:border-neutral-500 dark:bg-white dark:hover:text-primary-400"
+          class="font-medium text-neutral-700 hover:text-primary-700 dark:text-neutral-100 dark:hover:text-primary-300"
           href="{{ $url | safeURL }}"
           target="_blank"
           rel="me noopener noreferrer"
           aria-label="{{ $label }}"
           title="{{ $label }}"
         >
-          {{ if $icon }}
-            <img src="{{ $icon | relURL }}" alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
-          {{ else }}
-            <span aria-hidden="true">{{ $emoji }}</span>
-          {{ end }}
+          <span>{{ $label }}</span>
         </a>
+        {{- $scratch.Add "idx" 1 -}}
       {{ end }}
     {{ end }}
   </div>
