@@ -35,7 +35,7 @@ enableRobotsTXT = true
 
 [author]
   name = "Francesco Pelosin"
-  bio = "Computer Vision / Machine Learning Engineer"
+  bio = "Deep Learning and Research Engineer"
   links = [
     { github = "https://github.com/francesco-p" },
     { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
@@ -45,7 +45,7 @@ enableRobotsTXT = true
 
 [params.author]
   name = "Francesco Pelosin"
-  bio = "Computer Vision / Machine Learning Engineer"
+  bio = "Deep Learning and Research Engineer"
   links = [
     { github = "https://github.com/francesco-p" },
     { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },

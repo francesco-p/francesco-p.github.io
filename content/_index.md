@@ -34,12 +34,12 @@ description: "Francesco Pelosin"
   </div>
   <div class="timeline-item">
     <div class="timeline-meta">2022–2023</div>
-    <div class="timeline-title">AI Research Fellow</div>
+    <div class="timeline-title">Research Scientist</div>
     <div class="timeline-sub">Leonardo s.p.a. · Rome, Italy</div>
   </div>
   <div class="timeline-item">
     <div class="timeline-meta">2023–now</div>
-    <div class="timeline-title">Computer Vision / Machine Learning Engineer</div>
+    <div class="timeline-title">Deep Learning and Research Engineer</div>
     <div class="timeline-sub">Covision Lab · Brixen (South Tyrol), Italy</div>
   </div>
 </div>
