@@ -39,6 +39,7 @@ enableRobotsTXT = true
   links = [
     { github = "https://github.com/francesco-p" },
     { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
+    { huggingface = "https://huggingface.co/lakj7/spaces" },
     { mastodon = "https://infosec.exchange/@lakj" },
     { linkedin = "https://it.linkedin.com/in/francesco-pelosin-97533111a" },
   ]
@@ -49,6 +50,7 @@ enableRobotsTXT = true
   links = [
     { github = "https://github.com/francesco-p" },
     { link = "https://scholar.google.it/citations?user=XJ9QvI4AAAAJ&hl=en" },
+    { huggingface = "https://huggingface.co/lakj7/spaces" },
     { mastodon = "https://infosec.exchange/@lakj" },
     { linkedin = "https://it.linkedin.com/in/francesco-pelosin-97533111a" },
   ]

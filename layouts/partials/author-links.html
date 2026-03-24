@@ -6,6 +6,7 @@
       {{ range $name, $url := $links }}
         {{- $label := ($name | title) -}}
         {{- if eq $name "github" }}{{ $label = "GitHub" }}{{ end -}}
+        {{- if eq $name "huggingface" }}{{ $label = "Hugging Face" }}{{ end -}}
         {{- if eq $name "mastodon" }}{{ $label = "Mastodon" }}{{ end -}}
         {{- if eq $name "linkedin" }}{{ $label = "LinkedIn" }}{{ end -}}
         {{- if eq $name "link" }}{{ $label = "Scholar" }}{{ end -}}
