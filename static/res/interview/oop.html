@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python OOP — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0d0d0d;
+  --bg2:      #141414;
+  --bg3:      #1a1a1a;
+  --paper:    #111111;
+  --ink:      #e8e4dc;
+  --muted:    #7a7570;
+  --faint:    #4a4640;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.13);
+  --red:      #c87a7a;
+  --blue:     #7abfc8;
+  --green:    #7ac87a;
+  --orange:   #c8b97a;
+  --purple:   #c87ab2;
+  --tag-bg:   rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+  --code-bg:  #111;
+  --code-text:#d4cfc8;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+/* ── Layout ── */
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1220px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  letter-spacing: 0.01em;
+}
+
+.nav-section {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+  margin: 1.4rem 0 0.4rem;
+  font-weight: 500;
+}
+
+nav a {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.12s;
+  font-weight: 300;
+  border-left: 2px solid transparent;
+  padding-left: 8px;
+  margin-left: -8px;
+}
+nav a:hover { color: var(--red); border-left-color: var(--red); }
+
+.nav-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.pillar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.pillar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Main ── */
+main {
+  padding: 3rem 4rem 6rem;
+  max-width: 800px;
+}
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 3.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border2);
+}
+
+.hero-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--red);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.1rem;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 1.1rem;
+}
+
+h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--red);
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 530px;
+  line-height: 1.8;
+}
+
+.pill-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 1.4rem; }
+
+.pill {
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--red);
+  padding: 3px 9px;
+  border-radius: 2px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Sections ── */
+section { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+}
+
+h2 .num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--faint);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--blue);
+  margin: 1.8rem 0 0.6rem;
+  font-weight: 500;
+}
+
+p { margin-bottom: 0.9rem; }
+strong { font-weight: 500; }
+
+/* ── Code ── */
+pre {
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 1.3rem 1.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.code-label {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.9rem;
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #4a4640;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--code-text);
+}
+
+.c-kw  { color: #c07ab2; }
+.c-fn  { color: #7ab2c0; }
+.c-cls { color: #e0b060; }
+.c-str { color: #85b870; }
+.c-num { color: #c09060; }
+.c-cm  { color: #4a4640; font-style: italic; }
+.c-bi  { color: #c07060; }
+.c-dec { color: #a07ac0; }
+.c-self{ color: #c0c080; }
+
+/* Inline code in prose */
+p code, li code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--orange);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2.5px solid var(--orange);
+  background: rgba(192,92,26,0.05);
+  padding: 0.9rem 1.2rem;
+  margin: 1.1rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.callout.blue  { border-left-color: var(--blue);   background: rgba(26,95,168,0.05); }
+.callout.red   { border-left-color: var(--red);    background: rgba(192,57,43,0.05); }
+.callout.green { border-left-color: var(--green);  background: rgba(30,125,75,0.05); }
+.callout.purple{ border-left-color: var(--purple); background: rgba(107,47,160,0.05); }
+
+.callout-label {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+  opacity: 0.55;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ── Four pillars ── */
+.pillar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.pillar-card {
+  background: var(--paper);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1rem 1.1rem;
+  border-top: 3px solid var(--border2);
+}
+.pillar-card.enc   { border-top-color: var(--red); }
+.pillar-card.inh   { border-top-color: var(--blue); }
+.pillar-card.pol   { border-top-color: var(--green); }
+.pillar-card.abs   { border-top-color: var(--purple); }
+
+.pillar-card-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.pillar-card.enc .pillar-card-title { color: var(--red); }
+.pillar-card.inh .pillar-card-title { color: var(--blue); }
+.pillar-card.pol .pillar-card-title { color: var(--green); }
+.pillar-card.abs .pillar-card-title { color: var(--purple); }
+
+.pillar-card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* ── Comparison table ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 1rem 0;
+  background: var(--paper);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border2);
+  padding: 0.55rem 0.9rem;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+td:first-child { font-family: 'IBM Plex Mono', monospace; color: var(--red); font-size: 12.5px; }
+td:nth-child(2) { font-family: 'IBM Plex Mono', monospace; color: var(--blue); font-size: 12.5px; }
+td:last-child { color: var(--muted); }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.7rem 0; }
+
+.checklist li {
+  padding: 0.45rem 0 0.45rem 1.5rem;
+  position: relative;
+  font-size: 14px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+
+.checklist li::before {
+  content: '◇';
+  position: absolute;
+  left: 0;
+  color: var(--faint);
+  font-size: 10px;
+  top: 0.6rem;
+}
+
+/* ── HR ── */
+hr { border: none; border-top: 1px solid var(--border2); margin: 2.5rem 0; }
+
+/* ── Output trace ── */
+.trace {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.trace .hi { color: var(--ink); font-weight: 500; }
+.trace .ok { color: var(--green); }
+.trace .err { color: var(--red); }
+
+/* ── Magic methods grid ── */
+.magic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 1rem 0;
+}
+.magic-cell {
+  background: var(--paper);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.6rem 0.8rem;
+}
+.magic-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--purple);
+  font-weight: 500;
+}
+.magic-desc {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 2px; }
+
+/* ── Mobile ── */
+@media (max-width: 700px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.5rem 4rem; }
+  .pillar-grid, .magic-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <nav>
+    <div class="nav-brand">Python OOP · Primer</div>
+
+    <span class="nav-section">Core concepts</span>
+    <a href="#pillars">Four pillars</a>
+    <a href="#classes">Classes & instances</a>
+    <a href="#methods">Method types</a>
+    <a href="#magic">Magic methods</a>
+
+    <span class="nav-section">Pillars deep-dive</span>
+    <a href="#encapsulation">Encapsulation</a>
+    <a href="#inheritance">Inheritance & MRO</a>
+    <a href="#polymorphism">Polymorphism</a>
+    <a href="#abstraction">Abstraction</a>
+
+    <span class="nav-section">Advanced</span>
+    <a href="#properties">Properties</a>
+    <a href="#dataclasses">Dataclasses</a>
+    <a href="#protocols">Protocols</a>
+    <a href="#slots">__slots__</a>
+    <a href="#metaclasses">Metaclasses</a>
+
+    <span class="nav-section">Interview</span>
+    <a href="#design">Design principles</a>
+    <a href="#checklist">Checklist</a>
+
+    <span class="nav-section">Other Primers</span>
+    <a href="index.html">&#8592; All Primers</a>
+
+    <div class="nav-footer">
+      <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin-bottom:.7rem;">four pillars</div>
+      <div class="pillar"><span class="pillar-dot" style="background:var(--red)"></span>Encapsulation</div>
+      <div class="pillar"><span class="pillar-dot" style="background:var(--blue)"></span>Inheritance</div>
+      <div class="pillar"><span class="pillar-dot" style="background:var(--green)"></span>Polymorphism</div>
+      <div class="pillar"><span class="pillar-dot" style="background:var(--purple)"></span>Abstraction</div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-eyebrow">Interview Primer · Python OOP</div>
+      <h1>Objects are<br><em>contracts,</em> not containers</h1>
+      <p class="hero-sub">
+        Python's OOP is pragmatic: everything is an object, duck typing beats strict hierarchies,
+        and the data model lets you hook into the language itself via magic methods.
+        Know the four pillars cold — then know Python's quirks on top of them.
+      </p>
+      <div class="pill-row">
+        <span class="pill">Python 3.10+</span>
+        <span class="pill">4 pillars</span>
+        <span class="pill">Magic methods</span>
+        <span class="pill">MRO</span>
+        <span class="pill">Dataclasses</span>
+        <span class="pill">Protocols</span>
+        <span class="pill">SOLID</span>
+      </div>
+    </div>
+
+    <!-- ── 1. Four pillars ── -->
+    <section id="pillars">
+      <h2><span class="num">01</span> Four pillars</h2>
+      <div class="pillar-grid">
+        <div class="pillar-card enc">
+          <div class="pillar-card-title">Encapsulation</div>
+          <p>Bundle data + behavior in a class. Hide internals; expose a clean interface. Controls who can see and mutate state.</p>
+        </div>
+        <div class="pillar-card inh">
+          <div class="pillar-card-title">Inheritance</div>
+          <p>A child class reuses and extends a parent. Python supports multiple inheritance; MRO determines resolution order.</p>
+        </div>
+        <div class="pillar-card pol">
+          <div class="pillar-card-title">Polymorphism</div>
+          <p>The same interface works on different types. Python achieves this via duck typing — if it quacks, it's a duck.</p>
+        </div>
+        <div class="pillar-card abs">
+          <div class="pillar-card-title">Abstraction</div>
+          <p>Expose what's needed; hide complexity. Formalized with ABCs or Protocols — callers depend on the interface, not the implementation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2. Classes & instances ── -->
+    <section id="classes">
+      <h2><span class="num">02</span> Classes & instances</h2>
+
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">BankAccount</span>:
+    interest_rate = <span class="c-num">0.03</span>          <span class="c-cm"># class variable — shared across all instances</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, owner: <span class="c-bi">str</span>, balance: <span class="c-bi">float</span> = <span class="c-num">0</span>):
+        <span class="c-self">self</span>.owner   = owner       <span class="c-cm"># instance variable — unique per object</span>
+        <span class="c-self">self</span>._balance = balance    <span class="c-cm"># _single underscore = "internal, please don't touch"</span>
+        <span class="c-self">self</span>.__id = id(<span class="c-self">self</span>)       <span class="c-cm"># __double = name-mangled to _BankAccount__id</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">deposit</span>(<span class="c-self">self</span>, amount: <span class="c-bi">float</span>) -> <span class="c-bi">None</span>:
+        <span class="c-kw">if</span> amount <= <span class="c-num">0</span>:
+            <span class="c-kw">raise</span> <span class="c-bi">ValueError</span>(<span class="c-str">"Deposit must be positive"</span>)
+        <span class="c-self">self</span>._balance += amount
+
+    <span class="c-kw">def</span> <span class="c-fn">__repr__</span>(<span class="c-self">self</span>) -> <span class="c-bi">str</span>:
+        <span class="c-kw">return</span> <span class="c-str">f"BankAccount({self.owner!r}, balance={self._balance})"</span>
+</code></pre>
+
+      <div class="callout blue">
+        <div class="callout-label">Python convention on visibility</div>
+        Python has no true private. <code>_x</code> is a hint ("don't use outside the class").
+        <code>__x</code> triggers name mangling to <code>_ClassName__x</code> — it's not private, just harder to access accidentally.
+        There's no <code>private</code> keyword. Discipline is by convention.
+      </div>
+
+      <h3>Class vs instance vs local</h3>
+      <table>
+        <thead><tr><th>Variable</th><th>Defined on</th><th>Shared?</th></tr></thead>
+        <tbody>
+          <tr><td>class var</td><td>class body</td><td>Yes — all instances see the same value until an instance shadows it</td></tr>
+          <tr><td>instance var</td><td>self.x = …</td><td>No — each instance has its own copy</td></tr>
+          <tr><td>local var</td><td>inside a method</td><td>No — gone after the method returns</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 3. Method types ── -->
+    <section id="methods">
+      <h2><span class="num">03</span> Method types</h2>
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Circle</span>:
+    PI = <span class="c-num">3.14159</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, radius):
+        <span class="c-self">self</span>.radius = radius
+
+    <span class="c-kw">def</span> <span class="c-fn">area</span>(<span class="c-self">self</span>):                    <span class="c-cm"># instance method — receives self</span>
+        <span class="c-kw">return</span> <span class="c-cls">Circle</span>.PI * <span class="c-self">self</span>.radius ** <span class="c-num">2</span>
+
+    <span class="c-dec">@classmethod</span>
+    <span class="c-kw">def</span> <span class="c-fn">unit</span>(cls):                     <span class="c-cm"># class method — receives cls, not self</span>
+        <span class="c-kw">return</span> cls(<span class="c-num">1</span>)                  <span class="c-cm"># useful as an alternative constructor</span>
+
+    <span class="c-dec">@staticmethod</span>
+    <span class="c-kw">def</span> <span class="c-fn">validate_radius</span>(r):           <span class="c-cm"># static — no self, no cls; just a namespaced function</span>
+        <span class="c-kw">return</span> r > <span class="c-num">0</span>
+
+<span class="c-cm"># Usage</span>
+c1 = Circle(<span class="c-num">5</span>)
+c2 = Circle.unit()                <span class="c-cm"># alternative constructor via classmethod</span>
+Circle.validate_radius(<span class="c-num">3</span>)        <span class="c-cm"># called on the class itself</span>
+</code></pre>
+
+      <div class="callout">
+        <div class="callout-label">when to use each</div>
+        Use <strong>instance methods</strong> for anything that needs object state.
+        Use <strong>classmethods</strong> for factory/alternative constructors (e.g., <code>date.fromisoformat</code>).
+        Use <strong>staticmethods</strong> for utility logic that logically belongs to the class but needs no state.
+      </div>
+    </section>
+
+    <!-- ── 4. Magic methods ── -->
+    <section id="magic">
+      <h2><span class="num">04</span> Magic methods (dunder)</h2>
+      <p>These let your objects participate in Python's built-in protocols — operators, iteration, context managers, and more.</p>
+
+      <div class="magic-grid">
+        <div class="magic-cell">
+          <div class="magic-name">__init__</div>
+          <div class="magic-desc">Constructor — initialize instance state</div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__repr__</div>
+          <div class="magic-desc">Dev-facing string: <code style="font-size:11px;color:var(--purple)">repr(obj)</code></div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__str__</div>
+          <div class="magic-desc">User-facing string: <code style="font-size:11px;color:var(--purple)">str(obj)</code>, <code style="font-size:11px;color:var(--purple)">print()</code></div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__eq__ / __hash__</div>
+          <div class="magic-desc">Equality and dict/set membership. Define both together.</div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__len__</div>
+          <div class="magic-desc">Called by <code style="font-size:11px;color:var(--purple)">len(obj)</code></div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__getitem__</div>
+          <div class="magic-desc">Enables <code style="font-size:11px;color:var(--purple)">obj[key]</code> syntax</div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__iter__ / __next__</div>
+          <div class="magic-desc">Makes object iterable in for loops</div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__enter__ / __exit__</div>
+          <div class="magic-desc">Context manager: <code style="font-size:11px;color:var(--purple)">with obj:</code></div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__add__ / __mul__</div>
+          <div class="magic-desc">Operator overloading: <code style="font-size:11px;color:var(--purple)">+</code>, <code style="font-size:11px;color:var(--purple)">*</code>, etc.</div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__call__</div>
+          <div class="magic-desc">Makes instance callable: <code style="font-size:11px;color:var(--purple)">obj()</code></div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__contains__</div>
+          <div class="magic-desc">Powers <code style="font-size:11px;color:var(--purple)">in</code> operator</div>
+        </div>
+        <div class="magic-cell">
+          <div class="magic-name">__del__</div>
+          <div class="magic-desc">Destructor — called when GC collects the object</div>
+        </div>
+      </div>
+
+      <h3>Practical example — a Vector class</h3>
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Vector</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, x, y):
+        <span class="c-self">self</span>.x, <span class="c-self">self</span>.y = x, y
+
+    <span class="c-kw">def</span> <span class="c-fn">__repr__</span>(<span class="c-self">self</span>):
+        <span class="c-kw">return</span> <span class="c-str">f"Vector({self.x}, {self.y})"</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__add__</span>(<span class="c-self">self</span>, other):              <span class="c-cm"># v1 + v2</span>
+        <span class="c-kw">return</span> <span class="c-cls">Vector</span>(<span class="c-self">self</span>.x + other.x, <span class="c-self">self</span>.y + other.y)
+
+    <span class="c-kw">def</span> <span class="c-fn">__mul__</span>(<span class="c-self">self</span>, scalar):             <span class="c-cm"># v * 3</span>
+        <span class="c-kw">return</span> <span class="c-cls">Vector</span>(<span class="c-self">self</span>.x * scalar, <span class="c-self">self</span>.y * scalar)
+
+    <span class="c-kw">def</span> <span class="c-fn">__abs__</span>(<span class="c-self">self</span>):                     <span class="c-cm"># abs(v) → magnitude</span>
+        <span class="c-kw">return</span> (<span class="c-self">self</span>.x**<span class="c-num">2</span> + <span class="c-self">self</span>.y**<span class="c-num">2</span>) ** <span class="c-num">0.5</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__eq__</span>(<span class="c-self">self</span>, other):
+        <span class="c-kw">return</span> <span class="c-bi">isinstance</span>(other, <span class="c-cls">Vector</span>) <span class="c-kw">and</span> <span class="c-self">self</span>.x == other.x <span class="c-kw">and</span> <span class="c-self">self</span>.y == other.y
+
+<span class="c-cls">Vector</span>(<span class="c-num">1</span>, <span class="c-num">2</span>) + <span class="c-cls">Vector</span>(<span class="c-num">3</span>, <span class="c-num">4</span>)   <span class="c-cm"># → Vector(4, 6)</span>
+<span class="c-bi">abs</span>(<span class="c-cls">Vector</span>(<span class="c-num">3</span>, <span class="c-num">4</span>))             <span class="c-cm"># → 5.0</span>
+</code></pre>
+    </section>
+
+    <hr>
+
+    <!-- ── 5. Encapsulation ── -->
+    <section id="encapsulation">
+      <h2><span class="num">05</span> Encapsulation</h2>
+      <p>
+        Encapsulation means an object owns its state and decides what the outside world can do with it.
+        In Python this is enforced by convention and, more powerfully, by <strong>properties</strong>.
+      </p>
+
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Temperature</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, celsius: <span class="c-bi">float</span>):
+        <span class="c-self">self</span>.celsius = celsius       <span class="c-cm"># uses the setter below</span>
+
+    <span class="c-dec">@property</span>
+    <span class="c-kw">def</span> <span class="c-fn">celsius</span>(<span class="c-self">self</span>) -> <span class="c-bi">float</span>:
+        <span class="c-kw">return</span> <span class="c-self">self</span>._celsius
+
+    <span class="c-dec">@celsius.setter</span>
+    <span class="c-kw">def</span> <span class="c-fn">celsius</span>(<span class="c-self">self</span>, value: <span class="c-bi">float</span>):
+        <span class="c-kw">if</span> value < <span class="c-num">-273.15</span>:
+            <span class="c-kw">raise</span> <span class="c-bi">ValueError</span>(<span class="c-str">"Below absolute zero"</span>)
+        <span class="c-self">self</span>._celsius = value
+
+    <span class="c-dec">@property</span>
+    <span class="c-kw">def</span> <span class="c-fn">fahrenheit</span>(<span class="c-self">self</span>) -> <span class="c-bi">float</span>:   <span class="c-cm"># derived, read-only property</span>
+        <span class="c-kw">return</span> <span class="c-self">self</span>._celsius * <span class="c-num">9</span>/<span class="c-num">5</span> + <span class="c-num">32</span>
+
+t = <span class="c-cls">Temperature</span>(<span class="c-num">100</span>)
+<span class="c-bi">print</span>(t.fahrenheit)              <span class="c-cm"># 212.0 — looks like an attribute, runs code</span>
+t.celsius = -<span class="c-num">300</span>               <span class="c-cm"># → ValueError</span>
+</code></pre>
+    </section>
+
+    <!-- ── 6. Inheritance & MRO ── -->
+    <section id="inheritance">
+      <h2><span class="num">06</span> Inheritance & MRO</h2>
+      <p>
+        A child class inherits all methods and attributes of its parent. Use <code>super()</code> to call
+        the parent's implementation. With <strong>multiple inheritance</strong>, Python uses the
+        C3 linearization algorithm to determine <strong>Method Resolution Order (MRO)</strong>.
+      </p>
+
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Animal</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, name):
+        <span class="c-self">self</span>.name = name
+
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-self">self</span>) -> <span class="c-bi">str</span>:
+        <span class="c-kw">raise</span> <span class="c-bi">NotImplementedError</span>
+
+<span class="c-kw">class</span> <span class="c-cls">Dog</span>(<span class="c-cls">Animal</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, name, breed):
+        <span class="c-bi">super</span>().__init__(name)       <span class="c-cm"># delegates to Animal.__init__</span>
+        <span class="c-self">self</span>.breed = breed
+
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-self">self</span>) -> <span class="c-bi">str</span>:
+        <span class="c-kw">return</span> <span class="c-str">f"{self.name} says: Woof!"</span>
+
+<span class="c-cm"># Multiple inheritance — MRO matters</span>
+<span class="c-kw">class</span> <span class="c-cls">Flyable</span>:
+    <span class="c-kw">def</span> <span class="c-fn">fly</span>(<span class="c-self">self</span>): <span class="c-kw">return</span> <span class="c-str">"I can fly"</span>
+
+<span class="c-kw">class</span> <span class="c-cls">FlyingDog</span>(<span class="c-cls">Dog</span>, <span class="c-cls">Flyable</span>):   <span class="c-cm"># MRO: FlyingDog → Dog → Animal → Flyable → object</span>
+    <span class="c-kw">pass</span>
+
+<span class="c-bi">print</span>(<span class="c-cls">FlyingDog</span>.__mro__)          <span class="c-cm"># inspect the resolution chain</span>
+</code></pre>
+
+      <div class="callout red">
+        <div class="callout-label">diamond problem</div>
+        When two parents share a common ancestor, the MRO ensures the ancestor's method runs only once.
+        Python's C3 algorithm guarantees a consistent, predictable order — always check <code>__mro__</code> when debugging
+        multiple inheritance surprises.
+      </div>
+
+      <div class="trace">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.5rem;color:var(--muted);">MRO trace · FlyingDog</span>
+        FlyingDog → <span class="hi">Dog</span> → <span class="hi">Animal</span> → <span class="hi">Flyable</span> → object<br>
+        <span class="ok">✓</span> speak() found on Dog — stops here, doesn't continue<br>
+        <span class="ok">✓</span> fly() not on Dog or Animal — found on Flyable<br>
+        <span class="ok">✓</span> __init__ found on Dog — calls super() → Animal.__init__
+      </div>
+    </section>
+
+    <!-- ── 7. Polymorphism ── -->
+    <section id="polymorphism">
+      <h2><span class="num">07</span> Polymorphism</h2>
+      <p>
+        Different objects responding to the same interface. Python's approach is <strong>duck typing</strong>:
+        if an object has the right methods, it works — no shared base class required.
+      </p>
+
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Cat</span>:
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-self">self</span>): <span class="c-kw">return</span> <span class="c-str">"Meow"</span>
+
+<span class="c-kw">class</span> <span class="c-cls">Dog</span>:
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-self">self</span>): <span class="c-kw">return</span> <span class="c-str">"Woof"</span>
+
+<span class="c-kw">class</span> <span class="c-cls">Robot</span>:
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-self">self</span>): <span class="c-kw">return</span> <span class="c-str">"Beep boop"</span>
+
+<span class="c-kw">def</span> <span class="c-fn">make_noise</span>(things):          <span class="c-cm"># no type constraint — any object with .speak() works</span>
+    <span class="c-kw">for</span> t <span class="c-kw">in</span> things:
+        <span class="c-bi">print</span>(t.speak())
+
+make_noise([<span class="c-cls">Cat</span>(), <span class="c-cls">Dog</span>(), <span class="c-cls">Robot</span>()])
+<span class="c-cm"># Meow / Woof / Beep boop</span>
+</code></pre>
+
+      <div class="callout green">
+        <div class="callout-label">duck typing in practice</div>
+        You almost never need <code>isinstance()</code> checks in well-designed Python code.
+        If you find yourself writing <code>if isinstance(x, Dog)</code>, consider whether a protocol or
+        overloaded method would be cleaner.
+      </div>
+    </section>
+
+    <!-- ── 8. Abstraction ── -->
+    <section id="abstraction">
+      <h2><span class="num">08</span> Abstraction</h2>
+      <p>
+        Define an interface that subclasses must implement. Python offers two mechanisms:
+        <strong>ABCs</strong> (enforced at instantiation) and <strong>Protocols</strong> (structural, checked by type checkers).
+      </p>
+
+      <h3>Abstract Base Class (ABC)</h3>
+      <pre><code><span class="c-kw">from</span> abc <span class="c-kw">import</span> ABC, abstractmethod
+
+<span class="c-kw">class</span> <span class="c-cls">Shape</span>(<span class="c-cls">ABC</span>):
+    <span class="c-dec">@abstractmethod</span>
+    <span class="c-kw">def</span> <span class="c-fn">area</span>(<span class="c-self">self</span>) -> <span class="c-bi">float</span>: ...
+
+    <span class="c-dec">@abstractmethod</span>
+    <span class="c-kw">def</span> <span class="c-fn">perimeter</span>(<span class="c-self">self</span>) -> <span class="c-bi">float</span>: ...
+
+<span class="c-kw">class</span> <span class="c-cls">Rectangle</span>(<span class="c-cls">Shape</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, w, h):
+        <span class="c-self">self</span>.w, <span class="c-self">self</span>.h = w, h
+
+    <span class="c-kw">def</span> <span class="c-fn">area</span>(<span class="c-self">self</span>):      <span class="c-kw">return</span> <span class="c-self">self</span>.w * <span class="c-self">self</span>.h
+    <span class="c-kw">def</span> <span class="c-fn">perimeter</span>(<span class="c-self">self</span>): <span class="c-kw">return</span> <span class="c-num">2</span> * (<span class="c-self">self</span>.w + <span class="c-self">self</span>.h)
+
+<span class="c-cm"># Shape()  → TypeError: Can't instantiate abstract class</span>
+<span class="c-cm"># Rectangle(3, 4) → works fine</span>
+</code></pre>
+    </section>
+
+    <hr>
+
+    <!-- ── 9. Properties ── -->
+    <section id="properties">
+      <h2><span class="num">09</span> Properties in depth</h2>
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Person</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, name):
+        <span class="c-self">self</span>._name = name
+
+    <span class="c-dec">@property</span>
+    <span class="c-kw">def</span> <span class="c-fn">name</span>(<span class="c-self">self</span>):        <span class="c-cm"># getter</span>
+        <span class="c-kw">return</span> <span class="c-self">self</span>._name
+
+    <span class="c-dec">@name.setter</span>
+    <span class="c-kw">def</span> <span class="c-fn">name</span>(<span class="c-self">self</span>, value): <span class="c-cm"># setter</span>
+        <span class="c-kw">if</span> <span class="c-kw">not</span> <span class="c-bi">isinstance</span>(value, <span class="c-bi">str</span>):
+            <span class="c-kw">raise</span> <span class="c-bi">TypeError</span>(<span class="c-str">"Name must be a string"</span>)
+        <span class="c-self">self</span>._name = value.strip()
+
+    <span class="c-dec">@name.deleter</span>
+    <span class="c-kw">def</span> <span class="c-fn">name</span>(<span class="c-self">self</span>):        <span class="c-cm"># deleter — del obj.name</span>
+        <span class="c-self">self</span>._name = <span class="c-str">"Anonymous"</span>
+</code></pre>
+      <div class="callout">
+        <div class="callout-label">key insight</div>
+        Properties let you start with a plain attribute and add validation later <em>without changing the public API</em>.
+        Callers still write <code>person.name = "Alice"</code> — they never know there's a setter underneath.
+      </div>
+    </section>
+
+    <!-- ── 10. Dataclasses ── -->
+    <section id="dataclasses">
+      <h2><span class="num">10</span> Dataclasses</h2>
+      <p>Auto-generates <code>__init__</code>, <code>__repr__</code>, <code>__eq__</code> — and more with flags.</p>
+
+      <pre><code><span class="c-kw">from</span> dataclasses <span class="c-kw">import</span> dataclass, field
+
+<span class="c-dec">@dataclass</span>
+<span class="c-kw">class</span> <span class="c-cls">Point</span>:
+    x: <span class="c-bi">float</span>
+    y: <span class="c-bi">float</span>
+    label: <span class="c-bi">str</span> = <span class="c-str">"unnamed"</span>         <span class="c-cm"># fields with defaults come last</span>
+
+<span class="c-dec">@dataclass</span>(frozen=<span class="c-bi">True</span>)            <span class="c-cm"># immutable — instances are hashable</span>
+<span class="c-kw">class</span> <span class="c-cls">ImmutablePoint</span>:
+    x: <span class="c-bi">float</span>
+    y: <span class="c-bi">float</span>
+
+<span class="c-dec">@dataclass</span>(order=<span class="c-bi">True</span>)             <span class="c-cm"># generates __lt__, __le__, etc.</span>
+<span class="c-kw">class</span> <span class="c-cls">Player</span>:
+    score: <span class="c-bi">int</span>
+    name: <span class="c-bi">str</span>
+    tags: <span class="c-bi">list</span> = field(default_factory=<span class="c-bi">list</span>)  <span class="c-cm"># never use [] as default!</span>
+</code></pre>
+
+      <div class="callout red">
+        <div class="callout-label">common trap</div>
+        Never use a mutable default like <code>tags: list = []</code> — the same list object is shared across all instances.
+        Always use <code>field(default_factory=list)</code>.
+      </div>
+    </section>
+
+    <!-- ── 11. Protocols ── -->
+    <section id="protocols">
+      <h2><span class="num">11</span> Protocols (structural subtyping)</h2>
+      <p>
+        A <code>Protocol</code> defines an interface purely by shape — no inheritance required.
+        Any class with the right methods satisfies it. Type checkers enforce it; Python's runtime doesn't.
+      </p>
+      <pre><code><span class="c-kw">from</span> typing <span class="c-kw">import</span> Protocol
+
+<span class="c-kw">class</span> <span class="c-cls">Drawable</span>(<span class="c-cls">Protocol</span>):
+    <span class="c-kw">def</span> <span class="c-fn">draw</span>(<span class="c-self">self</span>) -> <span class="c-bi">None</span>: ...
+
+<span class="c-kw">class</span> <span class="c-cls">Circle</span>:                       <span class="c-cm"># does NOT inherit from Drawable</span>
+    <span class="c-kw">def</span> <span class="c-fn">draw</span>(<span class="c-self">self</span>): <span class="c-bi">print</span>(<span class="c-str">"⬤"</span>)
+
+<span class="c-kw">def</span> <span class="c-fn">render</span>(shape: <span class="c-cls">Drawable</span>) -> <span class="c-bi">None</span>:
+    shape.draw()
+
+render(<span class="c-cls">Circle</span>())  <span class="c-cm"># ✓ — Circle satisfies Drawable structurally</span>
+</code></pre>
+      <div class="callout purple">
+        <div class="callout-label">ABC vs Protocol</div>
+        Use <strong>ABC</strong> when you want runtime enforcement and want to share implementation (mixin methods).
+        Use <strong>Protocol</strong> when you want zero coupling — callers define what they need, implementors don't know about it.
+      </div>
+    </section>
+
+    <!-- ── 12. __slots__ ── -->
+    <section id="slots">
+      <h2><span class="num">12</span> __slots__</h2>
+      <p>
+        By default, every Python object has a <code>__dict__</code> — a hash map of its attributes.
+        Declaring <code>__slots__</code> replaces it with a fixed-layout array: faster access, less memory.
+      </p>
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">Point</span>:
+    __slots__ = (<span class="c-str">'x'</span>, <span class="c-str">'y'</span>)          <span class="c-cm"># only x and y allowed — no __dict__</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, x, y):
+        <span class="c-self">self</span>.x, <span class="c-self">self</span>.y = x, y
+
+p = <span class="c-cls">Point</span>(<span class="c-num">1</span>, <span class="c-num">2</span>)
+p.z = <span class="c-num">3</span>                            <span class="c-cm"># → AttributeError: 'Point' has no attribute 'z'</span>
+</code></pre>
+      <div class="callout blue">
+        <div class="callout-label">when to use it</div>
+        Use <code>__slots__</code> for objects created in the millions (e.g., nodes in a graph or tree).
+        Typically saves ~40–50% memory per instance. Don't bother for normal application-level objects.
+      </div>
+    </section>
+
+    <!-- ── 13. Metaclasses ── -->
+    <section id="metaclasses">
+      <h2><span class="num">13</span> Metaclasses (know the concept)</h2>
+      <p>
+        A metaclass is the class of a class. <code>type</code> is the default metaclass of every Python class.
+        Metaclasses let you intercept class <em>creation</em> — not just instance creation.
+      </p>
+      <pre><code><span class="c-kw">class</span> <span class="c-cls">SingletonMeta</span>(<span class="c-bi">type</span>):
+    _instances = {}
+
+    <span class="c-kw">def</span> <span class="c-fn">__call__</span>(cls, *args, **kwargs):
+        <span class="c-kw">if</span> cls <span class="c-kw">not in</span> cls._instances:
+            cls._instances[cls] = <span class="c-bi">super</span>().__call__(*args, **kwargs)
+        <span class="c-kw">return</span> cls._instances[cls]
+
+<span class="c-kw">class</span> <span class="c-cls">Config</span>(metaclass=<span class="c-cls">SingletonMeta</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>): <span class="c-self">self</span>.debug = <span class="c-bi">False</span>
+
+<span class="c-cls">Config</span>() <span class="c-kw">is</span> <span class="c-cls">Config</span>()              <span class="c-cm"># → True — always the same object</span>
+</code></pre>
+      <div class="callout">
+        <div class="callout-label">interview note</div>
+        You rarely write metaclasses in application code. Know they exist, know what they do,
+        and know that <code>__init_subclass__</code> and class decorators handle 80% of metaclass use cases more cleanly.
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ── 14. Design principles ── -->
+    <section id="design">
+      <h2><span class="num">14</span> SOLID + Python specifics</h2>
+      <table>
+        <thead><tr><th>Principle</th><th>Abbrev.</th><th>In plain Python</th></tr></thead>
+        <tbody>
+          <tr><td>Single Responsibility</td><td>S</td><td>One class, one reason to change. A <code>User</code> class shouldn't also send emails.</td></tr>
+          <tr><td>Open/Closed</td><td>O</td><td>Open for extension (subclass or inject), closed for modification. Use ABCs / Protocols.</td></tr>
+          <tr><td>Liskov Substitution</td><td>L</td><td>A subclass must be usable wherever the parent is. Don't override to raise exceptions the parent wouldn't.</td></tr>
+          <tr><td>Interface Segregation</td><td>I</td><td>Many small Protocols beat one fat ABC. Don't force a class to implement methods it doesn't need.</td></tr>
+          <tr><td>Dependency Inversion</td><td>D</td><td>Depend on abstractions (Protocol / ABC), not concrete classes. Pass dependencies in; don't import them inside.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout green">
+        <div class="callout-label">composition over inheritance</div>
+        Favor composing behavior (passing objects in) over deep inheritance chains.
+        Deep hierarchies are fragile — a change at the top breaks everything below.
+        In Python, mixins and Protocols usually get you further than 5-level inheritance.
+      </div>
+    </section>
+
+    <!-- ── 15. Checklist ── -->
+    <section id="checklist">
+      <h2><span class="num">15</span> Before you interview — checklist</h2>
+      <ul class="checklist">
+        <li>Can name and explain the four pillars with a concrete Python example each</li>
+        <li>Knows the difference between <code>_x</code>, <code>__x</code>, and <code>x</code></li>
+        <li>Can write a <code>@property</code> with getter, setter, and deleter from memory</li>
+        <li>Understands <code>@classmethod</code> vs <code>@staticmethod</code> vs instance method</li>
+        <li>Can explain MRO and predict output of a diamond inheritance scenario</li>
+        <li>Knows when to use ABC vs Protocol — and the trade-offs</li>
+        <li>Understands <code>__eq__</code> and <code>__hash__</code> must be defined together</li>
+        <li>Can implement a context manager via <code>__enter__</code> / <code>__exit__</code></li>
+        <li>Knows the mutable default trap in dataclasses (and regular <code>__init__</code>)</li>
+        <li>Can explain Liskov Substitution with an example of a violation</li>
+        <li>Knows <code>__slots__</code> purpose and when it matters</li>
+        <li>Can sketch the Singleton, Factory, and Observer patterns in Python</li>
+      </ul>
+
+      <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border2);">
+        <p style="font-size:13px;color:var(--muted);line-height:1.85;">
+          The hardest OOP interview questions aren't about syntax — they're about <em>design decisions</em>.
+          When to use inheritance vs composition, when ABC vs Protocol, why Liskov matters.
+          Know the <em>why</em> behind each concept, and the code will follow.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>

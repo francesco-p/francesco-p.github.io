@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Deep Dive — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #111;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.nav-section {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 1.4rem 0 0.4rem;
+  font-weight: 500;
+  opacity: 0.55;
+}
+
+nav a {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+  font-weight: 300;
+}
+nav a:hover { color: var(--accent); }
+
+.nav-bottom {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.nav-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 2px 0;
+  font-family: 'DM Mono', monospace;
+}
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 1rem;
+  font-family: 'DM Mono', monospace;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.1rem, 4vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 1.2rem;
+}
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Sections ── */
+section { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+h2 .num {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+
+h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin: 1.8rem 0 0.6rem;
+  font-weight: 500;
+}
+
+p { margin-bottom: 0.9rem; }
+strong { font-weight: 500; color: var(--text); }
+
+/* ── CV analogy band ── */
+.cv-analogy {
+  display: flex;
+  gap: 0;
+  margin: 1.2rem 0;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 13.5px;
+}
+.cv-side {
+  flex: 1;
+  padding: 0.9rem 1.1rem;
+  background: rgba(122,191,200,0.05);
+  border-right: 1px solid var(--border2);
+}
+.llm-side {
+  flex: 1;
+  padding: 0.9rem 1.1rem;
+  background: rgba(200,185,122,0.05);
+}
+.cv-side-label {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent2);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 0.4rem;
+  opacity: 0.8;
+}
+.llm-side-label {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 0.4rem;
+  opacity: 0.8;
+}
+.cv-side p, .llm-side p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+/* ── Code ── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1.25rem 1.4rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  position: relative;
+}
+.code-label {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9c0b0;
+}
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #4a4740; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+
+p code, li code, td code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2px solid var(--accent);
+  background: rgba(200,185,122,0.05);
+  padding: 1rem 1.25rem;
+  margin: 1.2rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.75;
+}
+.callout.blue   { border-left-color: var(--accent2); background: rgba(122,191,200,0.05); }
+.callout.red    { border-left-color: var(--red);     background: rgba(200,122,122,0.05); }
+.callout.green  { border-left-color: var(--green);   background: rgba(122,200,122,0.05); }
+.callout.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.callout.orange { border-left-color: var(--orange);  background: rgba(200,149,106,0.05); }
+
+.callout-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  opacity: 0.55;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Math display ── */
+.math {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  padding: 1rem 1.3rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 2;
+}
+.math .label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.math .dim  { color: var(--accent2); }
+.math .note { color: var(--muted); font-style: italic; font-size: 12px; }
+.math .hi   { color: var(--text); font-weight: 500; }
+.math .katex { font-size: 1em; }
+
+/* ── Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+}
+.card-title {
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* ── Architecture diagram ── */
+.arch-diagram {
+  margin: 1.2rem 0;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.arch-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+}
+.arch-row:last-child { border-bottom: none; }
+.arch-label {
+  width: 160px;
+  flex-shrink: 0;
+  padding: 0.7rem 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  color: var(--accent2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  background: rgba(122,191,200,0.04);
+}
+.arch-desc {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+.arch-shape {
+  width: 120px;
+  flex-shrink: 0;
+  padding: 0.7rem 0.8rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  border-left: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ── Pipeline flow ── */
+.pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 1.2rem 0;
+}
+.pipe-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.pipe-step:last-child { border-bottom: none; }
+.pipe-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 0.15rem;
+  min-width: 28px;
+}
+.pipe-body { flex: 1; }
+.pipe-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+.pipe-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* ── Table ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 1rem 0; }
+th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border2);
+  padding: 0.5rem 0.75rem;
+  font-weight: 400;
+  font-family: 'DM Mono', monospace;
+}
+td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--muted);
+}
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+/* ── Trace ── */
+.trace {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 2;
+}
+.trace .hi  { color: var(--accent);  font-weight: 500; }
+.trace .ok  { color: var(--green);  }
+.trace .inf { color: var(--accent2); }
+.trace .bad { color: var(--red);    }
+.trace .dim { color: var(--muted);  font-size: 11px; }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.8rem 0; }
+.checklist li {
+  padding: 0.4rem 0 0.4rem 1.4rem;
+  position: relative;
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: '○';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+  font-size: 11px;
+  top: 0.55rem;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.4rem 4rem; }
+  .card-grid { grid-template-columns: 1fr; }
+  .cv-analogy { flex-direction: column; }
+  .arch-shape { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">LLM Deep Dive</div>
+
+  <span class="nav-section">The Big Picture</span>
+  <a href="#mental-model">Mental model for CV people</a>
+  <a href="#tokens">Tokens & vocabulary</a>
+  <a href="#objective">The core objective</a>
+
+  <span class="nav-section">Architecture</span>
+  <a href="#embeddings">Embeddings</a>
+  <a href="#positional">Positional encoding</a>
+  <a href="#attention">Self-attention</a>
+  <a href="#mha">Multi-head attention</a>
+  <a href="#transformer-block">Transformer block</a>
+  <a href="#full-arch">Full GPT-style architecture</a>
+  <a href="#kv-cache">KV cache</a>
+
+  <span class="nav-section">Pretraining</span>
+  <a href="#data">Data & tokenization</a>
+  <a href="#pretraining-loop">Training loop at scale</a>
+  <a href="#scaling">Scaling laws</a>
+  <a href="#instabilities">Training instabilities</a>
+
+  <span class="nav-section">Post-training</span>
+  <a href="#sft">Supervised fine-tuning</a>
+  <a href="#rlhf">RLHF</a>
+  <a href="#dpo">DPO</a>
+  <a href="#peft">PEFT & LoRA</a>
+
+  <span class="nav-section">Inference</span>
+  <a href="#decoding">Decoding strategies</a>
+  <a href="#inference-tricks">Inference optimization</a>
+  <a href="#context">Context & prompting</a>
+
+  <span class="nav-section">Modern Variants</span>
+  <a href="#modern">Architecture improvements</a>
+  <a href="#moe">Mixture of Experts</a>
+
+  <span class="nav-section">Interview</span>
+  <a href="#questions">Key questions</a>
+  <a href="#checklist">Checklist</a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;opacity:.6;">scale ref</div>
+    <div class="nav-stat"><span>GPT-2</span><span>1.5B params</span></div>
+    <div class="nav-stat"><span>LLaMA-3 8B</span><span>8B params</span></div>
+    <div class="nav-stat"><span>GPT-4 (est.)</span><span>~1.8T params</span></div>
+    <div class="nav-stat"><span>Attention</span><span>O(T²·d)</span></div>
+    <div class="nav-stat"><span>Tokens/day</span><span>~10T (GPT-4)</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Deep Dive · Large Language Models · For CV Scientists</div>
+    <h1>From pixels to tokens:<br><em>what changed,</em> what didn't</h1>
+    <p class="hero-desc">
+      You already know the fundamentals — tensors, gradients, attention, residual connections.
+      LLMs are built from the same primitives, but the <em>domain shift</em> is deeper than it looks.
+      Discrete inputs, autoregressive generation, next-token prediction as the universal objective,
+      and training at a scale where the data itself becomes the model.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Transformer (decoder)</span>
+      <span class="pill">Autoregressive</span>
+      <span class="pill">Pretraining</span>
+      <span class="pill">RLHF / DPO</span>
+      <span class="pill">LoRA</span>
+      <span class="pill">KV cache</span>
+      <span class="pill">Scaling laws</span>
+      <span class="pill">MoE</span>
+    </div>
+  </div>
+
+  <!-- ══════════ THE BIG PICTURE ══════════ -->
+
+  <!-- 1. Mental model -->
+  <section id="mental-model">
+    <h2><span class="num">01</span> The mental model shift</h2>
+    <p>
+      In CV, your model sees a 2D spatial grid and predicts a label or a dense map.
+      The spatial structure is the core inductive bias — convolutions exploit it, ViT attends over it.
+      Language has no such grid. Instead it has <strong>sequence</strong>: a 1D stream of discrete symbols
+      where order encodes meaning and the relationship between distant tokens matters as much as adjacent ones.
+    </p>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">Computer Vision</div>
+        <p>Input: pixel grid (H×W×C) — continuous, fixed size<br>
+        Output: class label, bounding box, segmentation mask<br>
+        Structure: spatial locality — nearby pixels are related<br>
+        Prediction: one-shot (or per-pixel) from full input</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">Language Models</div>
+        <p>Input: token sequence (T) — discrete, variable length<br>
+        Output: distribution over next token (vocabulary size V)<br>
+        Structure: sequential dependency — any token depends on all prior<br>
+        Prediction: autoregressive — one token at a time, left to right</p>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">the one sentence that explains everything</div>
+      An LLM is a function that takes a sequence of tokens and outputs a probability distribution
+      over what the next token should be — and that single objective, applied at internet scale, produces
+      a model that can reason, translate, code, and generalize.
+    </div>
+
+    <p>
+      Think of it like this: if you trained a ViT to predict the next patch given all previous patches
+      in a rasterized image scan, you'd have something structurally identical to a GPT.
+      That's actually how image GPT (iGPT) works. The architecture is the same — the domain is different.
+    </p>
+  </section>
+
+  <!-- 2. Tokens -->
+  <section id="tokens">
+    <h2><span class="num">02</span> Tokens & vocabulary</h2>
+    <p>
+      Images have pixels — continuous real-valued intensities, differentiable end to end.
+      Language has tokens — discrete integer IDs from a fixed vocabulary. This discreteness
+      is fundamental: you cannot backprop through a token index. Everything after tokenization
+      is continuous, but the tokenizer itself is frozen during training.
+    </p>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">CV analogy</div>
+        <p>Tokenization ≈ vector quantization (VQ-VAE). Continuous inputs are discretized into a finite codebook. After quantization, you work with codebook indices — just like token IDs.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">LLM reality</div>
+        <p>Byte-Pair Encoding (BPE) merges frequent character pairs into subword units. "unbelievable" → ["un", "believ", "able"]. Vocabulary size V ≈ 32k–100k. OOV words are handled by falling back to bytes.</p>
+      </div>
+    </div>
+
+    <h3>Byte-Pair Encoding (BPE)</h3>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-num">01</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Start with characters</div>
+          <div class="pipe-desc">Initialize vocabulary with all individual bytes/characters. Every word is a sequence of these base tokens.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">02</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Count pair frequencies</div>
+          <div class="pipe-desc">Find the most frequent adjacent pair across the entire corpus. e.g., ("e", "r") appears 12,000 times.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">03</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Merge the top pair</div>
+          <div class="pipe-desc">Create a new token "er" and replace all occurrences. Add merge rule to the rulebook.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">04</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Repeat until vocabulary full</div>
+          <div class="pipe-desc">Iterate until vocabulary reaches target size (e.g., 50,257 for GPT-2). Common words become single tokens; rare words are split into subwords.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">why tokenization matters</div>
+      Tokenization is a silent hyperparameter. Poor tokenization makes arithmetic hard (numbers
+      split weirdly: "123" → ["12","3"]), hurts low-resource languages (Chinese characters
+      may each be one token while English words average ~0.75 tokens), and inflates context length.
+      GPT-4's cl100k tokenizer is dramatically better than GPT-2's for code and multilingual text.
+    </div>
+  </section>
+
+  <!-- 3. Objective -->
+  <section id="objective">
+    <h2><span class="num">03</span> The core objective: next-token prediction</h2>
+    <p>
+      Everything in LLM pretraining reduces to one loss: given a sequence of tokens,
+      predict the next one. This is called <strong>causal language modeling (CLM)</strong>
+      or <strong>autoregressive language modeling</strong>.
+    </p>
+
+    <div class="math">
+      <span class="label">causal language modeling loss</span>
+      \(\mathcal{L} = -\dfrac{1}{T}\sum_{t=1}^{T}\log P(x_t\mid x_1,\ldots,x_{t-1})\)<br>
+      <br>
+      <span class="note">= average negative log-likelihood of each token given all prior tokens</span><br>
+      <span class="note">= cross-entropy between one-hot true token and softmax output</span><br>
+      <br>
+      \(\text{Perplexity} = \exp(\mathcal{L})\) <span class="note">← lower is better; 1 = perfect, ∞ = random</span>
+    </div>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">CV equivalent</div>
+        <p>Masked autoencoder (MAE): predict masked patches from visible patches. BERT-style: bidirectional. But language models are strictly causal — no peeking at future tokens.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">LLM reality</div>
+        <p>Every forward pass produces T predictions simultaneously (one per position). The causal mask ensures position t only attends to positions ≤ t. Loss averaged over all positions = massive label efficiency.</p>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">why this objective is so powerful</div>
+      Every text document is simultaneously a supervised dataset — each token is a label for the preceding context.
+      A 1 trillion token corpus gives ~1 trillion training examples, all self-labeled.
+      Predicting the next word forces the model to compress world knowledge, grammar, reasoning,
+      and common sense into its weights — because all of these help predict text better.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════ ARCHITECTURE ══════════ -->
+
+  <!-- 4. Embeddings -->
+  <section id="embeddings">
+    <h2><span class="num">04</span> Token embeddings</h2>
+    <p>
+      Discrete token IDs can't be fed directly into a neural net — they have no geometric meaning.
+      The embedding table maps each integer ID to a dense learned vector of dimension <code>d_model</code>.
+    </p>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">CV analogy</div>
+        <p>The first conv layer in a CNN transforms raw RGB pixels into learned feature maps. The embedding table does the same for tokens — it's a learned lookup table, equivalent to a linear layer with a one-hot input.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">LLM reality</div>
+        <p><code>nn.Embedding(V, d_model)</code> — a matrix of shape (V, d_model). Row i is the embedding for token i. Weights are learned. Often tied with the final output projection (weight tying).</p>
+      </div>
+    </div>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-kw">import</span> torch
+<span class="c-kw">import</span> torch.nn <span class="c-kw">as</span> nn
+
+V       = <span class="c-num">50257</span>   <span class="c-cm"># vocabulary size (GPT-2)</span>
+d_model = <span class="c-num">768</span>     <span class="c-cm"># embedding / model dimension</span>
+T       = <span class="c-num">1024</span>    <span class="c-cm"># context length (sequence length)</span>
+
+token_emb = nn.<span class="c-fn">Embedding</span>(V, d_model)
+
+tokens = torch.<span class="c-fn">randint</span>(<span class="c-num">0</span>, V, (batch := <span class="c-num">4</span>, T))  <span class="c-cm"># (B, T) integer IDs</span>
+x = <span class="c-fn">token_emb</span>(tokens)                             <span class="c-cm"># (B, T, d_model)</span>
+
+<span class="c-cm"># Weight tying: share embedding & output weights (saves params, improves perf)</span>
+lm_head = nn.<span class="c-fn">Linear</span>(d_model, V, bias=<span class="c-bi">False</span>)
+lm_head.weight = token_emb.weight                   <span class="c-cm"># tied</span>
+</code></pre>
+  </section>
+
+  <!-- 5. Positional encoding -->
+  <section id="positional">
+    <h2><span class="num">05</span> Positional encoding</h2>
+    <p>
+      Self-attention is permutation-invariant — shuffling the token sequence would produce the same
+      attention weights. We need to inject position information explicitly.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Learned absolute (GPT-2)</div>
+        <p>A second embedding table of shape (T_max, d_model). Position 0–1023 each get a learned vector. Simple and effective. Fails to generalize beyond T_max.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Sinusoidal (original Transformer)</div>
+        <p>Fixed: PE(pos,2i) = sin(pos/10000^(2i/d)). No learned params. Smooth encoding. Can extrapolate but not well in practice.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">RoPE — Rotary Position Embedding</div>
+        <p>Modern standard (LLaMA, GPT-NeoX). Encodes <em>relative</em> position by rotating Q and K vectors before dot product. Attention score depends only on relative offset → generalizes better to longer sequences.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">ALiBi</div>
+        <p>Adds a linear penalty to attention logits based on distance. No positional vectors at all. Simple, extrapolates well. Used in MPT, BLOOM.</p>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">RoPE — why it works</div>
+      For query q at position m and key k at position n, RoPE ensures:
+      qₘᵀkₙ depends only on (m − n), not on absolute positions.
+      This means the model learns position-<em>relative</em> patterns — "token 3 positions back" —
+      rather than absolute-position-specific patterns. The result: much better length generalization.
+    </div>
+
+    <pre><span class="code-label">pytorch — learned positional</span><code>
+pos_emb = nn.<span class="c-fn">Embedding</span>(T, d_model)
+positions = torch.<span class="c-fn">arange</span>(T, device=tokens.device)  <span class="c-cm"># [0, 1, ..., T-1]</span>
+x = <span class="c-fn">token_emb</span>(tokens) + <span class="c-fn">pos_emb</span>(positions)          <span class="c-cm"># (B, T, d_model)</span>
+<span class="c-cm"># After this: x is the initial representation fed into transformer blocks</span>
+</code></pre>
+  </section>
+
+  <!-- 6. Self-attention -->
+  <section id="attention">
+    <h2><span class="num">06</span> Causal self-attention — the core operation</h2>
+    <p>
+      In CV, each spatial location attends to all others (ViT). In a language model, position <em>t</em>
+      can only attend to positions <em>≤ t</em> — the causal mask prevents seeing the future.
+      This is what makes generation possible: at inference, we generate left to right.
+    </p>
+
+    <div class="math">
+      <span class="label">scaled dot-product attention (single head)</span>
+      \(Q = XW_Q,\quad K = XW_K,\quad V = XW_V\)<br>
+      <span class="dim">X: (B,T,d) · W_Q,W_K,W_V: (d,d_head) · Q,K,V: (B,T,d_head)</span><br>
+      <br>
+      \(\text{scores} = QK^T\!/\sqrt{d_{\text{head}}}\) <span class="dim">(B,T,T)</span><br>
+      \(\text{scores} = \text{scores} + \text{causal\_mask}\) <span class="note">← set future positions to −∞</span><br>
+      \(\text{weights} = \operatorname{softmax}(\text{scores})\) <span class="dim">(B,T,T) — rows sum to 1</span><br>
+      \(\text{output} = \text{weights}\cdot V\) <span class="dim">(B,T,d_head)</span>
+    </div>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">ViT attention</div>
+        <p>Bidirectional — every patch attends to every other patch. No mask. The [CLS] token aggregates all patches. Used for classification, not generation.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">GPT attention</div>
+        <p>Causal (autoregressive) — position t attends only to ≤ t. Lower-triangular mask. No [CLS] token. The last position is used for next-token prediction.</p>
+      </div>
+    </div>
+
+    <pre><span class="code-label">pytorch — causal self-attention</span><code>
+<span class="c-kw">import</span> torch.nn.functional <span class="c-kw">as</span> F
+
+<span class="c-kw">class</span> <span class="c-bi">CausalSelfAttention</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d_model, n_heads):
+        <span class="c-fn">super</span>().__init__()
+        self.n_heads = n_heads
+        self.d_head  = d_model // n_heads
+        self.qkv  = nn.<span class="c-fn">Linear</span>(d_model, <span class="c-num">3</span> * d_model, bias=<span class="c-bi">False</span>)
+        self.proj = nn.<span class="c-fn">Linear</span>(d_model, d_model, bias=<span class="c-bi">False</span>)
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        B, T, C = x.shape
+        <span class="c-cm"># Project to Q, K, V in one shot, then split</span>
+        q, k, v = self.qkv(x).<span class="c-fn">chunk</span>(<span class="c-num">3</span>, dim=-<span class="c-num">1</span>)
+
+        <span class="c-cm"># Reshape to (B, n_heads, T, d_head)</span>
+        <span class="c-kw">def</span> <span class="c-fn">split_heads</span>(t):
+            <span class="c-kw">return</span> t.<span class="c-fn">view</span>(B, T, self.n_heads, self.d_head).<span class="c-fn">transpose</span>(<span class="c-num">1</span>, <span class="c-num">2</span>)
+        q, k, v = <span class="c-fn">split_heads</span>(q), <span class="c-fn">split_heads</span>(k), <span class="c-fn">split_heads</span>(v)
+
+        <span class="c-cm"># Flash attention (PyTorch 2.0+) — fused, memory-efficient</span>
+        out = F.<span class="c-fn">scaled_dot_product_attention</span>(q, k, v, is_causal=<span class="c-bi">True</span>)
+
+        <span class="c-cm"># Merge heads and project</span>
+        out = out.<span class="c-fn">transpose</span>(<span class="c-num">1</span>, <span class="c-num">2</span>).<span class="c-fn">contiguous</span>().<span class="c-fn">view</span>(B, T, C)
+        <span class="c-kw">return</span> self.<span class="c-fn">proj</span>(out)
+</code></pre>
+
+    <div class="callout orange">
+      <div class="callout-label">Flash Attention — why it matters</div>
+      Standard attention materializes the (B, H, T, T) score matrix in HBM (GPU DRAM) — O(T²) memory.
+      FlashAttention fuses the softmax + matmul into a single CUDA kernel with tiled computation in fast SRAM.
+      Same numerics, same output — but O(T) memory and 2–4× faster on long sequences.
+      PyTorch 2.0's <code>F.scaled_dot_product_attention</code> uses it automatically.
+    </div>
+  </section>
+
+  <!-- 7. MHA -->
+  <section id="mha">
+    <h2><span class="num">07</span> Multi-head attention & variants</h2>
+    <p>
+      Running h attention heads in parallel lets the model attend to different representation subspaces simultaneously.
+      Each head learns different relationships — syntax, coreference, semantics.
+    </p>
+
+    <div class="math">
+      <span class="label">multi-head attention</span>
+      \(\text{head}_i = \operatorname{Attention}(QW_i^Q,\,KW_i^K,\,VW_i^V)\)<br>
+      \(\operatorname{MHA}(X) = \operatorname{Concat}(\text{head}_1,\ldots,\text{head}_h)\cdot W^O\)<br>
+      <span class="dim">\(d_{\text{head}} = d_{\text{model}}/h\) · total params per layer \(\approx 4d_{\text{model}}^2\)</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Variant</th><th>K/V heads</th><th>Used in</th><th>Benefit</th></tr></thead>
+      <tbody>
+        <tr><td>MHA (standard)</td><td>= Q heads</td><td>GPT-2, original Transformer</td><td>Full expressivity</td></tr>
+        <tr><td>MQA (Multi-Query)</td><td>1 shared head</td><td>PaLM, Falcon</td><td>Much smaller KV cache → faster inference</td></tr>
+        <tr><td>GQA (Grouped-Query)</td><td>G groups (G&lt;H)</td><td>LLaMA-2/3, Mistral</td><td>Balance: quality ≈ MHA, speed ≈ MQA</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-label">why GQA is the modern default</div>
+      The KV cache (keys and values for all prior tokens) dominates memory during inference.
+      With 32 Q heads and only 8 KV heads (GQA), the KV cache is 4× smaller.
+      LLaMA-3 8B uses 8 KV heads / 32 Q heads — the quality gap vs full MHA is negligible
+      at scale, but the inference speedup is substantial.
+    </div>
+  </section>
+
+  <!-- 8. Transformer block -->
+  <section id="transformer-block">
+    <h2><span class="num">08</span> The Transformer block</h2>
+    <p>
+      A single transformer block = self-attention + feed-forward network (FFN), each wrapped in a residual connection and layer norm.
+      The entire LLM is just this block stacked N times.
+    </p>
+
+    <div class="arch-diagram">
+      <div class="arch-row">
+        <div class="arch-label">Input x</div>
+        <div class="arch-desc">Token embeddings + positional encodings</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-label">Pre-norm</div>
+        <div class="arch-desc">LayerNorm(x) — normalize before attention (modern; original post-norm was less stable)</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-label">Self-Attention</div>
+        <div class="arch-desc">Causal MHA — tokens gather context from earlier positions</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-label">Residual add</div>
+        <div class="arch-desc">x = x + attn_output — skip connection preserves gradient flow through 96+ layers</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-label">Pre-norm</div>
+        <div class="arch-desc">LayerNorm(x) again before FFN</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-label">FFN / MLP</div>
+        <div class="arch-desc">Linear(d → 4d) → GELU → Linear(4d → d). Acts as per-token memory / key-value store.</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-label">Residual add</div>
+        <div class="arch-desc">x = x + ffn_output</div>
+        <div class="arch-shape">(B, T, d)</div>
+      </div>
+    </div>
+
+    <pre><span class="code-label">pytorch — transformer block</span><code>
+<span class="c-kw">class</span> <span class="c-bi">TransformerBlock</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d_model, n_heads, ffn_mult=<span class="c-num">4</span>, dropout=<span class="c-num">0.0</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.ln1  = nn.<span class="c-fn">RMSNorm</span>(d_model)       <span class="c-cm"># modern: RMSNorm over LayerNorm</span>
+        self.attn = <span class="c-fn">CausalSelfAttention</span>(d_model, n_heads)
+        self.ln2  = nn.<span class="c-fn">RMSNorm</span>(d_model)
+        self.ffn  = nn.<span class="c-fn">Sequential</span>(
+            nn.<span class="c-fn">Linear</span>(d_model, ffn_mult * d_model, bias=<span class="c-bi">False</span>),
+            nn.<span class="c-fn">GELU</span>(),
+            nn.<span class="c-fn">Linear</span>(ffn_mult * d_model, d_model, bias=<span class="c-bi">False</span>),
+            nn.<span class="c-fn">Dropout</span>(dropout),
+        )
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        x = x + self.attn(self.ln1(x))    <span class="c-cm"># pre-norm + residual</span>
+        x = x + self.ffn(self.ln2(x))     <span class="c-cm"># pre-norm + residual</span>
+        <span class="c-kw">return</span> x
+</code></pre>
+
+    <div class="callout blue">
+      <div class="callout-label">what does the FFN actually do?</div>
+      The attention mechanism routes information between tokens. The FFN processes each token
+      <em>independently</em> — it's a per-position transformation. Researchers have shown FFN layers
+      act like soft key-value memories: the first linear layer selects which "facts" are relevant,
+      the second writes the associated value into the residual stream.
+      This is why FFN layers store most of the factual knowledge in LLMs.
+    </div>
+  </section>
+
+  <!-- 9. Full architecture -->
+  <section id="full-arch">
+    <h2><span class="num">09</span> Full GPT-style architecture</h2>
+
+    <pre><span class="code-label">pytorch — minimal GPT</span><code>
+<span class="c-kw">class</span> <span class="c-bi">GPT</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, V, T, d_model, n_heads, n_layers, dropout=<span class="c-num">0.0</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.tok_emb = nn.<span class="c-fn">Embedding</span>(V, d_model)
+        self.pos_emb = nn.<span class="c-fn">Embedding</span>(T, d_model)
+        self.blocks  = nn.<span class="c-fn">ModuleList</span>([
+            <span class="c-fn">TransformerBlock</span>(d_model, n_heads, dropout=dropout)
+            <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(n_layers)
+        ])
+        self.ln_f    = nn.<span class="c-fn">RMSNorm</span>(d_model)   <span class="c-cm"># final norm before lm_head</span>
+        self.lm_head = nn.<span class="c-fn">Linear</span>(d_model, V, bias=<span class="c-bi">False</span>)
+        self.lm_head.weight = self.tok_emb.weight  <span class="c-cm"># weight tying</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, idx, targets=<span class="c-bi">None</span>):
+        B, T = idx.shape
+        pos  = torch.<span class="c-fn">arange</span>(T, device=idx.device)
+        x    = self.<span class="c-fn">tok_emb</span>(idx) + self.<span class="c-fn">pos_emb</span>(pos)
+        <span class="c-kw">for</span> block <span class="c-kw">in</span> self.blocks:
+            x = <span class="c-fn">block</span>(x)
+        logits = self.<span class="c-fn">lm_head</span>(self.<span class="c-fn">ln_f</span>(x))  <span class="c-cm"># (B, T, V)</span>
+
+        loss = <span class="c-bi">None</span>
+        <span class="c-kw">if</span> targets <span class="c-kw">is not</span> <span class="c-bi">None</span>:
+            loss = F.<span class="c-fn">cross_entropy</span>(
+                logits.<span class="c-fn">view</span>(-<span class="c-num">1</span>, V), targets.<span class="c-fn">view</span>(-<span class="c-num">1</span>)
+            )
+        <span class="c-kw">return</span> logits, loss
+</code></pre>
+
+    <table>
+      <thead><tr><th>Model</th><th>d_model</th><th>Layers</th><th>Heads</th><th>Context</th><th>Params</th></tr></thead>
+      <tbody>
+        <tr><td>GPT-2 small</td><td>768</td><td>12</td><td>12</td><td>1,024</td><td>117M</td></tr>
+        <tr><td>GPT-2 XL</td><td>1600</td><td>48</td><td>25</td><td>1,024</td><td>1.5B</td></tr>
+        <tr><td>LLaMA-3 8B</td><td>4096</td><td>32</td><td>32</td><td>128k</td><td>8B</td></tr>
+        <tr><td>LLaMA-3 70B</td><td>8192</td><td>80</td><td>64</td><td>128k</td><td>70B</td></tr>
+        <tr><td>GPT-3</td><td>12288</td><td>96</td><td>96</td><td>2,048</td><td>175B</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 10. KV Cache -->
+  <section id="kv-cache">
+    <h2><span class="num">10</span> KV cache — the inference trick</h2>
+    <p>
+      Autoregressive generation calls the model once per new token. Without caching, each forward pass
+      recomputes keys and values for <em>all</em> prior tokens — \(O(T^2)\) total work for a sequence of length T.
+      The KV cache eliminates this by storing the K and V tensors for every position already generated.
+    </p>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">CV analogy</div>
+        <p>Like feature caching in a sliding-window detector — compute features for a region once and reuse them. In LLMs, every past token position is a "region" whose keys and values never change once generated.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">LLM reality</div>
+        <p>Cache stores <strong>(K, V)</strong> tensors of shape <strong>(B, n_kv_heads, T_so_far, d_head)</strong> per layer. At step t+1 you only compute Q for the single new token, then attend over the full cached K and V. Per-step cost drops from \(O(T^2)\) to \(O(T)\).</p>
+      </div>
+    </div>
+
+    <h3>Prefill vs Decode</h3>
+    <p>Generation has two distinct phases with very different bottlenecks:</p>
+
+    <table>
+      <thead><tr><th>Phase</th><th>What happens</th><th>Bottleneck</th></tr></thead>
+      <tbody>
+        <tr><td>Prefill</td><td>Process the entire prompt in one forward pass. Build the initial KV cache from scratch.</td><td>Compute-bound (many tokens processed in parallel)</td></tr>
+        <tr><td>Decode</td><td>Generate one token at a time. Each step reads the full KV cache + appends one new (K,V) pair.</td><td>Memory-bandwidth-bound (reading the whole cache each step)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout blue">
+      <div class="callout-label">why decode is memory-bandwidth-bound</div>
+      At each decode step you load the <em>entire</em> KV cache — potentially gigabytes — from HBM to compute just one token.
+      GPU HBM bandwidth is ~3 TB/s; you're reading ~GB per step → only a few hundred tokens/sec on one GPU.
+      This is why batching decode requests together matters: you pay the HBM read cost once across many requests in a batch.
+    </div>
+
+    <div class="math">
+      <span class="label">KV cache memory formula</span>
+      \(\text{KV size} = 2 \times L \times H_{kv} \times d_h \times T \times B \times \text{bytes}\)<br>
+      <span class="dim">L: layers · H_kv: KV heads · d_h: head dim · T: seq len · B: batch · 2 for K and V</span><br>
+      <br>
+      LLaMA-3 70B example: \(L{=}80,\;H_{kv}{=}8,\;d_h{=}128,\;T{=}4096,\;B{=}1\), fp16:<br>
+      \(2\times80\times8\times128\times4096\times1\times2\,\text{B} \approx \mathbf{8\,\text{GB}}\)
+    </div>
+
+    <h3>KV cache reduction techniques</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">GQA / MQA</div>
+        <p>Grouped-Query Attention uses fewer KV heads than Q heads (e.g., 8 vs 32 in LLaMA-3). Cache shrinks by the ratio. MQA goes further: a single shared KV head — maximum memory savings, small quality cost.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Paged Attention (vLLM)</div>
+        <p>KV cache is fragmented as sequences grow to different lengths. vLLM uses non-contiguous "pages" (like virtual memory) so GPU memory is never wasted on padding or pre-allocation. Enables much larger batch sizes.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Flash-Decoding</div>
+        <p>Parallelizes the attention over the sequence length dimension during decode (standard Flash Attention parallelizes over batch/heads). Enables fast single-sequence decode on many GPU cores simultaneously.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">KV quantization</div>
+        <p>Quantize cached K and V to INT8 or INT4 (vs fp16). Halves or quarters the memory with small quality loss. Used in production at most major inference providers. Q stays in fp16 for quality.</p>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">the memory wall: why this limits context length in practice</div>
+      Longer context = larger KV cache. With 8 GB for 4K tokens, an 128K context window needs ~256 GB just for the KV cache of one sequence — more than most single-node GPU memory.
+      This is why sliding-window attention (Mistral), sparse attention, and retrieval-augmented generation all exist:
+      they trade exact long-range attention for memory efficiency.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════ PRETRAINING ══════════ -->
+
+  <!-- 11. Data -->
+  <section id="data">
+    <h2><span class="num">11</span> Data & the pretraining corpus</h2>
+    <p>
+      Pretraining data is the model's world. The quality, diversity, and scale of the corpus
+      determines what the model knows, its biases, and its capability ceiling.
+      At this scale, data engineering is a primary research problem.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-num">01</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Raw crawl</div>
+          <div class="pipe-desc">CommonCrawl: petabytes of raw web text. Includes boilerplate, spam, duplicates, low-quality content. Starting point for most open models.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">02</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Quality filtering</div>
+          <div class="pipe-desc">Perplexity filtering (discard text a reference LM finds surprising), classifier-based filtering (train a model to score quality vs Wikipedia), length filters, language ID.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">03</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Deduplication</div>
+          <div class="pipe-desc">MinHash LSH to find near-duplicate documents. Exact-match dedup at substring level. Critical: duplicated data causes memorization and degrades generalization.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">04</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Domain mixing</div>
+          <div class="pipe-desc">Mix web text, books, code, Wikipedia, scientific papers with carefully tuned weights. Code dramatically improves reasoning. More math data → better math. Ratios are major hyperparameters.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">05</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Tokenize & pack</div>
+          <div class="pipe-desc">Tokenize all documents, concatenate into one stream, chunk into fixed-length sequences (e.g., T=2048). A sequence may span multiple documents separated by &lt;|endoftext|&gt;.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. Pretraining loop -->
+  <section id="pretraining-loop">
+    <h2><span class="num">12</span> Pretraining at scale</h2>
+    <p>
+      The training loop looks deceptively similar to any other supervised setup, but the engineering
+      to make it work at 1000+ GPUs without divergence is where the real complexity lives.
+    </p>
+
+    <pre><span class="code-label">pytorch — pretraining loop skeleton</span><code>
+<span class="c-kw">from</span> torch.distributed <span class="c-kw">import</span> init_process_group
+<span class="c-kw">from</span> torch.nn.parallel <span class="c-kw">import</span> DistributedDataParallel <span class="c-kw">as</span> DDP
+
+<span class="c-cm"># Distributed setup (one process per GPU)</span>
+<span class="c-fn">init_process_group</span>(backend=<span class="c-str">"nccl"</span>)
+model = <span class="c-fn">GPT</span>(...).cuda()
+model = <span class="c-fn">DDP</span>(model)                      <span class="c-cm"># sync gradients across GPUs</span>
+
+optimizer = torch.optim.<span class="c-fn">AdamW</span>(
+    model.<span class="c-fn">parameters</span>(), lr=<span class="c-num">3e-4</span>,
+    betas=(<span class="c-num">0.9</span>, <span class="c-num">0.95</span>), weight_decay=<span class="c-num">0.1</span>  <span class="c-cm"># common LLM hyperparams</span>
+)
+scaler = torch.amp.<span class="c-fn">GradScaler</span>()          <span class="c-cm"># mixed precision</span>
+
+<span class="c-kw">for</span> step, (x, y) <span class="c-kw">in</span> <span class="c-fn">enumerate</span>(dataloader):
+    optimizer.<span class="c-fn">zero_grad</span>(set_to_none=<span class="c-bi">True</span>)  <span class="c-cm"># set_to_none faster than zero</span>
+
+    <span class="c-kw">with</span> torch.amp.<span class="c-fn">autocast</span>(device_type=<span class="c-str">"cuda"</span>, dtype=torch.bfloat16):
+        _, loss = <span class="c-fn">model</span>(x, targets=y)
+
+    scaler.<span class="c-fn">scale</span>(loss).<span class="c-fn">backward</span>()
+    scaler.<span class="c-fn">unscale_</span>(optimizer)
+    torch.nn.utils.<span class="c-fn">clip_grad_norm_</span>(model.<span class="c-fn">parameters</span>(), <span class="c-num">1.0</span>)
+    scaler.<span class="c-fn">step</span>(optimizer); scaler.<span class="c-fn">update</span>()
+    <span class="c-fn">lr_schedule</span>(optimizer, step)          <span class="c-cm"># warmup + cosine decay</span>
+</code></pre>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Data parallelism (DDP)</div>
+        <p>Each GPU holds a full model copy. Each sees a different data batch. Gradients are averaged across all GPUs after backward. Works up to ~100s of GPUs.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Tensor parallelism (TP)</div>
+        <p>Split individual weight matrices across GPUs. Each GPU holds a shard of each layer. Required when model doesn't fit on one GPU. Megatron-LM style.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Pipeline parallelism (PP)</div>
+        <p>Different layers on different GPUs. GPU 0 holds layers 0–23, GPU 1 holds 24–47, etc. Micro-batching hides the bubble overhead. Used for 100B+ models.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">ZeRO (DeepSpeed)</div>
+        <p>Shards optimizer states, gradients, and params across GPUs (Stage 1/2/3). Eliminates memory redundancy of naive DDP. Enables training large models on modest hardware.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13. Scaling laws -->
+  <section id="scaling">
+    <h2><span class="num">13</span> Scaling laws</h2>
+    <p>
+      Kaplan et al. (2020) and Hoffmann et al. (Chinchilla, 2022) found that LLM loss follows
+      smooth power laws in model size N, dataset size D, and compute C — predictable enough
+      to plan entire training runs in advance.
+    </p>
+
+    <div class="math">
+      <span class="label">Chinchilla scaling law (optimal compute allocation)</span>
+      L(N, D) ≈ A/Nᵅ + B/Dᵝ + L∞<br>
+      <br>
+      Optimal: N ∝ C^0.5  &nbsp; D ∝ C^0.5<br>
+      <span class="hi">→ tokens = ~20× parameters for compute-optimal training</span><br>
+      <span class="note">e.g., 70B model → train on ~1.4T tokens (LLaMA-2 did exactly this)</span>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">the Chinchilla insight</div>
+      GPT-3 (175B) was undertrained — only ~300B tokens. A 70B model trained on 1.4T tokens
+      (same compute) outperforms it on most benchmarks. The field has shifted:
+      smaller, longer-trained models beat large undertrained ones at equal compute.
+      LLaMA-3 8B trained on 15T tokens — 75× more than Chinchilla-optimal — because
+      inference cost matters, not just training cost.
+    </div>
+  </section>
+
+  <!-- 14. Instabilities -->
+  <section id="instabilities">
+    <h2><span class="num">14</span> Training instabilities at scale</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Loss spikes</div>
+        <p>Sudden large increases in loss mid-training. Often caused by a batch of "hard" or corrupted data. Fix: data quality filtering, gradient clipping, restart from checkpoint before spike.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Gradient explosion</div>
+        <p>Gradients blow up, NaN propagates. Fix: gradient norm clipping (max_norm=1.0), lower learning rate, better initialization, smaller microbatch size.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Attention entropy collapse</div>
+        <p>Attention weights become nearly one-hot ("attention sink"). Model focuses on one token, loses context. Fix: QK-norm, temperature scaling, attention regularization.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Rank collapse in layers</div>
+        <p>Weight matrices lose rank — representations become low-dimensional. Fix: weight decay, proper initialization (μP, Kaiming), avoid very high learning rates.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════ POST-TRAINING ══════════ -->
+
+  <!-- 15. SFT -->
+  <section id="sft">
+    <h2><span class="num">15</span> Supervised fine-tuning (SFT)</h2>
+    <p>
+      After pretraining, the model is a next-token predictor on raw text. It can complete documents
+      but doesn't follow instructions. SFT teaches it to follow the <strong>chat format</strong>:
+      given a user message, generate a helpful assistant response.
+    </p>
+
+    <div class="trace">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem;color:var(--muted);">chat format — typical template</span>
+      <span class="inf">&lt;|system|&gt;</span> You are a helpful assistant.<br>
+      <span class="inf">&lt;|user|&gt;</span> Explain gradient descent in one paragraph.<br>
+      <span class="inf">&lt;|assistant|&gt;</span> <span class="hi">Gradient descent is an optimization...</span><br>
+      <span class="dim">← loss computed only on assistant tokens (not user / system)</span>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">SFT data is tiny but impactful</div>
+      A typical SFT dataset is 10k–1M examples — orders of magnitude smaller than pretraining.
+      Quality matters far more than quantity. The LIMA paper showed 1,000 carefully curated
+      examples can outperform 50,000 noisy ones. SFT doesn't teach new knowledge — it teaches
+      the model to surface knowledge it already has in the desired format and style.
+    </div>
+
+    <pre><span class="code-label">pytorch — SFT loss (mask non-assistant tokens)</span><code>
+<span class="c-cm"># Only compute loss on assistant response tokens</span>
+labels = input_ids.<span class="c-fn">clone</span>()
+labels[attention_mask == <span class="c-num">0</span>] = -<span class="c-num">100</span>        <span class="c-cm"># padding</span>
+labels[is_user_or_system_token] = -<span class="c-num">100</span>    <span class="c-cm"># prompt tokens — no loss here</span>
+
+logits, _ = <span class="c-fn">model</span>(input_ids)
+loss = F.<span class="c-fn">cross_entropy</span>(
+    logits[:, :-<span class="c-num">1</span>, :].<span class="c-fn">reshape</span>(-<span class="c-num">1</span>, V),
+    labels[:, <span class="c-num">1</span>:].<span class="c-fn">reshape</span>(-<span class="c-num">1</span>),
+    ignore_index=-<span class="c-num">100</span>                       <span class="c-cm"># ignore masked positions</span>
+)
+</code></pre>
+  </section>
+
+  <!-- 16. RLHF -->
+  <section id="rlhf">
+    <h2><span class="num">16</span> RLHF — Reinforcement Learning from Human Feedback</h2>
+    <p>
+      SFT teaches format. RLHF teaches preference — helpful, harmless, honest responses over
+      technically correct but unhelpful or harmful ones. It's how ChatGPT, Claude, and Gemini
+      become useful assistants rather than raw text completers.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-num">01</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Collect comparisons</div>
+          <div class="pipe-desc">For each prompt, sample 2–8 completions from the SFT model. Human annotators rank them by quality (helpfulness, safety, accuracy). Creates a preference dataset of (prompt, chosen, rejected) triples.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">02</div>
+        <div class="pipe-body">
+          <div class="pipe-title">Train reward model (RM)</div>
+          <div class="pipe-desc">Fine-tune a LM (often the SFT model + a scalar head) to predict human preference. Trained with Bradley-Terry loss: reward(chosen) &gt; reward(rejected). The RM is a proxy for human judgment.</div>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">03</div>
+        <div class="pipe-body">
+          <div class="pipe-title">RL fine-tuning (PPO)</div>
+          <div class="pipe-desc">The SFT model is the policy. For each prompt, generate a completion → reward model scores it → PPO updates the policy to maximize reward. A KL penalty keeps the policy close to the SFT model (prevents reward hacking).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="math">
+      <span class="label">RLHF objective</span>
+      max E[R(x, y)] − β · KL(π_θ(y|x) ‖ π_SFT(y|x))<br>
+      <span class="note">← maximize reward while staying close to the SFT model</span><br>
+      <span class="note">β controls alignment tax — larger β = more conservative policy</span>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">reward hacking</div>
+      The policy finds completions that maximize the RM score without actually being good.
+      e.g., long, verbose answers score higher if the RM was trained on length-biased data.
+      The KL term and careful RM training mitigate this. It's an ongoing research problem.
+    </div>
+  </section>
+
+  <!-- 17. DPO -->
+  <section id="dpo">
+    <h2><span class="num">17</span> DPO — Direct Preference Optimization</h2>
+    <p>
+      DPO (Rafailov et al., 2023) is an elegant alternative to RLHF that skips the reward model entirely.
+      It reparameterizes the RL problem to optimize preferences directly on the LM — same outcome, much simpler training.
+    </p>
+
+    <div class="math">
+      <span class="label">DPO loss</span>
+      L_DPO = −E[log σ(β · log(π_θ(y_w|x)/π_ref(y_w|x)) − β · log(π_θ(y_l|x)/π_ref(y_l|x)))]<br>
+      <br>
+      <span class="note">y_w = preferred (won) · y_l = dispreferred (lost) · π_ref = frozen SFT model</span><br>
+      <span class="hi">Intuition: increase log-prob of chosen, decrease log-prob of rejected, relative to reference.</span>
+    </div>
+
+    <pre><span class="code-label">pytorch — DPO loss (simplified)</span><code>
+<span class="c-kw">def</span> <span class="c-fn">dpo_loss</span>(policy, reference, chosen_ids, rejected_ids, beta=<span class="c-num">0.1</span>):
+    <span class="c-kw">with</span> torch.<span class="c-fn">no_grad</span>():
+        ref_chosen  = <span class="c-fn">log_prob</span>(reference, chosen_ids)
+        ref_rejected = <span class="c-fn">log_prob</span>(reference, rejected_ids)
+
+    pol_chosen   = <span class="c-fn">log_prob</span>(policy, chosen_ids)
+    pol_rejected = <span class="c-fn">log_prob</span>(policy, rejected_ids)
+
+    <span class="c-cm"># Log-ratio difference (relative to reference)</span>
+    delta = (pol_chosen - ref_chosen) - (pol_rejected - ref_rejected)
+    loss  = -F.<span class="c-fn">logsigmoid</span>(beta * delta).<span class="c-fn">mean</span>()
+    <span class="c-kw">return</span> loss
+</code></pre>
+
+    <div class="callout green">
+      <div class="callout-label">DPO vs RLHF in practice</div>
+      DPO is simpler (no RM training, no PPO rollouts), more stable, and often competitive.
+      RLHF with online sampling is more powerful when you can generate many diverse completions —
+      it sees novel responses not in the dataset. DPO is offline — it only sees (chosen, rejected) pairs.
+      Most open models today use DPO or variants (KTO, IPO, SimPO).
+    </div>
+  </section>
+
+  <!-- 18. LoRA -->
+  <section id="peft">
+    <h2><span class="num">18</span> Parameter-Efficient Fine-Tuning (PEFT) & LoRA</h2>
+    <p>
+      Fine-tuning a 70B model updates 70B parameters — unaffordable on consumer hardware.
+      PEFT methods update a tiny fraction of parameters while keeping the base model frozen.
+    </p>
+
+    <div class="math">
+      <span class="label">LoRA — Low-Rank Adaptation</span>
+      W' = W₀ + ΔW = W₀ + BA<br>
+      <span class="dim">W₀: d×k frozen · B: d×r · A: r×k · r ≪ min(d,k)</span><br>
+      <br>
+      Trainable params: r·(d + k) vs d·k for full fine-tune<br>
+      <span class="hi">At r=8, d=k=4096: 65,536 params vs 16,777,216 — 256× fewer</span>
+    </div>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">CV analogy</div>
+        <p>Like adapter layers in domain adaptation — freeze the backbone, add small trainable modules between layers. BitFit (train only biases) is even more extreme. Same philosophy: minimal params, maximum leverage.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">LoRA specifics</div>
+        <p>Applied to Q, K, V, and output projection matrices. B initialized to zero (so ΔW=0 at start, no disturbance). A initialized with Gaussian. At inference, merge W₀ + BA — no latency overhead.</p>
+      </div>
+    </div>
+
+    <pre><span class="code-label">pytorch — LoRA layer</span><code>
+<span class="c-kw">class</span> <span class="c-bi">LoRALinear</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, linear: nn.Linear, rank=<span class="c-num">8</span>, alpha=<span class="c-num">16</span>):
+        <span class="c-fn">super</span>().__init__()
+        d, k = linear.weight.shape
+        self.linear = linear
+        self.linear.weight.<span class="c-fn">requires_grad_</span>(<span class="c-bi">False</span>)  <span class="c-cm"># freeze base</span>
+        self.A = nn.<span class="c-fn">Parameter</span>(torch.<span class="c-fn">randn</span>(rank, k) * <span class="c-num">0.01</span>)
+        self.B = nn.<span class="c-fn">Parameter</span>(torch.<span class="c-fn">zeros</span>(d, rank))
+        self.scale = alpha / rank                     <span class="c-cm"># α/r scaling factor</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        base = self.linear(x)
+        lora = (x @ self.A.T) @ self.B.T * self.scale  <span class="c-cm"># low-rank delta</span>
+        <span class="c-kw">return</span> base + lora
+
+    <span class="c-kw">def</span> <span class="c-fn">merge</span>(self):                               <span class="c-cm"># merge for zero-latency inference</span>
+        self.linear.weight.data += (self.B @ self.A) * self.scale
+</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ══════════ INFERENCE ══════════ -->
+
+  <!-- 19. Decoding -->
+  <section id="decoding">
+    <h2><span class="num">19</span> Decoding strategies</h2>
+    <p>
+      At inference, the model outputs a probability distribution over V tokens.
+      How you sample from that distribution determines whether you get creative,
+      deterministic, diverse, or incoherent text.
+    </p>
+
+    <table>
+      <thead><tr><th>Strategy</th><th>How</th><th>When to use</th></tr></thead>
+      <tbody>
+        <tr><td>Greedy</td><td>argmax each step</td><td>Fast, deterministic. Repetitive. Never good for creative tasks.</td></tr>
+        <tr><td>Beam search</td><td>Keep top-k sequences at each step</td><td>Better for translation/summarization (short, factual). Bad for open-ended generation.</td></tr>
+        <tr><td>Temperature</td><td>logits /= T before softmax</td><td>T&lt;1: sharper (more certain). T&gt;1: flatter (more random). T=0 → greedy.</td></tr>
+        <tr><td>Top-k sampling</td><td>Sample from top k tokens only</td><td>Avoids very unlikely tokens. k=50 is common. Rigid — k doesn't adapt to distribution shape.</td></tr>
+        <tr><td>Top-p (nucleus)</td><td>Sample from smallest set summing to p</td><td>Adaptive cutoff. p=0.9 is standard for chat. Better than top-k.</td></tr>
+        <tr><td>Min-p</td><td>Discard tokens below p×p_max</td><td>Newer, often better than top-p. Scales threshold to the max prob token.</td></tr>
+      </tbody>
+    </table>
+
+    <pre><span class="code-label">pytorch — generation loop</span><code>
+<span class="c-dec">@torch.no_grad</span>()
+<span class="c-kw">def</span> <span class="c-fn">generate</span>(model, idx, max_new_tokens, temperature=<span class="c-num">1.0</span>, top_p=<span class="c-num">0.9</span>):
+    <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(max_new_tokens):
+        logits, _ = <span class="c-fn">model</span>(idx)                <span class="c-cm"># (B, T, V)</span>
+        logits = logits[:, -<span class="c-num">1</span>, :] / temperature  <span class="c-cm"># last position only</span>
+
+        probs = F.<span class="c-fn">softmax</span>(logits, dim=-<span class="c-num">1</span>)
+
+        <span class="c-cm"># Top-p (nucleus) sampling</span>
+        sorted_p, sorted_idx = torch.<span class="c-fn">sort</span>(probs, descending=<span class="c-bi">True</span>)
+        cum_p = torch.<span class="c-fn">cumsum</span>(sorted_p, dim=-<span class="c-num">1</span>)
+        mask  = (cum_p - sorted_p) > top_p    <span class="c-cm"># remove tokens beyond nucleus</span>
+        sorted_p[mask] = <span class="c-num">0</span>
+        sorted_p /= sorted_p.<span class="c-fn">sum</span>()            <span class="c-cm"># renormalize</span>
+        probs.<span class="c-fn">scatter_</span>(-<span class="c-num">1</span>, sorted_idx, sorted_p)
+
+        next_token = torch.<span class="c-fn">multinomial</span>(probs, num_samples=<span class="c-num">1</span>)
+        idx = torch.<span class="c-fn">cat</span>([idx, next_token], dim=<span class="c-num">1</span>)
+
+    <span class="c-kw">return</span> idx
+</code></pre>
+  </section>
+
+  <!-- 20. Inference tricks -->
+  <section id="inference-tricks">
+    <h2><span class="num">20</span> Inference optimization</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Quantization (INT8/INT4)</div>
+        <p>Represent weights in lower precision. GPTQ, AWQ, bitsandbytes. 4-bit quantization cuts memory ~4× with &lt;1% quality loss on most tasks. Enables 70B on a single A100.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Speculative decoding</div>
+        <p>A small draft model proposes K tokens; the large model verifies all K in one parallel forward pass. If accepted, K tokens are generated at the cost of ~1 large model step. ~2–3× speedup.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Continuous batching</div>
+        <p>Don't wait for all sequences in a batch to finish before starting new ones. Insert new sequences as slots free. Used by vLLM, TGI. Dramatically improves GPU utilization in serving.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Paged attention (vLLM)</div>
+        <p>Treats KV cache like OS virtual memory — pages allocated on demand, no fragmentation. Enables much larger effective batch sizes and longer sequences at serving time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21. Context & prompting -->
+  <section id="context">
+    <h2><span class="num">21</span> Context window & prompting</h2>
+
+    <div class="cv-analogy">
+      <div class="cv-side">
+        <div class="cv-side-label">CV analogy</div>
+        <p>Context window ≈ input image resolution. Larger context = more information the model can use — but cost scales quadratically (O(T²) attention). Like high-res vs low-res inference.</p>
+      </div>
+      <div class="llm-side">
+        <div class="llm-side-label">LLM reality</div>
+        <p>Everything in the context window is "visible" to the model simultaneously. Few-shot examples, system prompt, conversation history, retrieved documents — all compete for the same T tokens.</p>
+      </div>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-label">the "lost in the middle" problem</div>
+      Models attend more strongly to tokens at the beginning and end of the context.
+      Information in the middle is less reliably used — demonstrated empirically across GPT-4, Claude, and open models.
+      For RAG systems: put the most important retrieved chunks at the start or end of the context.
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">chain-of-thought (CoT) prompting</div>
+      Prompting the model to "think step by step" before giving a final answer dramatically
+      improves accuracy on reasoning tasks. Why: each intermediate step becomes a token in context,
+      giving the model a "scratch pad". The model doesn't need to compute 7 reasoning steps
+      in one attention pass — it can externalize computation into text.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════ MODERN VARIANTS ══════════ -->
+
+  <!-- 22. Architecture improvements -->
+  <section id="modern">
+    <h2><span class="num">22</span> Modern architecture improvements</h2>
+
+    <table>
+      <thead><tr><th>Component</th><th>Original</th><th>Modern standard</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Normalization</td><td>LayerNorm (post)</td><td>RMSNorm (pre)</td><td>Simpler, faster (no mean subtraction), more stable pre-norm</td></tr>
+        <tr><td>Activation</td><td>ReLU</td><td>SwiGLU / GeGLU</td><td>Gated linear units consistently improve perplexity ~0.5–1 ppl</td></tr>
+        <tr><td>Position</td><td>Learned absolute</td><td>RoPE</td><td>Better length generalization; relative position encoding</td></tr>
+        <tr><td>Attention</td><td>MHA</td><td>GQA + Flash Attention</td><td>Smaller KV cache; memory-efficient kernel</td></tr>
+        <tr><td>FFN bias</td><td>Bias terms</td><td>No bias</td><td>Marginally better; reduces params; cleaner regularization</td></tr>
+        <tr><td>Context</td><td>2k tokens</td><td>128k–1M tokens</td><td>RoPE + Flash Attention + YaRN / ring attention</td></tr>
+      </tbody>
+    </table>
+
+    <pre><span class="code-label">pytorch — SwiGLU FFN (LLaMA-style)</span><code>
+<span class="c-kw">class</span> <span class="c-bi">SwiGLUFFN</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d_model, hidden):
+        <span class="c-fn">super</span>().__init__()
+        self.gate = nn.<span class="c-fn">Linear</span>(d_model, hidden, bias=<span class="c-bi">False</span>)
+        self.up   = nn.<span class="c-fn">Linear</span>(d_model, hidden, bias=<span class="c-bi">False</span>)
+        self.down = nn.<span class="c-fn">Linear</span>(hidden,  d_model, bias=<span class="c-bi">False</span>)
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        <span class="c-cm"># SwiGLU: gate(x) * swish(up(x)) then project down</span>
+        <span class="c-kw">return</span> self.<span class="c-fn">down</span>(F.<span class="c-fn">silu</span>(self.<span class="c-fn">gate</span>(x)) * self.<span class="c-fn">up</span>(x))
+</code></pre>
+  </section>
+
+  <!-- 23. MoE -->
+  <section id="moe">
+    <h2><span class="num">23</span> Mixture of Experts (MoE)</h2>
+    <p>
+      Instead of one dense FFN per transformer block, MoE places <strong>N expert FFNs</strong> in parallel
+      and a lightweight <strong>router</strong> that selects which top-k experts process each token.
+      The key insight: <em>parameters scale without proportionally scaling compute</em>.
+      GPT-4 is estimated to be a ~1.8T parameter MoE; each forward pass activates roughly ~220B parameters per token.
+    </p>
+
+    <div class="math">
+      <span class="label">MoE FFN layer — forward pass</span>
+      \(g_i(x) = \operatorname{Softmax}(W_{\text{router}}\cdot x)_i\) <span class="note">← router score for expert i</span><br>
+      \(\mathcal{T}(x) = \operatorname{TopK}(\{g_i(x)\}_{i=1}^N,\;k)\) <span class="note">← indices of selected experts</span><br>
+      \(\operatorname{MoE}(x) = \sum_{i\in\mathcal{T}(x)} g_i(x)\cdot\operatorname{FFN}_i(x)\) <span class="note">← gated sum of active experts</span><br>
+      <br>
+      \(\text{active params per token} = \tfrac{k}{N}\times\text{total FFN params}\)<br>
+      <span class="dim">Mixtral 8×7B: N=8, k=2 → 46.7B total, ~12.9B active · DeepSeek-V3: N=256, k=8</span>
+    </div>
+
+    <h3>Router mechanics</h3>
+    <p>
+      The router is a small linear layer \(W_r \in \mathbb{R}^{d \times N}\) trained jointly with the rest of the model.
+      It maps each token's hidden state to N logits, takes softmax, then selects the top-k.
+      The routing is <strong>per token</strong> — different tokens in the same sequence can go to different experts.
+      This is what allows specialization: some experts learn syntax, others factual recall, others code.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Load balancing loss</div>
+        <p>Without it, the router collapses into "rich get richer" mode — always picking the same 1–2 experts (routing collapse). The auxiliary loss penalizes imbalanced expert utilization across a batch: \(\mathcal{L}_{\text{aux}} = \alpha\sum_i f_i P_i\), where \(f_i\) is fraction of tokens routed to expert i and \(P_i\) is average router probability for expert i.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Expert capacity & token dropping</div>
+        <p>In batch-parallel training, each expert has a capacity C = (tokens_per_batch / N) × capacity_factor. If more tokens are routed to an expert than its capacity allows, overflow tokens are dropped (or passed through unchanged via the residual). This means MoE models need large batches to work well.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Expert parallelism</div>
+        <p>In distributed training, different experts live on different GPUs. An all-to-all communication collective sends each token to its assigned expert's GPU, runs the FFN there, then gathers results back. This all-to-all is the main communication overhead — scales with N × k × batch_size × d_model.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Expert specialization</div>
+        <p>Empirically, experts do specialize: interpretability studies find some experts activate mainly on code tokens, others on foreign languages, others on numbers. This emergent specialization is one reason MoE quality matches dense models — it's implicit conditional computation.</p>
+      </div>
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">MoE trade-offs — the full picture</div>
+      <strong>Win (training):</strong> for a fixed compute budget (FLOPs), MoE can have far more total parameters than a dense model. More parameters → better quality. Chinchilla scaling laws were derived for dense models — MoE models are more parameter-efficient for the same FLOPs.<br><br>
+      <strong>Win (inference throughput):</strong> lower FLOPs per token → faster throughput at the same hardware if you can keep all experts in memory.<br><br>
+      <strong>Cost (memory):</strong> all N experts must reside in GPU memory even though only k are active per step. A 1.8T MoE requires ~900 GB of memory at fp16 — far beyond a single node. Experts are typically sharded across many GPUs, requiring expensive all-to-all communication at each layer.<br><br>
+      <strong>Cost (latency):</strong> for a single request, FLOPs are low but the all-to-all communication adds latency. Dense models often win on single-request latency; MoE wins on throughput at high batch sizes.
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">DeepSeek-V3 / R1 innovations</div>
+      DeepSeek-V3 uses 256 experts with top-8 routing and a "shared expert" (always active, for common knowledge) plus 256 "routed experts". They add a <strong>no-auxiliary-loss</strong> load balancing strategy — instead of a gradient-based auxiliary loss, they use a bias term added to router logits that's updated heuristically to maintain balance. This avoids the quality–balance trade-off inherent in the auxiliary loss approach.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════ INTERVIEW ══════════ -->
+
+  <!-- 24. Key questions -->
+  <section id="questions">
+    <h2><span class="num">24</span> Key interview questions</h2>
+
+    <div class="callout">
+      <div class="callout-label">why can't you just use a bidirectional transformer (like BERT) for generation?</div>
+      BERT sees the full sequence — future tokens influence past representations.
+      During generation you don't have future tokens yet.
+      Autoregressive generation <em>requires</em> causal masking: each position can only depend on what came before.
+      BERT-style models are discriminative (classify, embed) not generative. You'd need to mask
+      randomly during training and sample sequentially — that's masked language modeling, not CLM.
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">what does a transformer layer actually do to a token's representation?</div>
+      Think of the residual stream as a shared message-passing bus.
+      Attention reads from other tokens' representations and writes relevant information into the stream.
+      The FFN reads from the stream and writes stored "facts" or transformations back in.
+      Layer norm stabilizes the magnitude. After N layers, each token's vector is a function of
+      its entire causal context — it has "gathered" relevant context from all prior positions.
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">how is LLM training different from training a ResNet at scale?</div>
+      Same fundamentals (SGD, cross-entropy), but: (1) sequence data requires causal masking, not random crop;
+      (2) the "dataset" never fits in RAM — streamed from disk; (3) distributed training is unavoidable
+      (no single GPU holds the model); (4) instabilities are common at scale and require checkpoint restarts;
+      (5) the loss plateau matters more than the loss value — perplexity improvements translate
+      unpredictably to downstream capability; (6) data curation is a primary research problem, not preprocessing.
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-label">why does in-context learning work?</div>
+      ICL is not gradient-based learning — no weights update. The model "implements" a learning algorithm
+      in the forward pass by attending to the examples in context and adapting its output accordingly.
+      Mechanistically, attention heads can implement something like gradient descent by reading and
+      using key-value pairs from the context. It emerges from pretraining on diverse data with
+      recurring patterns of examples followed by conclusions.
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">what causes hallucination?</div>
+      Multiple interacting causes: (1) the model learned to generate plausible-sounding text, not verified facts;
+      (2) factual knowledge is distributed across FFN layers — retrieval is probabilistic, not exact;
+      (3) training on conflicting or outdated data; (4) the generation process is autoregressive —
+      each token conditions on all prior generated tokens, so a wrong token compounds;
+      (5) RLHF can amplify confident, fluent-sounding responses even when incorrect.
+      Mitigation: RAG (ground in retrieved documents), tool use, chain-of-thought for verification.
+    </div>
+  </section>
+
+  <!-- 25. Checklist -->
+  <section id="checklist">
+    <h2><span class="num">25</span> Before the interview — checklist</h2>
+    <ul class="checklist">
+      <li>Can explain autoregressive generation and why causal masking is required</li>
+      <li>Understands BPE tokenization and why tokenization is a "silent hyperparameter"</li>
+      <li>Can walk through a full transformer block (pre-norm → attention → residual → FFN → residual)</li>
+      <li>Knows what Q, K, V represent and why the √d_k scaling prevents softmax saturation</li>
+      <li>Can explain the difference between MHA, MQA, and GQA — and why GQA is now standard</li>
+      <li>Knows why RoPE is preferred over absolute positional encodings</li>
+      <li>Understands the KV cache: what it stores, why it's needed, and why GQA reduces its size</li>
+      <li>Can explain the full pretraining pipeline: data → tokenize → train → instabilities</li>
+      <li>Knows Chinchilla: ~20 tokens per parameter for compute-optimal training</li>
+      <li>Understands SFT: what it teaches (format, not knowledge), why prompt masking matters</li>
+      <li>Can explain RLHF: RM training → PPO → KL penalty to prevent reward hacking</li>
+      <li>Understands DPO: eliminates RM, directly optimizes preference on the LM</li>
+      <li>Can explain LoRA: W' = W₀ + BA, why B initialized to zero, what r controls</li>
+      <li>Knows temperature, top-p sampling and their trade-offs (creativity vs coherence)</li>
+      <li>Can explain MoE: what "active parameters" means and its memory vs compute trade-off</li>
+      <li>Understands why hallucination happens and at least two mitigation strategies</li>
+    </ul>
+
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.9;">
+        The frame that ties it all together: <strong>an LLM is a lossy compression of the internet into a 
+        differentiable function</strong>. Pretraining compresses world knowledge. SFT teaches the interface.
+        RLHF aligns the objective. Prompting is the query language. 
+        Your CV background — attention, residuals, distributed training, scale — is almost directly transferable.
+        The shift is from spatial to sequential, from continuous to discrete, and from predicting labels 
+        to predicting probability distributions over a vocabulary. Everything else is engineering at scale.
+      </p>
+    </div>
+  </section>
+
+</main>
+</div>
+</body>
+</html>

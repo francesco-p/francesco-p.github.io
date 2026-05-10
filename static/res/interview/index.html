@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Interview — Primer Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #111;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 4rem 2.5rem 6rem;
+}
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 1.2rem;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  color: var(--text);
+  margin-bottom: 1.4rem;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 300;
+}
+
+.hero-desc {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 580px;
+  line-height: 1.8;
+  margin-bottom: 1.8rem;
+}
+
+.pill-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Section header ── */
+.section-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 1.2rem;
+}
+
+/* ── Card grid ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 4rem;
+}
+
+.card {
+  background: var(--bg2);
+  padding: 1.75rem 1.75rem 1.5rem;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.card:hover {
+  background: var(--bg3);
+}
+
+.card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+
+.card-num {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+.card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.card-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  flex-grow: 1;
+}
+
+.card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.tag {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+.tag.accent  { border-color: var(--tag-border); color: var(--accent); background: var(--tag-bg); }
+.tag.blue    { border-color: rgba(122,191,200,0.25); color: var(--accent2); background: rgba(122,191,200,0.06); }
+.tag.green   { border-color: rgba(122,200,122,0.25); color: var(--green); background: rgba(122,200,122,0.06); }
+.tag.purple  { border-color: rgba(200,122,178,0.25); color: var(--accent3); background: rgba(200,122,178,0.06); }
+.tag.orange  { border-color: rgba(200,149,106,0.25); color: var(--orange); background: rgba(200,149,106,0.06); }
+
+.card-arrow {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 16px;
+  color: var(--accent);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+/* ── Study path ── */
+.path-section {
+  margin-bottom: 4rem;
+}
+
+.path-section h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.path {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.path-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.path-step:last-child { border-bottom: none; }
+
+.path-index {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  min-width: 28px;
+  padding-top: 2px;
+}
+
+.path-content { flex: 1; }
+
+.path-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.path-title a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.path-title a:hover { color: var(--accent); }
+
+.path-why {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.path-effort {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-top: 3px;
+}
+
+/* ── Footer ── */
+footer {
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .page { padding: 2.5rem 1.25rem 4rem; }
+  .card-grid { grid-template-columns: 1fr; }
+  .path-effort { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Interview Prep · Amazon · 2025</div>
+    <h1>Twelve primers.<br><em>One interview.</em></h1>
+    <p class="hero-desc">
+      A focused collection of technical primers covering the full stack of knowledge
+      for a machine learning / applied science interview at Amazon. Each page is
+      self-contained — use the study path below or jump to any topic you need.
+    </p>
+    <div class="pill-row">
+      <span class="pill">ML fundamentals</span>
+      <span class="pill">Deep learning</span>
+      <span class="pill">LLMs</span>
+      <span class="pill">Dynamic programming</span>
+      <span class="pill">Python OOP</span>
+      <span class="pill">Math</span>
+      <span class="pill">Coding problems</span>
+    </div>
+  </div>
+
+  <!-- Card grid -->
+  <div class="section-header">All Primers</div>
+  <div class="card-grid">
+
+    <a class="card" href="ml.html">
+      <div class="card-num">01</div>
+      <div class="card-title">Machine Learning</div>
+      <div class="card-desc">
+        Loss functions, optimizers, backprop, the PyTorch training loop, CNNs, RNNs,
+        attention, and the key interview questions that come up every time.
+      </div>
+      <div class="card-tags">
+        <span class="tag accent">PyTorch</span>
+        <span class="tag blue">Backprop</span>
+        <span class="tag">CNN / RNN</span>
+        <span class="tag">Transformers</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="math.html">
+      <div class="card-num">02</div>
+      <div class="card-title">Math for ML</div>
+      <div class="card-desc">
+        Linear algebra, SVD, PCA, probability, MLE/MAP, gradients, convexity,
+        and information theory — the geometry behind every model.
+      </div>
+      <div class="card-tags">
+        <span class="tag accent">Linear Algebra</span>
+        <span class="tag blue">Probability</span>
+        <span class="tag green">Calculus</span>
+        <span class="tag">Info Theory</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="llm_primer.html">
+      <div class="card-num">03</div>
+      <div class="card-title">LLM Deep Dive</div>
+      <div class="card-desc">
+        Tokens, self-attention, the full GPT architecture, KV cache, scaling laws,
+        RLHF, DPO, LoRA, and inference tricks — for CV scientists crossing over.
+      </div>
+      <div class="card-tags">
+        <span class="tag accent">Transformer</span>
+        <span class="tag blue">RLHF / DPO</span>
+        <span class="tag purple">LoRA</span>
+        <span class="tag">Decoding</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="modern_dl_primer.html">
+      <div class="card-num">04</div>
+      <div class="card-title">Modern Deep Learning</div>
+      <div class="card-desc">
+        What's actually shipping in 2024–2025: RoPE, MoE, Mamba, DINO lineage,
+        SAM3, GRPO, test-time compute scaling, quantization, and vLLM/SGLang.
+      </div>
+      <div class="card-tags">
+        <span class="tag orange">🔥 hot</span>
+        <span class="tag accent">RoPE / MoE</span>
+        <span class="tag blue">Vision</span>
+        <span class="tag purple">GRPO</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="dp.html">
+      <div class="card-num">05</div>
+      <div class="card-title">Dynamic Programming</div>
+      <div class="card-desc">
+        The mental model, memoization vs. tabulation, 6 canonical problems
+        (Knapsack, LCS, Coin Change, LIS, Grid paths) and an interview framework.
+      </div>
+      <div class="card-tags">
+        <span class="tag accent">Python 3</span>
+        <span class="tag blue">Memoization</span>
+        <span class="tag green">Tabulation</span>
+        <span class="tag">6 problems</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="oop.html">
+      <div class="card-num">06</div>
+      <div class="card-title">Python OOP</div>
+      <div class="card-desc">
+        Four pillars, dunder methods, properties, dataclasses, protocols,
+        metaclasses, SOLID principles, and the patterns that show up in ML codebases.
+      </div>
+      <div class="card-tags">
+        <span class="tag accent">Python 3</span>
+        <span class="tag blue">Protocols</span>
+        <span class="tag green">Dataclasses</span>
+        <span class="tag">SOLID</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="coding_problems.html">
+      <div class="card-num">07</div>
+      <div class="card-title">Coding Problems</div>
+      <div class="card-desc">
+        15 hands-on problems with full solutions: binary search variants, DP classics,
+        BFS/DFS/topo sort, sliding window, and string patterns.
+      </div>
+      <div class="card-tags">
+        <span class="tag green">Easy ×7</span>
+        <span class="tag accent">Medium ×7</span>
+        <span class="tag orange">Hard ×1</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="numpy_pytorch.html">
+      <div class="card-num">08</div>
+      <div class="card-title">NumPy &amp; PyTorch</div>
+      <div class="card-desc">
+        7 deep-dive problems on array/tensor mechanics: indexing modes, broadcasting, memory
+        layout &amp; strides, shape ops, gather/scatter, and autograd internals.
+      </div>
+      <div class="card-tags">
+        <span class="tag green">Easy ×1</span>
+        <span class="tag accent">Medium ×5</span>
+        <span class="tag orange">Hard ×1</span>
+        <span class="tag blue">NumPy / PyTorch</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="python_idioms.html">
+      <div class="card-num">09</div>
+      <div class="card-title">Python Idioms</div>
+      <div class="card-desc">
+        Comprehensions, generators, yield, the iterator protocol, starred unpacking,
+        and advanced function signatures — Python written the way it was meant.
+      </div>
+      <div class="card-tags">
+        <span class="tag blue">generators</span>
+        <span class="tag accent">yield</span>
+        <span class="tag green">comprehensions</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="python_patterns.html">
+      <div class="card-num">10</div>
+      <div class="card-title">Python Patterns</div>
+      <div class="card-desc">
+        Closures, decorators, functools, itertools, collections (Counter, deque, defaultdict),
+        and context managers — the abstractions senior engineers reach for.
+      </div>
+      <div class="card-tags">
+        <span class="tag blue">decorators</span>
+        <span class="tag accent">functools</span>
+        <span class="tag green">collections</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="python_internals.html">
+      <div class="card-num">11</div>
+      <div class="card-title">Python Internals</div>
+      <div class="card-desc">
+        Dunder methods, dataclasses, <code>__slots__</code>, the data model, and intermediate
+        Python concepts — how things work under the hood.
+      </div>
+      <div class="card-tags">
+        <span class="tag blue">dunder methods</span>
+        <span class="tag accent">dataclasses</span>
+        <span class="tag green">__slots__</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="interview_deep_dive.html">
+      <div class="card-num">12</div>
+      <div class="card-title">Interview Deep-Dive</div>
+      <div class="card-desc">
+        Project-based Q&amp;A simulating real Amazon technical interviews — SSL segmentation,
+        diffusion models, continual learning, MLOps, and wildcard questions.
+      </div>
+      <div class="card-tags">
+        <span class="tag orange">project Q&amp;A</span>
+        <span class="tag blue">MLOps</span>
+        <span class="tag accent">deep learning</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+  </div>
+
+  <!-- Suggested study path -->
+  <div class="path-section">
+    <div class="section-header">Suggested Study Path</div>
+    <div class="path">
+
+      <div class="path-step">
+        <div class="path-index">01</div>
+        <div class="path-content">
+          <div class="path-title"><a href="math.html">Math for ML</a></div>
+          <div class="path-why">Build the foundation everything else rests on — gradients, probability, and linear algebra are assumed in every other primer.</div>
+        </div>
+        <div class="path-effort">~3 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">02</div>
+        <div class="path-content">
+          <div class="path-title"><a href="ml.html">Machine Learning</a></div>
+          <div class="path-why">Core training loop, loss functions, backprop, and neural net architecture — the vocabulary used everywhere else.</div>
+        </div>
+        <div class="path-effort">~4 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">03</div>
+        <div class="path-content">
+          <div class="path-title"><a href="llm_primer.html">LLM Deep Dive</a></div>
+          <div class="path-why">Deep-dive into the Transformer: attention mechanics, pretraining, RLHF, and inference — Amazon roles expect this cold.</div>
+        </div>
+        <div class="path-effort">~5 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">04</div>
+        <div class="path-content">
+          <div class="path-title"><a href="modern_dl_primer.html">Modern Deep Learning</a></div>
+          <div class="path-why">The 2024–2025 landscape: what's changed, what's shipping, and what interviewers at frontier-model teams actually ask about.</div>
+        </div>
+        <div class="path-effort">~3 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">05</div>
+        <div class="path-content">
+          <div class="path-title"><a href="dp.html">Dynamic Programming</a></div>
+          <div class="path-why">Amazon coding rounds frequently include DP. Nail the mental model before you touch a single problem.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">06</div>
+        <div class="path-content">
+          <div class="path-title"><a href="oop.html">Python OOP</a></div>
+          <div class="path-why">System-design and take-home rounds often ask you to architect something. Protocols, dataclasses, and SOLID principles are practical here.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">07</div>
+        <div class="path-content">
+          <div class="path-title"><a href="coding_problems.html">Coding Problems</a></div>
+          <div class="path-why">Run through the 15 problems under timed conditions — binary search, graphs, DP, and sliding window patterns that come up in coding rounds.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">08</div>
+        <div class="path-content">
+          <div class="path-title"><a href="numpy_pytorch.html">NumPy &amp; PyTorch</a></div>
+          <div class="path-why">Indexing modes, strides, broadcasting, gather/scatter, and autograd internals — the tensor ops that appear in every ML take-home.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">09</div>
+        <div class="path-content">
+          <div class="path-title"><a href="python_idioms.html">Python Idioms</a></div>
+          <div class="path-why">Comprehensions, generators, yield, and the iterator protocol — fluency here shows up in every take-home and code review.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">10</div>
+        <div class="path-content">
+          <div class="path-title"><a href="python_patterns.html">Python Patterns</a></div>
+          <div class="path-why">Decorators, context managers, functools, itertools, and collections — the abstractions that make the difference between good and great Python.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">11</div>
+        <div class="path-content">
+          <div class="path-title"><a href="python_internals.html">Python Internals</a></div>
+          <div class="path-why">Dunder methods, the data model, dataclasses, and __slots__ — the layer below the idioms that interviewers probe in system-design questions.</div>
+        </div>
+        <div class="path-effort">~2 h</div>
+      </div>
+
+      <div class="path-step">
+        <div class="path-index">12</div>
+        <div class="path-content">
+          <div class="path-title"><a href="interview_deep_dive.html">Interview Deep-Dive</a></div>
+          <div class="path-why">Run through simulated project Q&amp;A on your actual work — SSL segmentation, diffusion, continual learning. The closest thing to a mock interview in this pack.</div>
+        </div>
+        <div class="path-effort">~3 h</div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Amazon Interview Prep · 12 primers · Last updated May 2026
+  </footer>
+
+</div>
+</body>
+</html>

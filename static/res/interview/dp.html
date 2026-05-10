@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Programming — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #141414;
+    --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e4dc;
+    --muted: #7a7570;
+    --accent: #c8b97a;
+    --accent2: #7abfc8;
+    --accent3: #c87ab2;
+    --green: #7ac87a;
+    --red: #c87a7a;
+    --code-bg: #111;
+    --tag-bg: rgba(200,185,122,0.1);
+    --tag-border: rgba(200,185,122,0.25);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── Sidebar ── */
+  nav {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .nav-section {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin: 1.5rem 0 0.5rem;
+    font-weight: 500;
+  }
+
+  nav a {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 3px 0;
+    transition: color 0.15s;
+    font-weight: 300;
+  }
+  nav a:hover { color: var(--accent); }
+
+  .nav-complexity {
+    margin-top: auto;
+    padding-top: 2rem;
+  }
+
+  .complexity-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 2px 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── Main ── */
+  main {
+    padding: 3rem 3.5rem 6rem;
+    max-width: 780px;
+  }
+
+  /* ── Header ── */
+  .hero {
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.75;
+  }
+
+  .pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .pill {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    border: 1px solid var(--tag-border);
+    background: var(--tag-bg);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Sections ── */
+  section {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 2rem;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.9rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  h2 .num {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    align-self: center;
+  }
+
+  h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent2);
+    margin: 1.8rem 0 0.6rem;
+    font-weight: 500;
+  }
+
+  p { margin-bottom: 0.9rem; }
+
+  strong { font-weight: 500; color: var(--text); }
+
+  /* ── Callout boxes ── */
+  .callout {
+    border-left: 2px solid var(--accent);
+    background: rgba(200,185,122,0.05);
+    padding: 1rem 1.25rem;
+    margin: 1.2rem 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .callout.blue {
+    border-left-color: var(--accent2);
+    background: rgba(122,191,200,0.05);
+  }
+
+  .callout.red {
+    border-left-color: var(--red);
+    background: rgba(200,122,122,0.05);
+  }
+
+  .callout.green {
+    border-left-color: var(--green);
+    background: rgba(122,200,122,0.05);
+  }
+
+  .callout-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    opacity: 0.65;
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1.25rem 1.4rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    position: relative;
+  }
+
+  .code-label {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.8rem;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #c9c0b0;
+  }
+
+  .c-kw  { color: #c87ab2; }
+  .c-fn  { color: #7abfc8; }
+  .c-str { color: #7ac87a; }
+  .c-num { color: #c8b97a; }
+  .c-cm  { color: #4a4740; font-style: italic; }
+  .c-bi  { color: #c8916e; }
+
+  /* ── Pattern cards ── */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 1rem 0;
+  }
+
+  .pattern-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.9rem 1rem;
+  }
+
+  .pattern-card-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .pattern-card p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ── Complexity table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 1rem 0;
+  }
+
+  th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border2);
+    padding: 0.5rem 0.75rem;
+    font-weight: 400;
+  }
+
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; }
+  td:nth-child(2) { color: var(--accent); font-family: 'DM Mono', monospace; }
+  td:last-child { color: var(--muted); }
+
+  /* ── Divider ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  /* ── Checklist ── */
+  .checklist {
+    list-style: none;
+    margin: 0.8rem 0;
+  }
+
+  .checklist li {
+    padding: 0.4rem 0;
+    padding-left: 1.4rem;
+    position: relative;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist li::before {
+    content: '○';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+    font-size: 11px;
+    top: 0.55rem;
+  }
+
+  /* ── Step trace ── */
+  .trace {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 2;
+  }
+
+  .trace .hi { color: var(--accent); font-weight: 500; }
+  .trace .row { display: flex; gap: 1.5rem; align-items: center; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* ── Mobile ── */
+  @media (max-width: 700px) {
+    .shell { grid-template-columns: 1fr; }
+    nav { display: none; }
+    main { padding: 2rem 1.5rem 4rem; }
+    .pattern-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <nav>
+    <div class="nav-logo">DP Primer</div>
+    <span class="nav-section">Foundation</span>
+    <a href="#what">What is DP?</a>
+    <a href="#when">When to use it</a>
+    <a href="#patterns">Core patterns</a>
+
+    <span class="nav-section">Techniques</span>
+    <a href="#memoization">Memoization</a>
+    <a href="#tabulation">Tabulation</a>
+    <a href="#reconstruct">Reconstruction</a>
+
+    <span class="nav-section">Problems</span>
+    <a href="#fib">Fibonacci</a>
+    <a href="#knapsack">0/1 Knapsack</a>
+    <a href="#lcs">Longest Common Subseq.</a>
+    <a href="#coins">Coin Change</a>
+    <a href="#lis">Longest Inc. Subseq.</a>
+    <a href="#grid">Grid Paths</a>
+
+    <span class="nav-section">Interview</span>
+    <a href="#framework">Framework</a>
+    <a href="#checklist">Checklist</a>
+
+    <span class="nav-section">Other Primers</span>
+    <a href="index.html">&#8592; All Primers</a>
+
+    <div class="nav-complexity">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;">complexity ref</div>
+      <div class="complexity-row"><span>Fibonacci</span><span>O(n)</span></div>
+      <div class="complexity-row"><span>Knapsack</span><span>O(nW)</span></div>
+      <div class="complexity-row"><span>LCS</span><span>O(mn)</span></div>
+      <div class="complexity-row"><span>Coin Change</span><span>O(nA)</span></div>
+      <div class="complexity-row"><span>LIS</span><span>O(n²)</span></div>
+      <div class="complexity-row"><span>Grid paths</span><span>O(mn)</span></div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-label">Interview Primer · Dynamic Programming</div>
+      <h1>The <em>thinking</em> before<br>the table</h1>
+      <p class="hero-desc">
+        DP isn't a trick — it's a disciplined way of breaking overlapping subproblems into smaller pieces
+        and caching results so you never compute the same thing twice.
+        Master the mental model, and any variant becomes a variation on a theme.
+      </p>
+      <div class="pill-row">
+        <span class="pill">Python 3</span>
+        <span class="pill">Memoization</span>
+        <span class="pill">Tabulation</span>
+        <span class="pill">Reconstruction</span>
+        <span class="pill">6 canonical problems</span>
+      </div>
+    </div>
+
+    <!-- ── 1. What is DP ── -->
+    <section id="what">
+      <h2><span class="num">01</span> What is dynamic programming?</h2>
+      <p>
+        Dynamic programming is an optimization technique that solves complex problems by breaking them into
+        <strong>overlapping subproblems</strong>, solving each exactly once, and storing the results.
+        It's applicable when two properties hold:
+      </p>
+      <div class="pattern-grid">
+        <div class="pattern-card">
+          <div class="pattern-card-title">Optimal substructure</div>
+          <p>The optimal solution to the whole can be built from optimal solutions to subproblems.</p>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-card-title">Overlapping subproblems</div>
+          <p>The same subproblems recur many times — unlike divide-and-conquer, which has distinct subproblems.</p>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-label">mental model</div>
+        Think of it as <strong>recursion + caching</strong>. If the naïve recursive solution recomputes
+        the same call multiple times, you have overlapping subproblems — and DP is your tool.
+      </div>
+    </section>
+
+    <!-- ── 2. When ── -->
+    <section id="when">
+      <h2><span class="num">02</span> When does DP apply?</h2>
+      <p>Look for these signals in the problem statement:</p>
+      <ul class="checklist">
+        <li>"find the <strong>minimum / maximum</strong> number of ways…"</li>
+        <li>"how many distinct ways…"</li>
+        <li>"can you partition / achieve exactly…"</li>
+        <li>The input is a string, array, or grid and you're asked about subsequences or subarrays</li>
+        <li>The problem involves making a sequence of choices where each choice affects future options</li>
+      </ul>
+      <div class="callout red">
+        <div class="callout-label">don't confuse with</div>
+        Greedy (one local choice is always globally optimal) and divide-and-conquer (subproblems don't overlap).
+        If the subproblems are independent, plain recursion or merge sort is enough.
+      </div>
+    </section>
+
+    <!-- ── 3. Core patterns ── -->
+    <section id="patterns">
+      <h2><span class="num">03</span> Core patterns</h2>
+      <table>
+        <thead>
+          <tr><th>Pattern</th><th>State dimensions</th><th>Typical examples</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1D linear</td><td>dp[i]</td><td>Fibonacci, climbing stairs, coin change (1D)</td></tr>
+          <tr><td>2D grid</td><td>dp[i][j]</td><td>Grid paths, edit distance, LCS, knapsack</td></tr>
+          <tr><td>Interval</td><td>dp[i][j] (range)</td><td>Burst balloons, matrix chain, palindrome partitioning</td></tr>
+          <tr><td>Tree/graph</td><td>dp on nodes</td><td>House robber III, diameter of tree</td></tr>
+          <tr><td>Bitmask</td><td>dp[mask]</td><td>TSP, assignments, counting subsets</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr>
+
+    <!-- ── 4. Memoization ── -->
+    <section id="memoization">
+      <h2><span class="num">04</span> Approach 1: Memoization (top-down)</h2>
+      <p>
+        Write the natural recursion, then cache results in a dictionary.
+        Execution flows <strong>top-down</strong>: you call the big problem, which recurses into subproblems on demand.
+      </p>
+      <div class="callout blue">
+        <div class="callout-label">when to prefer it</div>
+        Not all subproblems may be needed. Memoization naturally skips them.
+        Also easier to reason about when the state space is sparse or the recurrence isn't obvious upfront.
+      </div>
+
+      <h3>Template</h3>
+      <pre><code class="code-label">python</code><code>
+<span class="c-kw">from</span> functools <span class="c-kw">import</span> cache
+
+<span class="c-kw">def</span> <span class="c-fn">solve</span>(problem_input):
+    <span class="c-cm"># @cache turns the function into a memoized version</span>
+    <span class="c-kw">@cache</span>
+    <span class="c-kw">def</span> <span class="c-fn">dp</span>(state):
+        <span class="c-kw">if</span> base_case(state):
+            <span class="c-kw">return</span> base_value
+        <span class="c-kw">return</span> combine(dp(substate1), dp(substate2), ...)
+
+    <span class="c-kw">return</span> dp(initial_state)
+</code></pre>
+
+      <p style="font-size:13px;color:var(--muted);">
+        <code style="font-size:12px;">@cache</code> (Python 3.9+) or <code style="font-size:12px;">@lru_cache(None)</code> — both memoize automatically.
+        For mutable inputs (lists), convert to tuples before passing as the state.
+      </p>
+    </section>
+
+    <!-- ── 5. Tabulation ── -->
+    <section id="tabulation">
+      <h2><span class="num">05</span> Approach 2: Tabulation (bottom-up)</h2>
+      <p>
+        Fill a table from the smallest subproblems upward. No recursion stack — often faster in practice
+        and easier to optimize memory.
+      </p>
+      <div class="callout blue">
+        <div class="callout-label">when to prefer it</div>
+        You need tight memory control (rolling array optimization), or the recurrence is clear
+        and all subproblems will be visited anyway.
+      </div>
+
+      <h3>Template</h3>
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">solve</span>(n):
+    dp = [<span class="c-num">0</span>] * (n + <span class="c-num">1</span>)
+    dp[<span class="c-num">0</span>] = base_case_value          <span class="c-cm"># seed the base case(s)</span>
+
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-bi">range</span>(<span class="c-num">1</span>, n + <span class="c-num">1</span>):
+        dp[i] = recurrence(dp, i)   <span class="c-cm"># fill left-to-right</span>
+
+    <span class="c-kw">return</span> dp[n]
+</code></pre>
+    </section>
+
+    <!-- ── 6. Reconstruction ── -->
+    <section id="reconstruct">
+      <h2><span class="num">06</span> Reconstructing the solution</h2>
+      <p>
+        The DP table gives you the <em>value</em> of the optimal solution. To get the actual path or sequence,
+        trace backwards through the table using the same recurrence, choosing the transition that was taken.
+      </p>
+      <pre><code>
+<span class="c-cm"># After filling dp[], walk back to find the choices made</span>
+<span class="c-kw">def</span> <span class="c-fn">reconstruct</span>(dp, choices_or_parent):
+    path = []
+    i = len(dp) - <span class="c-num">1</span>
+    <span class="c-kw">while</span> i > <span class="c-num">0</span>:
+        choice = choices_or_parent[i]
+        path.append(choice)
+        i -= choice                  <span class="c-cm"># step back by what was chosen</span>
+    <span class="c-kw">return</span> path[::<span class="c-num">-1</span>]               <span class="c-cm"># reverse to get forward order</span>
+</code></pre>
+    </section>
+
+    <hr>
+
+    <!-- ── Problem 1: Fibonacci ── -->
+    <section id="fib">
+      <h2><span class="num">P1</span> Fibonacci (warm-up)</h2>
+      <p>
+        The "hello world" of DP. Naïve recursion is O(2ⁿ); memoization or tabulation drops it to O(n).
+      </p>
+
+      <h3>Memoized</h3>
+      <pre><code>
+<span class="c-kw">from</span> functools <span class="c-kw">import</span> cache
+
+<span class="c-kw">@cache</span>
+<span class="c-kw">def</span> <span class="c-fn">fib</span>(n):
+    <span class="c-kw">if</span> n <= <span class="c-num">1</span>: <span class="c-kw">return</span> n
+    <span class="c-kw">return</span> fib(n - <span class="c-num">1</span>) + fib(n - <span class="c-num">2</span>)
+</code></pre>
+
+      <h3>Tabulated (O(1) space with rolling vars)</h3>
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">fib</span>(n):
+    a, b = <span class="c-num">0</span>, <span class="c-num">1</span>
+    <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-bi">range</span>(n):
+        a, b = b, a + b
+    <span class="c-kw">return</span> a
+</code></pre>
+
+      <div class="trace">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.5rem;color:var(--muted);">execution trace · fib(5)</span>
+        fib(5) → fib(4) + fib(3)<br>
+        &nbsp;&nbsp;fib(4) → fib(3) + fib(2) &nbsp;&nbsp;<span class="hi">← without cache: fib(3) recomputed 2×</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;fib(3) → fib(2) + fib(1)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fib(2) → fib(1) + fib(0) = <span class="hi">1</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;fib(3) = <span class="hi">2</span> &nbsp;(cached → instant)<br>
+        &nbsp;&nbsp;fib(4) = <span class="hi">3</span><br>
+        fib(5) = <span class="hi">5</span>
+      </div>
+    </section>
+
+    <!-- ── Problem 2: Knapsack ── -->
+    <section id="knapsack">
+      <h2><span class="num">P2</span> 0/1 Knapsack</h2>
+      <p>
+        Given <em>n</em> items each with weight and value, and a bag of capacity <em>W</em>,
+        maximize total value without exceeding weight. Each item can be taken at most once (0/1).
+      </p>
+
+      <div class="callout">
+        <div class="callout-label">recurrence</div>
+        <code style="font-size:13px;">
+          dp[i][w] = max(dp[i-1][w], dp[i-1][w - wt[i]] + val[i])
+        </code><br>
+        <span style="font-size:13px;margin-top:.3rem;display:block;color:var(--muted);">
+          Either skip item i (take row above), or include it (go back by its weight, add its value).
+        </span>
+      </div>
+
+      <h3>Bottom-up, space-optimized to 1D</h3>
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">knapsack</span>(weights, values, W):
+    n = <span class="c-bi">len</span>(weights)
+    dp = [<span class="c-num">0</span>] * (W + <span class="c-num">1</span>)
+
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-bi">range</span>(n):
+        <span class="c-cm"># Iterate W → weight[i] to avoid using item twice</span>
+        <span class="c-kw">for</span> w <span class="c-kw">in</span> <span class="c-bi">range</span>(W, weights[i] - <span class="c-num">1</span>, <span class="c-num">-1</span>):
+            dp[w] = <span class="c-bi">max</span>(dp[w], dp[w - weights[i]] + values[i])
+
+    <span class="c-kw">return</span> dp[W]
+
+<span class="c-cm"># Example</span>
+weights = [<span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>]
+values  = [<span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>, <span class="c-num">6</span>]
+<span class="c-bi">print</span>(knapsack(weights, values, W=<span class="c-num">8</span>))  <span class="c-cm"># → 10</span>
+</code></pre>
+
+      <div class="callout red">
+        <div class="callout-label">critical detail</div>
+        Iterate the capacity <strong>backwards</strong> in the 1D version. If you go forwards, an item can be picked
+        multiple times (that's the unbounded knapsack variant — a different problem).
+      </div>
+    </section>
+
+    <!-- ── Problem 3: LCS ── -->
+    <section id="lcs">
+      <h2><span class="num">P3</span> Longest Common Subsequence</h2>
+      <p>
+        Find the longest subsequence common to two strings s and t
+        (characters don't need to be contiguous, just in order).
+      </p>
+
+      <div class="callout">
+        <div class="callout-label">recurrence</div>
+        <code style="font-size:13px;">
+          if s[i] == t[j]: dp[i][j] = dp[i-1][j-1] + 1<br>
+          else: dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+        </code>
+      </div>
+
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">lcs</span>(s, t):
+    m, n = <span class="c-bi">len</span>(s), <span class="c-bi">len</span>(t)
+    dp = [[<span class="c-num">0</span>] * (n + <span class="c-num">1</span>) <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-bi">range</span>(m + <span class="c-num">1</span>)]
+
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-bi">range</span>(<span class="c-num">1</span>, m + <span class="c-num">1</span>):
+        <span class="c-kw">for</span> j <span class="c-kw">in</span> <span class="c-bi">range</span>(<span class="c-num">1</span>, n + <span class="c-num">1</span>):
+            <span class="c-kw">if</span> s[i-<span class="c-num">1</span>] == t[j-<span class="c-num">1</span>]:
+                dp[i][j] = dp[i-<span class="c-num">1</span>][j-<span class="c-num">1</span>] + <span class="c-num">1</span>
+            <span class="c-kw">else</span>:
+                dp[i][j] = <span class="c-bi">max</span>(dp[i-<span class="c-num">1</span>][j], dp[i][j-<span class="c-num">1</span>])
+
+    <span class="c-kw">return</span> dp[m][n]
+
+<span class="c-bi">print</span>(lcs(<span class="c-str">"ABCBDAB"</span>, <span class="c-str">"BDCABA"</span>))  <span class="c-cm"># → 4 ("BCBA")</span>
+</code></pre>
+
+      <div class="callout green">
+        <div class="callout-label">cousin problems</div>
+        Edit distance (Levenshtein), shortest common supersequence, longest palindromic subsequence —
+        all share this 2D string DP structure with small recurrence tweaks.
+      </div>
+    </section>
+
+    <!-- ── Problem 4: Coin Change ── -->
+    <section id="coins">
+      <h2><span class="num">P4</span> Coin Change</h2>
+      <p>
+        Given coin denominations and a target amount, find the minimum number of coins that sum to the target.
+        Coins can be reused (unbounded).
+      </p>
+
+      <div class="callout">
+        <div class="callout-label">recurrence</div>
+        <code style="font-size:13px;">dp[a] = min(dp[a - coin] + 1) for each coin ≤ a</code>
+      </div>
+
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">coin_change</span>(coins, amount):
+    INF = <span class="c-bi">float</span>(<span class="c-str">'inf'</span>)
+    dp = [INF] * (amount + <span class="c-num">1</span>)
+    dp[<span class="c-num">0</span>] = <span class="c-num">0</span>                      <span class="c-cm"># 0 coins needed for amount 0</span>
+
+    <span class="c-kw">for</span> a <span class="c-kw">in</span> <span class="c-bi">range</span>(<span class="c-num">1</span>, amount + <span class="c-num">1</span>):
+        <span class="c-kw">for</span> coin <span class="c-kw">in</span> coins:
+            <span class="c-kw">if</span> coin <= a:
+                dp[a] = <span class="c-bi">min</span>(dp[a], dp[a - coin] + <span class="c-num">1</span>)
+
+    <span class="c-kw">return</span> dp[amount] <span class="c-kw">if</span> dp[amount] != INF <span class="c-kw">else</span> -<span class="c-num">1</span>
+
+<span class="c-bi">print</span>(coin_change([<span class="c-num">1</span>, <span class="c-num">5</span>, <span class="c-num">6</span>, <span class="c-num">9</span>], <span class="c-num">11</span>))  <span class="c-cm"># → 2  (5+6)</span>
+</code></pre>
+
+      <div class="trace">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.5rem;color:var(--muted);">table trace · coins=[1,5,6,9], amount=11</span>
+        dp[0] = <span class="hi">0</span><br>
+        dp[1] = 1  (0+1)<br>
+        dp[5] = 1  (0+5)<br>
+        dp[6] = 1  (0+6)<br>
+        dp[10] = 2  (dp[5]+5 or dp[4]+6)<br>
+        dp[11] = <span class="hi">2</span>  (dp[5]+6 = 1+1)
+      </div>
+
+      <div class="callout blue">
+        <div class="callout-label">count variant</div>
+        Swap <code style="font-size:12px;">min</code> for <code style="font-size:12px;">+=</code> and initialize <code style="font-size:12px;">dp[0]=1</code>
+        to count the number of ways to make the amount — same structure, different aggregator.
+      </div>
+    </section>
+
+    <!-- ── Problem 5: LIS ── -->
+    <section id="lis">
+      <h2><span class="num">P5</span> Longest Increasing Subsequence</h2>
+      <p>
+        Find the length of the longest strictly increasing subsequence in an array.
+        The O(n²) DP solution is easy to derive; O(n log n) uses binary search.
+      </p>
+
+      <h3>O(n²) — clean DP</h3>
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">lis</span>(nums):
+    n = <span class="c-bi">len</span>(nums)
+    dp = [<span class="c-num">1</span>] * n            <span class="c-cm"># every element is an LIS of length 1</span>
+
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-bi">range</span>(<span class="c-num">1</span>, n):
+        <span class="c-kw">for</span> j <span class="c-kw">in</span> <span class="c-bi">range</span>(i):
+            <span class="c-kw">if</span> nums[j] < nums[i]:
+                dp[i] = <span class="c-bi">max</span>(dp[i], dp[j] + <span class="c-num">1</span>)
+
+    <span class="c-kw">return</span> <span class="c-bi">max</span>(dp)
+
+<span class="c-bi">print</span>(lis([<span class="c-num">10</span>,<span class="c-num">9</span>,<span class="c-num">2</span>,<span class="c-num">5</span>,<span class="c-num">3</span>,<span class="c-num">7</span>,<span class="c-num">101</span>,<span class="c-num">18</span>]))  <span class="c-cm"># → 4 (2,3,7,18)</span>
+</code></pre>
+
+      <h3>O(n log n) — patience sorting</h3>
+      <pre><code>
+<span class="c-kw">import</span> bisect
+
+<span class="c-kw">def</span> <span class="c-fn">lis_fast</span>(nums):
+    tails = []                        <span class="c-cm"># tails[i] = smallest tail of IS of len i+1</span>
+    <span class="c-kw">for</span> x <span class="c-kw">in</span> nums:
+        pos = bisect.bisect_left(tails, x)
+        <span class="c-kw">if</span> pos == <span class="c-bi">len</span>(tails):
+            tails.append(x)           <span class="c-cm"># extend</span>
+        <span class="c-kw">else</span>:
+            tails[pos] = x            <span class="c-cm"># replace with smaller tail</span>
+    <span class="c-kw">return</span> <span class="c-bi">len</span>(tails)
+</code></pre>
+    </section>
+
+    <!-- ── Problem 6: Grid Paths ── -->
+    <section id="grid">
+      <h2><span class="num">P6</span> Grid paths</h2>
+      <p>
+        Count unique paths from top-left to bottom-right of an m×n grid, moving only right or down.
+        With obstacles, skip blocked cells.
+      </p>
+
+      <div class="callout">
+        <div class="callout-label">recurrence</div>
+        <code style="font-size:13px;">dp[i][j] = dp[i-1][j] + dp[i][j-1]</code><br>
+        <span style="font-size:13px;color:var(--muted);margin-top:.3rem;display:block;">
+          Paths to any cell = paths coming from above + paths coming from left.
+        </span>
+      </div>
+
+      <pre><code>
+<span class="c-kw">def</span> <span class="c-fn">unique_paths</span>(m, n, obstacles=<span class="c-bi">None</span>):
+    obs = obstacles <span class="c-kw">or</span> <span class="c-bi">set</span>()
+    dp = [[<span class="c-num">0</span>] * n <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-bi">range</span>(m)]
+    dp[<span class="c-num">0</span>][<span class="c-num">0</span>] = <span class="c-num">1</span>
+
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-bi">range</span>(m):
+        <span class="c-kw">for</span> j <span class="c-kw">in</span> <span class="c-bi">range</span>(n):
+            <span class="c-kw">if</span> (i, j) <span class="c-kw">in</span> obs <span class="c-kw">or</span> (i == <span class="c-num">0</span> <span class="c-kw">and</span> j == <span class="c-num">0</span>): <span class="c-kw">continue</span>
+            from_top  = dp[i-<span class="c-num">1</span>][j] <span class="c-kw">if</span> i > <span class="c-num">0</span> <span class="c-kw">else</span> <span class="c-num">0</span>
+            from_left = dp[i][j-<span class="c-num">1</span>] <span class="c-kw">if</span> j > <span class="c-num">0</span> <span class="c-kw">else</span> <span class="c-num">0</span>
+            dp[i][j] = from_top + from_left
+
+    <span class="c-kw">return</span> dp[m-<span class="c-num">1</span>][n-<span class="c-num">1</span>]
+
+<span class="c-bi">print</span>(unique_paths(<span class="c-num">3</span>, <span class="c-num">7</span>))  <span class="c-cm"># → 28</span>
+</code></pre>
+    </section>
+
+    <hr>
+
+    <!-- ── Framework ── -->
+    <section id="framework">
+      <h2><span class="num">07</span> Interview framework</h2>
+      <p>When you see a DP problem in an interview, work through this sequence out loud:</p>
+
+      <div style="counter-reset: steps;">
+        <div class="callout" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>1 — Identify</strong>&emsp;Is this DP? Look for "min/max", "how many ways", "can we achieve X".
+        </div>
+        <div class="callout blue" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>2 — Define state</strong>&emsp;What is dp[i] or dp[i][j]? Say it in plain English: "dp[i] = minimum coins to make amount i."
+        </div>
+        <div class="callout" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>3 — Write recurrence</strong>&emsp;Express dp[i] in terms of smaller subproblems. Cover all cases.
+        </div>
+        <div class="callout blue" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>4 — Base cases</strong>&emsp;What's the smallest valid state? Seed it explicitly.
+        </div>
+        <div class="callout" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>5 — Order of evaluation</strong>&emsp;Ensure each dp[i] is computed only after the states it depends on.
+        </div>
+        <div class="callout blue" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>6 — Answer</strong>&emsp;Where in the table is the final answer? It's not always dp[n].
+        </div>
+        <div class="callout green" style="margin:.6rem 0;padding:.8rem 1.2rem;">
+          <strong>7 — Optimize</strong>&emsp;Can you reduce from 2D to 1D? Can you drop rows you no longer need?
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Checklist ── -->
+    <section id="checklist">
+      <h2><span class="num">08</span> Before you submit — checklist</h2>
+      <ul class="checklist">
+        <li>State definition stated explicitly in words</li>
+        <li>Recurrence covers all transitions (including "skip" / "don't take")</li>
+        <li>Base case(s) initialized correctly (dp[0], dp[0][0], etc.)</li>
+        <li>Table filled in correct dependency order</li>
+        <li>Answer extracted from correct cell</li>
+        <li>Edge cases: empty input, n=0, amount=0, single element</li>
+        <li>Time complexity: O(states × transitions per state)</li>
+        <li>Space complexity noted; 1D optimization considered</li>
+        <li>Reconstruction logic if the actual path/choices are needed</li>
+        <li>Overflow / infinity initialization correct (float('inf'), not -1 as ∞)</li>
+      </ul>
+
+      <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+        <p style="font-size:13px;color:var(--muted);line-height:1.8;">
+          The hardest part of DP is always the <em>state definition</em>.
+          Once you have that right, the recurrence almost writes itself.
+          When stuck, ask: <strong>"what information do I need to make the optimal choice at step i?"</strong> — that's your state.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>

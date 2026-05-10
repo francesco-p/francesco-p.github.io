@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Metrics — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #111;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex; flex-direction: column;
+}
+.nav-logo { font-family: 'Fraunces', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
+.nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 1.4rem 0 0.4rem; font-weight: 500; opacity: 0.55; }
+nav a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; padding: 3px 0; transition: color 0.15s; font-weight: 300; }
+nav a:hover { color: var(--accent); }
+.nav-bottom { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 2px 0; font-family: 'DM Mono', monospace; }
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+/* ── Hero ── */
+.hero { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 500; margin-bottom: 1rem; font-family: 'DM Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2.1rem, 4vw, 2.9rem); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 1.2rem; }
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill { font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+
+/* ── Metric card ── */
+.metric { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+.metric-header {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 6px 6px 0 0; padding: 1.2rem 1.4rem;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.metric-title-row { display: flex; align-items: baseline; gap: 0.7rem; }
+.metric-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+.metric-name { font-family: 'Fraunces', serif; font-size: 1.45rem; font-weight: 700; color: var(--text); }
+.metric-type { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 2px; border: 1px solid; flex-shrink: 0; }
+.type-cls   { color: var(--accent2); border-color: rgba(122,191,200,0.3); background: rgba(122,191,200,0.07); }
+.type-reg   { color: var(--orange);  border-color: rgba(200,149,106,0.3); background: rgba(200,149,106,0.07); }
+.type-seg   { color: var(--accent3); border-color: rgba(200,122,178,0.3); background: rgba(200,122,178,0.07); }
+.type-rank  { color: var(--green);   border-color: rgba(122,200,122,0.3); background: rgba(122,200,122,0.07); }
+
+.metric-body { background: var(--bg2); border: 1px solid var(--border2); border-top: none; border-radius: 0 0 6px 6px; padding: 1.4rem; }
+
+/* ── Formula box ── */
+.formula {
+  background: var(--code-bg); border: 1px solid var(--border2);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  padding: 1rem 1.3rem; margin: 1rem 0;
+  font-family: 'DM Mono', monospace; font-size: 13.5px;
+  color: var(--accent); line-height: 2.1;
+}
+.formula .label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+.formula .note  { color: var(--muted); font-size: 12px; font-style: italic; }
+.formula .hi    { color: var(--text); font-weight: 500; }
+.formula .dim   { color: var(--accent2); }
+
+/* ── Confusion matrix visual ── */
+.cm-grid {
+  display: grid; grid-template-columns: auto 1fr 1fr;
+  gap: 3px; max-width: 320px; margin: 1rem 0;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+}
+.cm-cell {
+  padding: 0.55rem 0.8rem; border-radius: 3px; text-align: center;
+}
+.cm-label { color: var(--muted); background: transparent; display: flex; align-items: center; justify-content: flex-end; }
+.cm-header { color: var(--muted); background: transparent; text-align: center; }
+.cm-tp { background: rgba(122,200,122,0.15); color: var(--green); border: 1px solid rgba(122,200,122,0.25); }
+.cm-tn { background: rgba(122,200,122,0.15); color: var(--green); border: 1px solid rgba(122,200,122,0.25); }
+.cm-fp { background: rgba(200,122,122,0.12); color: var(--red); border: 1px solid rgba(200,122,122,0.25); }
+.cm-fn { background: rgba(200,149,106,0.12); color: var(--orange); border: 1px solid rgba(200,149,106,0.25); }
+
+/* ── Code ── */
+.code-wrap { position: relative; margin: 1rem 0; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+.code-header { display: flex; align-items: center; justify-content: space-between; background: #080808; padding: 0.45rem 1rem; border-bottom: 1px solid var(--border); }
+.code-lang { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.copy-btn { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: 3px; padding: 2px 8px; cursor: pointer; transition: all 0.15s; }
+.copy-btn:hover { color: var(--accent); border-color: var(--tag-border); }
+.copy-btn.ok { color: var(--green); border-color: rgba(122,200,122,0.3); }
+pre { background: var(--code-bg); padding: 1.1rem 1.2rem; overflow-x: auto; margin: 0; }
+code { font-family: 'DM Mono', monospace; font-size: 12.5px; line-height: 1.75; color: #c9c0b0; display: block; }
+.c-kw  { color: #c87ab2; } .c-fn { color: #7abfc8; }
+.c-str { color: #7ac87a; } .c-num { color: #c8b97a; }
+.c-cm  { color: #444240; font-style: italic; }
+
+p code, li code { font-family: 'DM Mono', monospace; font-size: 12px; background: var(--bg3); border: 1px solid var(--border2); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2px solid var(--accent);
+  background: rgba(200,185,122,0.05);
+  padding: 0.9rem 1.15rem; margin: 1rem 0;
+  border-radius: 0 4px 4px 0; font-size: 14px; color: var(--text); line-height: 1.75;
+}
+.callout.blue   { border-left-color: var(--accent2); background: rgba(122,191,200,0.05); }
+.callout.red    { border-left-color: var(--red);     background: rgba(200,122,122,0.05); }
+.callout.green  { border-left-color: var(--green);   background: rgba(122,200,122,0.05); }
+.callout.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.callout.orange { border-left-color: var(--orange);  background: rgba(200,149,106,0.05); }
+.callout-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; margin-bottom: 0.35rem; opacity: 0.55; font-family: 'DM Mono', monospace; }
+
+p { margin-bottom: 0.8rem; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 500; color: var(--text); }
+
+/* ── Comparison table ── */
+.compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 1rem 0; }
+.compare-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.compare-box-title { font-family: 'DM Mono', monospace; font-size: 10.5px; font-weight: 500; padding: 0.45rem 0.9rem; border-bottom: 1px solid var(--border); background: #111; }
+.compare-box.good .compare-box-title { color: var(--green); }
+.compare-box.bad  .compare-box-title { color: var(--red); }
+.compare-box p { font-size: 13px; color: var(--muted); padding: 0.7rem 0.9rem; margin: 0; line-height: 1.6; }
+
+/* ── When-to-use table ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 1rem 0; }
+th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); border-bottom: 1px solid var(--border2); padding: 0.5rem 0.75rem; font-weight: 400; font-family: 'DM Mono', monospace; }
+td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--muted); font-size: 13px; line-height: 1.55; }
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; }
+
+/* ── Section divider ── */
+h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent2); margin: 1.4rem 0 0.6rem; font-weight: 500; }
+hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.8rem 0; }
+.checklist li { padding: 0.4rem 0 0.4rem 1.4rem; position: relative; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--border); line-height: 1.6; }
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before { content: '○'; position: absolute; left: 0; color: var(--muted); font-size: 11px; top: 0.6rem; }
+
+/* ── Visual bar (range indicator) ── */
+.range-strip { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; font-family: 'DM Mono', monospace; font-size: 11.5px; }
+.range-label { color: var(--muted); min-width: 60px; }
+.range-bar { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.range-fill { height: 100%; border-radius: 3px; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.2rem 4rem; }
+  .compare-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="nav-logo">ML Metrics · Primer</div>
+
+  <span class="nav-section">Classification</span>
+  <a href="#accuracy">Accuracy</a>
+  <a href="#precision">Precision</a>
+  <a href="#recall">Recall</a>
+  <a href="#f1">F1 Score</a>
+  <a href="#auc">AUC-ROC</a>
+  <a href="#auprc">AUC-PR (PR curve)</a>
+
+  <span class="nav-section">Regression</span>
+  <a href="#mae">MAE</a>
+  <a href="#mse">MSE / RMSE</a>
+  <a href="#r2">R² (R-squared)</a>
+
+  <span class="nav-section">Segmentation</span>
+  <a href="#iou">IoU / Jaccard</a>
+  <a href="#dice">Dice Coefficient</a>
+
+  <span class="nav-section">Decision guide</span>
+  <a href="#when">When to use what</a>
+  <a href="#checklist">Checklist</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;opacity:.55;">quick ref</div>
+    <div class="nav-stat"><span>Dice vs IoU</span><span>Dice = 2·IoU/(1+IoU)</span></div>
+    <div class="nav-stat"><span>F1 range</span><span>[0, 1]</span></div>
+    <div class="nav-stat"><span>AUC random</span><span>0.5</span></div>
+    <div class="nav-stat"><span>R² perfect</span><span>1.0</span></div>
+    <div class="nav-stat"><span>IoU perfect</span><span>1.0</span></div>
+  </div>
+</nav>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-label">Interview Primer · ML Metrics</div>
+    <h1>What you measure<br>is what you <em>optimize</em></h1>
+    <p class="hero-desc">
+      Every metric encodes a decision about what errors cost. Knowing the formula is table stakes —
+      the interview tests whether you know <em>when each metric lies</em>,
+      what its failure modes are, and how to choose between them when they disagree.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Accuracy</span>
+      <span class="pill">Precision</span>
+      <span class="pill">Recall</span>
+      <span class="pill">F1</span>
+      <span class="pill">AUC-ROC</span>
+      <span class="pill">AUC-PR</span>
+      <span class="pill">MAE</span>
+      <span class="pill">R²</span>
+      <span class="pill">IoU</span>
+      <span class="pill">Dice</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   CONFUSION MATRIX FOUNDATION         -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="confusion">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">00</span>
+        <span class="metric-name">The Confusion Matrix</span>
+      </div>
+      <span class="metric-type type-cls">Classification · foundation</span>
+    </div>
+    <div class="metric-body">
+      <p>Every classification metric is derived from four numbers. Internalize this grid before anything else.</p>
+
+      <div class="cm-grid">
+        <div class="cm-cell cm-label"></div>
+        <div class="cm-cell cm-header">Pred Positive</div>
+        <div class="cm-cell cm-header">Pred Negative</div>
+
+        <div class="cm-cell cm-label">Actual Pos</div>
+        <div class="cm-cell cm-tp"><strong>TP</strong><br><span style="font-size:10px;opacity:.7;">True Pos</span></div>
+        <div class="cm-cell cm-fn"><strong>FN</strong><br><span style="font-size:10px;opacity:.7;">False Neg<br>(miss)</span></div>
+
+        <div class="cm-cell cm-label">Actual Neg</div>
+        <div class="cm-cell cm-fp"><strong>FP</strong><br><span style="font-size:10px;opacity:.7;">False Pos<br>(alarm)</span></div>
+        <div class="cm-cell cm-tn"><strong>TN</strong><br><span style="font-size:10px;opacity:.7;">True Neg</span></div>
+      </div>
+
+      <div class="formula">
+        <span class="label">derived counts</span>
+        P (predicted positive) = TP + FP<br>
+        N (predicted negative) = TN + FN<br>
+        Total = TP + TN + FP + FN
+      </div>
+
+      <div class="callout blue">
+        <div class="callout-label">memory trick</div>
+        The <em>first word</em> (True/False) tells you if the prediction was right. The <em>second word</em> (Positive/Negative) tells you what the model predicted. FP = model said positive, it was wrong. FN = model said negative, it was wrong.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   ACCURACY                            -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="accuracy">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">01</span>
+        <span class="metric-name">Accuracy</span>
+      </div>
+      <span class="metric-type type-cls">Classification</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">Accuracy = (TP + TN) / (TP + TN + FP + FN)</span><br>
+        = correctly classified / total samples<br>
+        <span class="note">Range: [0, 1]. Higher is better.</span>
+      </div>
+
+      <p><strong>What it measures:</strong> the fraction of all predictions that were correct, across all classes.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> accuracy_score
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+y_true = [<span class="c-num">1</span>, <span class="c-num">0</span>, <span class="c-num">1</span>, <span class="c-num">1</span>, <span class="c-num">0</span>]
+y_pred = [<span class="c-num">1</span>, <span class="c-num">0</span>, <span class="c-num">0</span>, <span class="c-num">1</span>, <span class="c-num">1</span>]  <span class="c-cm"># 3 correct out of 5</span>
+
+accuracy_score(y_true, y_pred)    <span class="c-cm"># → 0.6</span>
+
+<span class="c-cm"># Manual</span>
+np.<span class="c-fn">mean</span>(np.<span class="c-fn">array</span>(y_true) == np.<span class="c-fn">array</span>(y_pred))  <span class="c-cm"># → 0.6</span>
+</code></pre>
+      </div>
+
+      <div class="callout red">
+        <div class="callout-label">the class imbalance trap</div>
+        With 99% negative samples, predicting "always negative" gives <strong>99% accuracy</strong> — and catches zero positives. Accuracy is meaningless when classes are imbalanced. Always ask: what's the majority class baseline? If accuracy ≈ majority class frequency, the model learned nothing.
+      </div>
+
+      <div class="compare-row">
+        <div class="compare-box good">
+          <div class="compare-box-title">✓ use when</div>
+          <p>Classes are roughly balanced. Random chance baseline is meaningful. Cost of FP ≈ cost of FN.</p>
+        </div>
+        <div class="compare-box bad">
+          <div class="compare-box-title">✗ avoid when</div>
+          <p>Imbalanced data. One type of error is more costly (fraud, disease, defect detection). Multi-class with skewed class distributions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   PRECISION                           -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="precision">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">02</span>
+        <span class="metric-name">Precision</span>
+      </div>
+      <span class="metric-type type-cls">Classification</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">Precision = TP / (TP + FP)</span><br>
+        = of everything predicted positive, how many actually were<br>
+        <span class="note">Range: [0, 1]. A model predicting nothing positive has undefined (0/0) precision.</span>
+      </div>
+
+      <p><strong>What it measures:</strong> the quality of positive predictions — when you raise the alarm, how often are you right?</p>
+      <p><strong>Optimize precision when false positives are costly:</strong> spam filters (legitimate email wrongly blocked), surgery recommendations (operating on a healthy patient), drug approvals (side effects from unnecessary treatment).</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> precision_score
+
+<span class="c-cm"># Binary</span>
+precision_score(y_true, y_pred)
+<span class="c-cm"># → TP / (TP + FP)</span>
+
+<span class="c-cm"># Multi-class: average across classes</span>
+precision_score(y_true, y_pred, average=<span class="c-str">'macro'</span>)    <span class="c-cm"># unweighted mean</span>
+precision_score(y_true, y_pred, average=<span class="c-str">'weighted'</span>) <span class="c-cm"># weighted by class support</span>
+precision_score(y_true, y_pred, average=<span class="c-str">'micro'</span>)    <span class="c-cm"># globally over all samples</span>
+</code></pre>
+      </div>
+
+      <div class="callout orange">
+        <div class="callout-label">precision-recall tradeoff</div>
+        Raising your classification threshold increases precision (you only predict positive when very confident) but decreases recall (you miss more true positives). They move in opposite directions. There is no free lunch — you must choose based on what errors cost more in your domain.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   RECALL                              -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="recall">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">03</span>
+        <span class="metric-name">Recall (Sensitivity / TPR)</span>
+      </div>
+      <span class="metric-type type-cls">Classification</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">Recall = TP / (TP + FN)</span><br>
+        = of all actual positives, how many did we catch<br>
+        <br>
+        Also called: Sensitivity, True Positive Rate (TPR), Hit Rate<br>
+        <span class="note">Range: [0, 1]. A model predicting everything positive has recall = 1.0 trivially.</span>
+      </div>
+
+      <p><strong>What it measures:</strong> completeness — how many real positives do you catch? Optimizing recall means minimizing missed detections.</p>
+      <p><strong>Optimize recall when false negatives are costly:</strong> cancer screening (missing a diagnosis), fraud detection (letting a fraud transaction through), safety systems (missing a pedestrian), defect detection (a defective part reaches the customer).</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> recall_score
+
+recall_score(y_true, y_pred)  <span class="c-cm"># → TP / (TP + FN)</span>
+
+<span class="c-cm"># Specificity (True Negative Rate) — often confused with recall</span>
+<span class="c-cm"># Specificity = TN / (TN + FP)  — how well we identify negatives</span>
+<span class="c-cm"># Recall = TPR. Specificity = TNR. Together they define the ROC curve.</span>
+</code></pre>
+      </div>
+
+      <div class="callout blue">
+        <div class="callout-label">trivial high recall</div>
+        A model that predicts <em>everything</em> as positive achieves recall = 1.0 (catches all true positives) but precision collapses. This is why you never evaluate recall in isolation — always with precision or as F1/AUC-PR.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   F1                                  -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="f1">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">04</span>
+        <span class="metric-name">F1 Score</span>
+      </div>
+      <span class="metric-type type-cls">Classification</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">F1 = 2 · (Precision · Recall) / (Precision + Recall)</span><br>
+        = harmonic mean of precision and recall<br>
+        <br>
+        <span class="label">generalized Fβ</span>
+        Fβ = (1 + β²) · (P · R) / (β²·P + R)<br>
+        β &gt; 1 → weights recall more &nbsp;&nbsp; β &lt; 1 → weights precision more<br>
+        <span class="note">F1 = F_β with β=1. F2 gives recall twice the weight of precision.</span>
+      </div>
+
+      <p><strong>Why harmonic mean, not arithmetic mean?</strong> The harmonic mean is dominated by the smaller value. If precision = 1.0 and recall = 0.01, arithmetic mean = 0.505 (misleadingly good); harmonic mean = 0.02 (reflects the poor recall). A metric that rewards gaming either one alone is useless.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> f1_score, fbeta_score
+
+f1_score(y_true, y_pred)                        <span class="c-cm"># binary F1</span>
+f1_score(y_true, y_pred, average=<span class="c-str">'macro'</span>)       <span class="c-cm"># unweighted mean over classes</span>
+f1_score(y_true, y_pred, average=<span class="c-str">'weighted'</span>)   <span class="c-cm"># weighted by class frequency</span>
+
+fbeta_score(y_true, y_pred, beta=<span class="c-num">2</span>)            <span class="c-cm"># F2: recall-heavy</span>
+fbeta_score(y_true, y_pred, beta=<span class="c-num">0.5</span>)          <span class="c-cm"># F0.5: precision-heavy</span>
+
+<span class="c-cm"># Manual:</span>
+p = <span class="c-fn">precision_score</span>(y_true, y_pred)
+r = <span class="c-fn">recall_score</span>(y_true, y_pred)
+f1 = <span class="c-num">2</span> * p * r / (p + r)
+</code></pre>
+      </div>
+
+      <h3>macro vs micro vs weighted averaging</h3>
+      <table>
+        <thead><tr><th>Average</th><th>How</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td>macro</td><td>Compute F1 per class, take unweighted mean</td><td>When all classes matter equally, regardless of size. Penalizes poor performance on rare classes.</td></tr>
+          <tr><td>weighted</td><td>Compute F1 per class, weight by class support</td><td>When class imbalance exists but large classes are more important. Common in practice.</td></tr>
+          <tr><td>micro</td><td>Aggregate TP/FP/FN globally, then compute</td><td>When you care about per-sample performance equally. Dominated by large classes.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout red">
+        <div class="callout-label">F1 doesn't account for true negatives</div>
+        F1 ignores TN — it only cares about positive predictions. For highly imbalanced data where the negative class dominates, F1 can give a misleading picture. Matthews Correlation Coefficient (MCC) is a more balanced alternative that includes all four quadrants: MCC = (TP·TN − FP·FN) / √((TP+FP)(TP+FN)(TN+FP)(TN+FN)).
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   AUC-ROC                             -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="auc">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">05</span>
+        <span class="metric-name">AUC-ROC</span>
+      </div>
+      <span class="metric-type type-rank">Ranking · Threshold-free</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">ROC curve</span>
+        x-axis: FPR = FP / (FP + TN)  &nbsp;&nbsp;<span class="note">(1 − Specificity)</span><br>
+        y-axis: TPR = TP / (TP + FN)  &nbsp;&nbsp;<span class="note">(= Recall)</span><br>
+        Sweep threshold from 1 → 0, plot (FPR, TPR) at each step<br>
+        <br>
+        <span class="label">AUC (area under curve)</span>
+        <span class="hi">AUC = 0.5</span> → random classifier<br>
+        <span class="hi">AUC = 1.0</span> → perfect ranking<br>
+        <span class="hi">AUC = P(score(pos) > score(neg))</span> &nbsp;&nbsp;<span class="note">← probabilistic interpretation</span>
+      </div>
+
+      <p><strong>What AUC-ROC actually measures:</strong> given a randomly drawn positive and negative sample, what's the probability your model assigns a higher score to the positive? It's a measure of <em>ranking quality</em>, not classification quality.</p>
+      <p>AUC-ROC is <strong>threshold-independent</strong>: you don't need to choose a classification threshold to compute it. This makes it useful for model comparison regardless of operating point.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> roc_auc_score, roc_curve
+<span class="c-kw">import</span> matplotlib.pyplot <span class="c-kw">as</span> plt
+
+y_scores = model.<span class="c-fn">predict_proba</span>(X_test)[:, <span class="c-num">1</span>]  <span class="c-cm"># positive class proba</span>
+
+auc = <span class="c-fn">roc_auc_score</span>(y_true, y_scores)
+
+fpr, tpr, thresholds = <span class="c-fn">roc_curve</span>(y_true, y_scores)
+plt.<span class="c-fn">plot</span>(fpr, tpr, label=<span class="c-str">f"AUC = {auc:.3f}"</span>)
+plt.<span class="c-fn">plot</span>([<span class="c-num">0</span>,<span class="c-num">1</span>], [<span class="c-num">0</span>,<span class="c-num">1</span>], <span class="c-str">'--'</span>, color=<span class="c-str">'grey'</span>)  <span class="c-cm"># random baseline</span>
+
+<span class="c-cm"># Multi-class AUC (one-vs-rest)</span>
+<span class="c-fn">roc_auc_score</span>(y_true_mc, y_scores_mc, multi_class=<span class="c-str">'ovr'</span>, average=<span class="c-str">'macro'</span>)
+</code></pre>
+      </div>
+
+      <div class="callout red">
+        <div class="callout-label">AUC-ROC lies under heavy imbalance</div>
+        With 1000 negatives and 10 positives, even a bad model can achieve AUC ≈ 0.9 by correctly ranking most negatives below most positives — but it may still miss 80% of actual positives. The ROC curve is insensitive to the imbalance ratio because FPR is normalized by total negatives. Under heavy imbalance, <strong>AUC-PR is the correct metric.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   AUC-PR                              -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="auprc">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">06</span>
+        <span class="metric-name">AUC-PR (Precision-Recall Curve)</span>
+      </div>
+      <span class="metric-type type-rank">Ranking · Imbalance-aware</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">PR curve</span>
+        x-axis: Recall = TP / (TP + FN)<br>
+        y-axis: Precision = TP / (TP + FP)<br>
+        Sweep threshold 1 → 0, plot (Recall, Precision) at each step<br>
+        <br>
+        <span class="hi">Baseline = class prevalence</span> = positives / total<br>
+        <span class="note">Under 1% prevalence, random classifier AUC-PR ≈ 0.01 — not 0.5 like ROC</span>
+      </div>
+
+      <p><strong>Why AUC-PR is better than AUC-ROC under imbalance:</strong> The PR curve uses precision on the y-axis, which directly penalizes false positives relative to true positives. It doesn't dilute the signal with the large number of true negatives that inflate AUC-ROC under imbalance.</p>
+      <p><strong>Average Precision (AP)</strong> is the area under the PR curve computed as a weighted mean of precisions at each recall threshold — equivalent to AUC-PR for binary classification and identical to what mAP uses in object detection.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> (
+    average_precision_score, precision_recall_curve
+)
+
+ap = <span class="c-fn">average_precision_score</span>(y_true, y_scores)
+<span class="c-cm"># → scalar, equivalent to AUC of PR curve</span>
+
+prec, rec, thresh = <span class="c-fn">precision_recall_curve</span>(y_true, y_scores)
+<span class="c-cm"># prec[-1] = 1.0, rec[-1] = 0.0 (convention)</span>
+
+<span class="c-cm"># Practical: always compare AUC-PR against the no-skill baseline</span>
+baseline = y_true.<span class="c-fn">mean</span>()   <span class="c-cm"># prevalence — what a random model gets</span>
+<span class="c-fn">print</span>(<span class="c-str">f"AP={ap:.3f}, baseline={baseline:.3f}, lift={ap/baseline:.1f}x"</span>)
+</code></pre>
+      </div>
+
+      <div class="callout blue">
+        <div class="callout-label">AP vs AUC-ROC — when they disagree</div>
+        If AUC-ROC is high but AP is low, your model ranks well in aggregate but fails to produce precise predictions at the operating points that matter (high recall). This happens in medical screening or fraud detection — AUC-ROC looks fine but you can't set a threshold that gives acceptable precision without sacrificing too much recall.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   MAE                                 -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="mae">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">07</span>
+        <span class="metric-name">MAE — Mean Absolute Error</span>
+      </div>
+      <span class="metric-type type-reg">Regression</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">MAE = (1/n) · Σ |yᵢ − ŷᵢ|</span><br>
+        <br>
+        Unit: same as the target variable<br>
+        <span class="note">Range: [0, ∞). Corresponds to optimizing L1 loss. Equivalent to Laplace distribution likelihood.</span>
+      </div>
+
+      <p><strong>What it measures:</strong> the average absolute deviation between predictions and ground truth. Interpretable — if MAE = 5 and your target is house price in €1000s, you're off by €5,000 on average.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> mean_absolute_error
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+y_true = np.<span class="c-fn">array</span>([<span class="c-num">3</span>, <span class="c-num">5</span>, <span class="c-num">8</span>, <span class="c-num">10</span>])
+y_pred = np.<span class="c-fn">array</span>([<span class="c-num">2.5</span>, <span class="c-num">6</span>, <span class="c-num">7</span>, <span class="c-num">11</span>])
+
+<span class="c-fn">mean_absolute_error</span>(y_true, y_pred)   <span class="c-cm"># → 0.875</span>
+np.<span class="c-fn">abs</span>(y_true - y_pred).<span class="c-fn">mean</span>()       <span class="c-cm"># same</span>
+</code></pre>
+      </div>
+
+      <div class="compare-row">
+        <div class="compare-box good">
+          <div class="compare-box-title">✓ MAE advantage</div>
+          <p>Robust to outliers — a single massive error doesn't dominate. Each error contributes linearly. Easier to interpret in the original units.</p>
+        </div>
+        <div class="compare-box bad">
+          <div class="compare-box-title">✗ MAE disadvantage</div>
+          <p>Non-differentiable at zero (subgradient needed). Doesn't penalize large errors more — treating a 1-unit error the same proportionally as a 100-unit error.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">MAE vs MSE — the gradient insight</div>
+        MAE gives constant gradient w.r.t. all errors regardless of size (sign only). MSE gives gradient proportional to error magnitude — large errors get larger gradient updates. If your data has genuine outliers you want to ignore: MAE. If large errors are systematically important (e.g., demand forecasting where stockouts are critical): MSE/RMSE.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   MSE / RMSE                          -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="mse">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">08</span>
+        <span class="metric-name">MSE &amp; RMSE</span>
+      </div>
+      <span class="metric-type type-reg">Regression</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formulas</span>
+        <span class="hi">MSE  = (1/n) · Σ (yᵢ − ŷᵢ)²</span><br>
+        <span class="hi">RMSE = √MSE</span><br>
+        <br>
+        MSE unit: target² &nbsp;&nbsp; RMSE unit: same as target (interpretable)<br>
+        <span class="note">Corresponds to Gaussian likelihood. Differentiable everywhere.</span>
+      </div>
+
+      <p><strong>RMSE vs MAE:</strong> RMSE penalizes large errors <em>quadratically</em> — a 10-unit error contributes 100 to MSE vs 10 to MAE. This means RMSE is more sensitive to outliers and large mistakes. If you care more about avoiding large errors than many small ones, RMSE is the right choice.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> mean_squared_error
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+mse  = <span class="c-fn">mean_squared_error</span>(y_true, y_pred)
+rmse = np.<span class="c-fn">sqrt</span>(mse)
+<span class="c-cm"># sklearn ≥1.0: mean_squared_error(y_true, y_pred, squared=False) → RMSE</span>
+
+<span class="c-cm"># Huber loss: hybrid MAE+MSE, robust to outliers + differentiable at 0</span>
+<span class="c-kw">def</span> <span class="c-fn">huber</span>(y, yhat, delta=<span class="c-num">1.0</span>):
+    err = np.<span class="c-fn">abs</span>(y - yhat)
+    <span class="c-kw">return</span> np.<span class="c-fn">where</span>(err <= delta,
+                    <span class="c-num">0.5</span> * err**<span class="c-num">2</span>,              <span class="c-cm"># quadratic for small errors</span>
+                    delta * err - <span class="c-num">0.5</span>*delta**<span class="c-num">2</span>  <span class="c-cm"># linear for large errors</span>
+                   ).<span class="c-fn">mean</span>()
+</code></pre>
+      </div>
+
+      <div class="callout orange">
+        <div class="callout-label">RMSE is not robust to scale</div>
+        RMSE cannot be compared across datasets with different target scales. A model predicting house prices (error in €1000s) will have a larger RMSE than one predicting ages (error in years) — without implying it's worse. Always normalize or use relative metrics (MAPE, NRMSE) for cross-dataset comparison.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   R SQUARED                           -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="r2">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">09</span>
+        <span class="metric-name">R² — Coefficient of Determination</span>
+      </div>
+      <span class="metric-type type-reg">Regression</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">R² = 1 − SS_res / SS_tot</span><br>
+        <br>
+        SS_res = Σ(yᵢ − ŷᵢ)²  &nbsp;&nbsp;<span class="note">← residual sum of squares (your model's error)</span><br>
+        SS_tot = Σ(yᵢ − ȳ)²   &nbsp;&nbsp;<span class="note">← total variance in y (baseline: predict mean)</span><br>
+        <br>
+        <span class="hi">R² = 0</span> → model performs no better than predicting the mean<br>
+        <span class="hi">R² = 1</span> → perfect predictions<br>
+        <span class="hi">R² &lt; 0</span> → model is worse than predicting the mean (possible!)
+      </div>
+
+      <p><strong>What it measures:</strong> what fraction of the variance in y your model explains. R² = 0.85 means your model accounts for 85% of the variance in the target — the remaining 15% is unexplained noise or missing features.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">from</span> sklearn.metrics <span class="c-kw">import</span> r2_score
+
+r2 = <span class="c-fn">r2_score</span>(y_true, y_pred)
+
+<span class="c-cm"># Manual</span>
+ss_res = ((y_true - y_pred)**<span class="c-num">2</span>).<span class="c-fn">sum</span>()
+ss_tot = ((y_true - y_true.<span class="c-fn">mean</span>())**<span class="c-num">2</span>).<span class="c-fn">sum</span>()
+r2 = <span class="c-num">1</span> - ss_res / ss_tot
+
+<span class="c-cm"># Adjusted R² — penalizes adding useless features</span>
+n, p = <span class="c-fn">len</span>(y_true), X.shape[<span class="c-num">1</span>]   <span class="c-cm"># n samples, p features</span>
+r2_adj = <span class="c-num">1</span> - (<span class="c-num">1</span> - r2) * (n - <span class="c-num">1</span>) / (n - p - <span class="c-num">1</span>)
+</code></pre>
+      </div>
+
+      <div class="callout red">
+        <div class="callout-label">R² can be negative — and is not always the right metric</div>
+        R² can be negative when a model is <em>worse</em> than predicting the mean. This happens with overly biased models or out-of-distribution predictions. Also: R² always increases (or stays flat) as you add features — use <strong>Adjusted R²</strong> which penalizes added complexity. R² measures fit to training data — low training R² signals underfitting; high training R² + low test R² signals overfitting.
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">R² ≠ correlation²... usually</div>
+        For simple linear regression with a single feature, R² = Pearson r². For multiple features or non-linear models, this equivalence breaks. Don't conflate them.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   IoU                                 -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="iou">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">10</span>
+        <span class="metric-name">IoU — Intersection over Union (Jaccard)</span>
+      </div>
+      <span class="metric-type type-seg">Segmentation · Detection</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">IoU = |A ∩ B| / |A ∪ B|</span><br>
+        = TP / (TP + FP + FN)<br>
+        <br>
+        <span class="note">Range: [0, 1]. Also called Jaccard Index. TN not involved.</span><br>
+        <span class="label">mIoU — mean IoU (multi-class segmentation)</span>
+        mIoU = (1/C) · Σ_c IoU_c &nbsp;&nbsp;<span class="note">unweighted mean over C classes</span>
+      </div>
+
+      <p><strong>What it measures:</strong> the spatial overlap between predicted mask and ground truth mask, penalizing both over-prediction (FP) and under-prediction (FN) in the denominator. The denominator is the union — everything either mask covers.</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+<span class="c-kw">def</span> <span class="c-fn">iou</span>(pred: np.ndarray, target: np.ndarray, smooth: float = <span class="c-num">1e-6</span>) -> float:
+    <span class="c-cm"># pred, target: binary masks (H, W), dtype bool or 0/1</span>
+    intersection = (pred & target).<span class="c-fn">sum</span>()
+    union         = (pred | target).<span class="c-fn">sum</span>()
+    <span class="c-kw">return</span> (intersection + smooth) / (union + smooth)
+
+<span class="c-cm"># Multi-class mIoU with PyTorch</span>
+<span class="c-kw">def</span> <span class="c-fn">miou</span>(preds, targets, num_classes):
+    ious = []
+    <span class="c-kw">for</span> c <span class="c-kw">in</span> <span class="c-fn">range</span>(num_classes):
+        pred_c   = (preds == c)
+        target_c = (targets == c)
+        inter    = (pred_c & target_c).<span class="c-fn">sum</span>().<span class="c-fn">item</span>()
+        union    = (pred_c | target_c).<span class="c-fn">sum</span>().<span class="c-fn">item</span>()
+        <span class="c-kw">if</span> union == <span class="c-num">0</span>:
+            <span class="c-kw">continue</span>           <span class="c-cm"># class absent in both pred and target</span>
+        ious.<span class="c-fn">append</span>(inter / union)
+    <span class="c-kw">return</span> <span class="c-fn">sum</span>(ious) / <span class="c-fn">len</span>(ious)
+
+<span class="c-cm"># IoU threshold in object detection (COCO: IoU ≥ 0.5 = true positive)</span>
+<span class="c-cm"># mAP@50: mean AP at IoU threshold 0.5</span>
+<span class="c-cm"># mAP@50:95: mean AP averaged over IoU thresholds 0.5, 0.55, ..., 0.95</span>
+</code></pre>
+      </div>
+
+      <div class="callout purple">
+        <div class="callout-label">IoU vs Dice — the key difference in gradients</div>
+        Both measure overlap, but their gradients behave differently during training. IoU's gradient is sparse — zero everywhere except at boundary pixels. Dice's gradient is smoother. In practice, <strong>Dice is preferred as a training loss</strong>; IoU is preferred as an evaluation metric (because it's more interpretable — an IoU of 0.7 means 70% overlap). Many implementations use Dice loss during training but report IoU for validation.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   DICE                                -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="dice">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">11</span>
+        <span class="metric-name">Dice Coefficient (F1 for Masks)</span>
+      </div>
+      <span class="metric-type type-seg">Segmentation</span>
+    </div>
+    <div class="metric-body">
+
+      <div class="formula">
+        <span class="label">formula</span>
+        <span class="hi">Dice = 2|A ∩ B| / (|A| + |B|)</span><br>
+        = 2·TP / (2·TP + FP + FN)<br>
+        <br>
+        <span class="label">relationship to IoU</span>
+        Dice = 2·IoU / (1 + IoU)  &nbsp;&nbsp;<span class="note">← monotone transform: Dice ≥ IoU always</span><br>
+        IoU  = Dice / (2 − Dice)<br>
+        <span class="note">Dice = F1 score at the pixel level. Range: [0, 1].</span>
+      </div>
+
+      <p><strong>Why Dice ≥ IoU always:</strong> The denominator of Dice is |A| + |B| = 2·TP + FP + FN, while IoU's denominator is TP + FP + FN (the union). Since 2·TP > TP always (for TP > 0), the Dice denominator is smaller, the fraction is larger.</p>
+      <p><strong>Dice as a loss function:</strong> Unlike IoU, Dice is differentiable and can be used directly as a training loss (with soft/probabilistic predictions replacing binary masks).</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+        <pre><code>
+<span class="c-kw">import</span> torch
+
+<span class="c-kw">def</span> <span class="c-fn">dice_coefficient</span>(pred, target, smooth=<span class="c-num">1e-6</span>):
+    <span class="c-cm"># pred, target: binary masks, shape (B, H, W)</span>
+    intersection = (pred * target).<span class="c-fn">sum</span>(dim=(<span class="c-num">1</span>,<span class="c-num">2</span>))
+    dice = (<span class="c-num">2</span> * intersection + smooth) / (
+           pred.<span class="c-fn">sum</span>(dim=(<span class="c-num">1</span>,<span class="c-num">2</span>)) + target.<span class="c-fn">sum</span>(dim=(<span class="c-num">1</span>,<span class="c-num">2</span>)) + smooth
+    )
+    <span class="c-kw">return</span> dice.<span class="c-fn">mean</span>()
+
+<span class="c-kw">def</span> <span class="c-fn">dice_loss</span>(pred_logits, target, smooth=<span class="c-num">1e-6</span>):
+    <span class="c-cm"># Soft Dice loss — differentiable, works on probabilities</span>
+    pred  = torch.<span class="c-fn">sigmoid</span>(pred_logits)
+    inter = (pred * target).<span class="c-fn">sum</span>(dim=(<span class="c-num">1</span>,<span class="c-num">2</span>))
+    denom = pred.<span class="c-fn">sum</span>(dim=(<span class="c-num">1</span>,<span class="c-num">2</span>)) + target.<span class="c-fn">sum</span>(dim=(<span class="c-num">1</span>,<span class="c-num">2</span>))
+    <span class="c-kw">return</span> <span class="c-num">1</span> - ((<span class="c-num">2</span> * inter + smooth) / (denom + smooth)).<span class="c-fn">mean</span>()
+
+<span class="c-cm"># In practice: combine BCE + Dice for stability</span>
+loss = <span class="c-fn">bce_loss</span>(logits, target) + <span class="c-fn">dice_loss</span>(logits, target)
+</code></pre>
+      </div>
+
+      <h3>Dice vs IoU — when it matters most</h3>
+      <table>
+        <thead><tr><th>Situation</th><th>Prefer</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Small objects / thin structures</td><td>Dice</td><td>IoU is harsher on small masks — a few wrong pixels change IoU dramatically; Dice is more forgiving</td></tr>
+          <tr><td>Large uniform regions</td><td>IoU or Dice (similar)</td><td>Both metrics behave similarly for large, well-separated objects</td></tr>
+          <tr><td>Training loss</td><td>Dice loss</td><td>Differentiable everywhere; smoother gradients than IoU</td></tr>
+          <tr><td>Evaluation / reporting</td><td>IoU (mIoU)</td><td>More conservative, more standard in segmentation benchmarks (COCO, VOC, Cityscapes)</td></tr>
+          <tr><td>Medical image seg.</td><td>Dice</td><td>Historical convention; most medical papers report Dice score</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout green">
+        <div class="callout-label">the smooth (ε) term</div>
+        Adding a small constant ε (1e-6) to numerator and denominator prevents division by zero when both masks are empty and stabilizes gradients when predictions are all-zero at training start. It slightly biases the metric toward 1.0 for empty masks — be aware of this when evaluating rare classes.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   WHEN TO USE WHAT                    -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div class="metric" id="when">
+    <div class="metric-header">
+      <div class="metric-title-row">
+        <span class="metric-num">12</span>
+        <span class="metric-name">Decision Guide — When to Use What</span>
+      </div>
+    </div>
+    <div class="metric-body">
+      <table>
+        <thead><tr><th>Scenario</th><th>Primary metric</th><th>Why / notes</th></tr></thead>
+        <tbody>
+          <tr><td>Balanced binary classification</td><td>Accuracy, F1</td><td>Classes roughly equal — accuracy is interpretable. F1 for safety.</td></tr>
+          <tr><td>Imbalanced binary (rare positives)</td><td>AUC-PR, F1</td><td>AUC-ROC is too optimistic. F1 at your operating threshold.</td></tr>
+          <tr><td>Ranking / retrieval</td><td>AUC-ROC, MAP</td><td>Threshold-independent. You care about ordering, not a binary decision.</td></tr>
+          <tr><td>Cancer / fraud detection (FN costly)</td><td>Recall, F2</td><td>Missing a positive is much worse than a false alarm.</td></tr>
+          <tr><td>Spam filter (FP costly)</td><td>Precision, F0.5</td><td>Blocking legitimate email is worse than missing spam.</td></tr>
+          <tr><td>Multi-class, balanced</td><td>Macro-F1, Accuracy</td><td>Macro-F1 treats all classes equally.</td></tr>
+          <tr><td>Multi-class, imbalanced</td><td>Macro-F1, MCC</td><td>Weighted-F1 hides poor performance on rare classes.</td></tr>
+          <tr><td>Regression, no outliers</td><td>MSE / RMSE</td><td>Differentiable, penalizes large errors more.</td></tr>
+          <tr><td>Regression with outliers</td><td>MAE, Huber</td><td>MAE is robust; Huber is a smooth compromise.</td></tr>
+          <tr><td>Regression, variance explained</td><td>R²</td><td>Normalized metric, interpretable across datasets.</td></tr>
+          <tr><td>Object detection</td><td>mAP@50, mAP@50:95</td><td>COCO standard. AP = AUC of PR curve per class, averaged.</td></tr>
+          <tr><td>Semantic segmentation</td><td>mIoU</td><td>Standard on VOC, COCO, Cityscapes, ADE20k.</td></tr>
+          <tr><td>Medical / binary seg.</td><td>Dice</td><td>Convention; more forgiving on small structures.</td></tr>
+          <tr><td>Instance segmentation</td><td>Mask AP</td><td>IoU at mask level instead of bounding box level.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout orange">
+        <div class="callout-label">the question behind every metric choice</div>
+        Before picking a metric, answer: <strong>"What is the cost of a false positive vs a false negative in my problem?"</strong> If FN costs more → optimize recall. If FP costs more → optimize precision. If equal → F1. If you don't know the relative costs → AUC-ROC or AUC-PR to defer the threshold decision to deployment time.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--   CHECKLIST                           -->
+  <!-- ══════════════════════════════════════ -->
+
+  <div id="checklist" style="scroll-margin-top:2rem;">
+    <div class="metric-header" style="border-radius:6px;margin-bottom:1rem;">
+      <div class="metric-title-row">
+        <span class="metric-num">13</span>
+        <span class="metric-name">Before the Interview — Checklist</span>
+      </div>
+    </div>
+    <ul class="checklist">
+      <li>Can derive Accuracy, Precision, Recall, F1 from TP/TN/FP/FN alone, without looking them up</li>
+      <li>Knows why F1 uses harmonic mean: penalizes imbalance between precision and recall</li>
+      <li>Can explain why 99% accuracy is meaningless on a 99%-negative dataset</li>
+      <li>Knows AUC-ROC's probabilistic interpretation: P(score(pos) &gt; score(neg))</li>
+      <li>Knows when AUC-ROC lies: under heavy class imbalance → use AUC-PR instead</li>
+      <li>Can explain the precision-recall tradeoff: raising threshold increases P, decreases R</li>
+      <li>Knows Fβ: β &gt; 1 weights recall, β &lt; 1 weights precision. Can give a use case for each.</li>
+      <li>MAE vs MSE: MAE robust to outliers (L1 loss), MSE penalizes large errors more (L2 loss)</li>
+      <li>Can explain R² = 1 − SS_res/SS_tot and why R² can be negative</li>
+      <li>Knows Adjusted R²: penalizes adding useless features that inflate raw R²</li>
+      <li>IoU = TP / (TP + FP + FN) — denominator is the union, TN never appears</li>
+      <li>Dice = 2·TP / (2·TP + FP + FN) — always ≥ IoU; Dice = 2·IoU/(1+IoU)</li>
+      <li>Dice as training loss (differentiable), IoU as evaluation metric (interpretable) — knows the difference</li>
+      <li>Knows the ε smoothing term in Dice/IoU: prevents div-by-zero, slightly biases toward 1 on empty masks</li>
+      <li>Can explain macro vs micro vs weighted F1 averaging and when each is appropriate</li>
+      <li>MCC includes all four confusion matrix cells — more balanced than F1 for imbalanced data</li>
+    </ul>
+  </div>
+
+</main>
+</div>
+
+<script>
+function cp(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText || pre.textContent).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>

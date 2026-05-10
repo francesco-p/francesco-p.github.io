@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Deep-Dive — Francesco Pelosin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #111;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex; flex-direction: column;
+}
+.nav-logo { font-family: 'Fraunces', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+.nav-sub { font-size: 11px; color: var(--muted); opacity: 0.5; margin-bottom: 2rem; font-family: 'DM Mono', monospace; letter-spacing: 0.04em; }
+.nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 1.4rem 0 0.4rem; font-weight: 500; opacity: 0.5; }
+nav a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; padding: 3px 0; transition: color 0.15s; font-weight: 300; }
+nav a:hover { color: var(--accent); }
+.nav-bottom { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 2px 0; font-family: 'DM Mono', monospace; }
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 860px; }
+
+/* ── Hero ── */
+.hero { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 500; margin-bottom: 1rem; font-family: 'DM Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 1.2rem; }
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 580px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill { font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+.pill.blue { background: rgba(122,191,200,0.08); border-color: rgba(122,191,200,0.25); color: var(--accent2); }
+.pill.red  { background: rgba(200,122,122,0.08); border-color: rgba(200,122,122,0.25); color: var(--red); }
+
+/* ── Project header ── */
+.project-block { margin-bottom: 4rem; scroll-margin-top: 2rem; }
+
+.project-header {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 1.3rem 1.5rem; margin-bottom: 2rem;
+}
+.project-tag { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.6rem; opacity: 0.65; }
+.project-name { font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+.project-context { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+.project-meta { display: flex; gap: 1.5rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.meta-item { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+.meta-item span { color: var(--accent2); margin-left: 4px; }
+
+/* ── Q&A ── */
+.qa-block { margin-bottom: 0.8rem; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+
+.qa-question {
+  display: flex; align-items: flex-start; gap: 0.9rem;
+  padding: 1rem 1.2rem; cursor: pointer;
+  background: var(--bg2); transition: background 0.12s;
+  user-select: none;
+}
+.qa-question:hover { background: var(--bg3); }
+
+.qa-q-marker {
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  padding: 2px 7px; border-radius: 3px; flex-shrink: 0; margin-top: 1px;
+  letter-spacing: 0.06em;
+}
+.depth-1 .qa-q-marker { background: rgba(122,200,122,0.12); color: var(--green); border: 1px solid rgba(122,200,122,0.25); }
+.depth-2 .qa-q-marker { background: rgba(200,185,122,0.12); color: var(--accent); border: 1px solid rgba(200,185,122,0.25); }
+.depth-3 .qa-q-marker { background: rgba(200,122,122,0.12); color: var(--red); border: 1px solid rgba(200,122,122,0.25); }
+.depth-4 .qa-q-marker { background: rgba(200,122,178,0.12); color: var(--accent3); border: 1px solid rgba(200,122,178,0.25); }
+
+.qa-q-text { font-size: 14px; color: var(--text); font-weight: 400; line-height: 1.5; flex: 1; }
+.qa-chevron { font-size: 12px; color: var(--muted); flex-shrink: 0; margin-top: 3px; transition: transform 0.2s; }
+.qa-block.open .qa-chevron { transform: rotate(180deg); }
+
+.qa-answer {
+  display: none; padding: 1.1rem 1.2rem 1.1rem 3.2rem;
+  border-top: 1px solid var(--border); background: var(--bg);
+}
+.qa-block.open .qa-answer { display: block; }
+
+.qa-answer p { font-size: 14px; color: var(--muted); line-height: 1.8; margin-bottom: 0.8rem; }
+.qa-answer p:last-child { margin-bottom: 0; }
+.qa-answer strong { color: var(--text); font-weight: 500; }
+.qa-answer em { color: var(--accent); font-style: normal; }
+
+/* Inline code in answers */
+.qa-answer code {
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  padding: 1px 5px; border-radius: 3px; color: var(--accent);
+}
+
+/* Code block in answer */
+.qa-answer pre {
+  background: var(--code-bg); border: 1px solid var(--border2);
+  border-radius: 4px; padding: 1rem 1.2rem; margin: 0.8rem 0;
+  overflow-x: auto; font-family: 'DM Mono', monospace; font-size: 12.5px;
+  line-height: 1.7; color: #c9c0b0;
+}
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #4a4740; font-style: italic; }
+
+/* Insight box inside answer */
+.insight {
+  border-left: 2px solid var(--accent2);
+  background: rgba(122,191,200,0.05);
+  padding: 0.7rem 1rem; margin: 0.8rem 0;
+  border-radius: 0 4px 4px 0; font-size: 13px; line-height: 1.65;
+}
+.insight.orange { border-left-color: var(--orange); background: rgba(200,149,106,0.05); }
+.insight.red    { border-left-color: var(--red);    background: rgba(200,122,122,0.05); }
+.insight.green  { border-left-color: var(--green);  background: rgba(122,200,122,0.05); }
+.insight.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.insight-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; font-family: 'DM Mono', monospace; opacity: 0.55; margin-bottom: 0.3rem; }
+
+/* Bullet list in answer */
+.qa-answer ul { list-style: none; margin: 0.5rem 0; }
+.qa-answer ul li { font-size: 14px; color: var(--muted); padding: 3px 0 3px 1.2rem; position: relative; line-height: 1.6; }
+.qa-answer ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 11px; top: 6px; font-family: 'DM Mono', monospace; }
+
+/* ── Section separator ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+.depth-legend {
+  display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;
+  padding: 0.8rem 1rem; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Expand all ── */
+.expand-row { display: flex; gap: 8px; margin-bottom: 1.2rem; }
+.exp-btn {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
+  background: none; border: 1px solid var(--border2); border-radius: 3px;
+  padding: 4px 10px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.06em;
+}
+.exp-btn:hover { color: var(--accent); border-color: var(--tag-border); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 760px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.2rem 4rem; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">Interview Prep</div>
+  <div class="nav-sub">Francesco Pelosin, Ph.D.</div>
+
+  <span class="nav-section">Project 1</span>
+  <a href="#microtec">SSL Segmentation — Microtec</a>
+  <a href="#microtec-mim">Masked Image Modeling</a>
+  <a href="#microtec-swin">Swin + DPT Head</a>
+  <a href="#microtec-heads">Per-class head strategy</a>
+  <a href="#microtec-label">Label efficiency</a>
+
+  <span class="nav-section">Project 2</span>
+  <a href="#pirelli">Diffusion — Pirelli</a>
+  <a href="#pirelli-ddpm">DDPM & inpainting</a>
+  <a href="#pirelli-speed">Inference optimization</a>
+  <a href="#pirelli-coarse">Coarse-to-fine trick</a>
+  <a href="#pirelli-patch">Patch inference</a>
+
+  <span class="nav-section">Project 3</span>
+  <a href="#continual">Continual Learning — Leonardo</a>
+  <a href="#continual-mind">MIND architecture</a>
+  <a href="#continual-forget">Catastrophic forgetting</a>
+  <a href="#continual-unlearn">Machine unlearning</a>
+
+  <span class="nav-section">Cross-cutting</span>
+  <a href="#class-imbalance">Class imbalance (ECCV paper)</a>
+  <a href="#weakly">Weakly supervised — Durst</a>
+  <a href="#transfer">Transfer learning depth</a>
+  <a href="#prod">Production & MLOps</a>
+
+  <span class="nav-section">Wildcard</span>
+  <a href="#wildcard">Questions you didn't expect</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;opacity:.5;">legend</div>
+    <div class="nav-stat"><span style="color:var(--green);">●</span><span>surface</span></div>
+    <div class="nav-stat"><span style="color:var(--accent);">●</span><span>technical</span></div>
+    <div class="nav-stat"><span style="color:var(--red);">●</span><span>deep</span></div>
+    <div class="nav-stat"><span style="color:var(--accent3);">●</span><span>limit probe</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <div class="hero">
+    <div class="hero-label">Amazon Technical Interview · Deep-Dive Simulation</div>
+    <h1>They will pull<br>on <em>every thread</em></h1>
+    <p class="hero-desc">
+      Each question here maps to something in your resume. The interviewer starts with your framing,
+      then digs — architecture choices, failure modes, what you'd do differently,
+      how it compares to SOTA. Questions are ordered by depth: green is where they start,
+      purple is where they test whether you've actually hit the wall.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Masked Image Modeling</span>
+      <span class="pill">DDPM inpainting</span>
+      <span class="pill">Continual learning</span>
+      <span class="pill blue">Swin Transformer</span>
+      <span class="pill blue">DPT head</span>
+      <span class="pill red">Catastrophic forgetting</span>
+      <span class="pill red">Inference at 30k×5k</span>
+    </div>
+
+    <div class="depth-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span style="color:var(--green)">surface</span> — "tell me about X"</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div><span style="color:var(--accent)">technical</span> — "why not Y?"</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span style="color:var(--red)">deep</span> — "what breaks first?"</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div><span style="color:var(--accent3)">limit probe</span> — "what don't you know?"</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--   PROJECT 1 — SSL SEGMENTATION (MICROTEC)            -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <div class="project-block" id="microtec">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--accent)">Project 01 · Microtec · Self-Supervised Segmentation</div>
+      <div class="project-name">Masked Image Modeling → Multi-class Semantic Segmentation</div>
+      <p class="project-context">
+        Client had a multiclass semantic segmentation model for wood defects that overfitted every time it shipped.
+        You proposed and delivered a masked image modeling (MIM) warmup on a Swin Transformer backbone, froze it,
+        and attached per-class DPT-inspired segmentation heads. Reduced labeling cost ~95%. Published at ECCV 2024.
+      </p>
+      <div class="project-meta">
+        <div class="meta-item">Backbone <span>Swin Transformer</span></div>
+        <div class="meta-item">Pretraining<span>Masked Image Modeling</span></div>
+        <div class="meta-item">Head<span>DPT-inspired</span></div>
+        <div class="meta-item">Metric<span>per-class F1</span></div>
+        <div class="meta-item">Published<span>ECCV 2024 VISION Workshop</span></div>
+      </div>
+    </div>
+
+    <div class="expand-row">
+      <button class="exp-btn" onclick="expandAll('microtec-qs')">expand all</button>
+      <button class="exp-btn" onclick="collapseAll('microtec-qs')">collapse all</button>
+    </div>
+
+    <div id="microtec-qs">
+
+    <!-- Q1 surface -->
+    <div class="qa-block depth-1" id="microtec-mim">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">S</span>
+        <span class="qa-q-text">Walk me through the two solutions you proposed to the client. Why did they prefer the SSL approach over the pseudo-label one?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>The first proposal was a <strong>transfer learning + pseudo-label pipeline</strong>: take a UNet pretrained on natural images, fine-tune with the few labeled samples, generate pseudo-labels on unlabeled data, iterate. Fast, interpretable, and low-risk — but it still needs enough real labels to bootstrap a decent initial model, and pseudo-labels inherit the model's current biases. If the initial model is weak, the pseudo-labels are noisy and training collapses.</p>
+        <p>The second was a <strong>self-supervised warmup via Masked Image Modeling</strong>: let the backbone learn representations from the raw unlabeled images before ever seeing a label. The intuition is that a model that can reconstruct masked regions must understand the texture, edges, and spatial structure of the data. Only after this warmup are labels introduced — and far fewer are needed because the backbone is already "domain-aware".</p>
+        <p>The client preferred the SSL approach for two reasons: <em>autonomy</em> (they could continuously feed new unlabeled production images into pretraining without involving annotation teams) and <em>generalization</em> (the backbone representations generalize better across defect types rather than overfitting to whichever defects happened to be in the labeled set).</p>
+        <div class="insight">
+          <div class="insight-label">Be ready to follow up with</div>
+          "Why did MIM work better than contrastive SSL (DINO, SimCLR) for this use case?" — the answer is that MIM is better for dense prediction tasks because it forces patch-level understanding, whereas contrastive methods optimize global image-level representations.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2 technical -->
+    <div class="qa-block depth-2">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">Why Swin Transformer over a standard ViT for the MIM backbone? What does the shifted window attention buy you specifically for dense prediction?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>Standard ViT computes global self-attention: every patch attends to every other patch. That's O(N²) in the number of patches, which becomes prohibitive for high-resolution industrial images. More importantly, ViT treats all patches uniformly — it has no explicit notion of locality or multi-scale hierarchy.</p>
+        <p><strong>Swin builds a hierarchical feature pyramid natively</strong>: early stages operate on small windows (e.g. 7×7) at full resolution, later stages merge patches and attend at coarser scales. This gives you multi-scale feature maps — exactly what dense prediction heads like DPT, FPN, or Mask2Former consume. A plain ViT produces features at a single scale which requires expensive upsampling to recover spatial detail.</p>
+        <p>The <em>shifted window</em> mechanism is what makes cross-window communication possible without global attention: even-numbered layers shift the window partition by half, so information crosses window boundaries over successive layers. The receptive field grows layer by layer without O(N²) cost.</p>
+        <div class="insight orange">
+          <div class="insight-label">Potential follow-up trap</div>
+          "ViT-Adapter and plain ViT + FPN also work for dense tasks — did you consider them?" Yes: ViT-Adapter adds a convolutional adapter branch to ViT to recover multi-scale features. Swin is more parameter-efficient for high resolution in a resource-constrained industrial setting.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3 technical - MIM details -->
+    <div class="qa-block depth-2" id="microtec-swin">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">How exactly did you implement the MIM pretraining? What was the masking ratio, reconstruction target, and loss? How does this differ from MAE vs SimMIM?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>The pretraining objective is <strong>pixel-level reconstruction</strong>: mask a fraction of input patches (typically 40–75%), pass the visible patches through the encoder, then reconstruct the masked pixels from the encoded representation. The loss is mean squared error in pixel space (or normalized pixel space as in MAE).</p>
+        <p><strong>MAE (He et al., 2022)</strong> was designed for ViT: it operates on raw patches, uses a very high masking ratio (~75%), and the decoder is a shallow Transformer that reconstructs pixel values. Because ViT doesn't downsample, masking is straightforward.</p>
+        <p><strong>SimMIM (Xie et al., 2021)</strong> was designed for Swin: it masks at the raw image level (not after patch embedding), uses a simpler 1-layer convolution decoder, and the masking ratio is lower (~32%) because Swin's hierarchical downsampling makes high-ratio masking harder — patches at later stages cover large image regions. The reconstruction target is the raw pixel values of the masked patches.</p>
+        <p>For this project the approach was <em>SimMIM-style</em> since the backbone was Swin: mask at input resolution, let the hierarchical encoder process visible tokens, decode with a lightweight head to reconstruct masked regions. The warmup trains the encoder to produce rich patch-level features that downstream heads can exploit.</p>
+        <pre><span class="c-cm"># SimMIM masking — simplified</span>
+mask = (torch.rand(B, H//P, W//P) < mask_ratio)  <span class="c-cm"># True = masked</span>
+x_masked = x.clone()
+x_masked[:, :, mask] = mask_token                  <span class="c-cm"># replace with learned token</span>
+feats = encoder(x_masked)
+pred  = decoder(feats)
+loss  = F.mse_loss(pred[mask], target[mask])       <span class="c-cm"># only on masked positions</span></pre>
+      </div>
+    </div>
+
+    <!-- Q4 technical - DPT head -->
+    <div class="qa-block depth-2">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">You said you used a "DPT-inspired head." What is DPT and why didn't you use a standard FCN or FPN head? What trade-off did you make?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p><strong>DPT (Dense Prediction Transformer, Ranftl et al., 2021)</strong> is a decoder designed to consume the intermediate feature maps of a hierarchical vision transformer at multiple scales. For a Swin Transformer, you'd extract features from stages 1–4 at different resolutions (e.g. H/4, H/8, H/16, H/32), reassemble them progressively via bilinear upsampling + convolution fusion layers, and produce a full-resolution dense output.</p>
+        <p>A standard <strong>FCN</strong> applies convolutions directly on the last feature map — single scale, no multi-resolution fusion. It works for CNNs with skip connections built in but misses the rich multi-scale context that Swin's hierarchy provides.</p>
+        <p>An <strong>FPN</strong> is closer — it merges feature pyramids top-down — but it was designed for convolutional backbones where feature maps have spatial structure that maps cleanly to anchor boxes. For a Transformer backbone where tokens are abstract vectors, DPT's reassembly blocks (which convert token sequences back to spatial grids) are more principled.</p>
+        <p>The trade-off: DPT is more complex to implement and heavier than a simple FCN. In this project I used a "DPT-inspired" head, meaning I preserved the reassembly + fusion structure but simplified the number of fusion stages to keep inference latency acceptable on the client's hardware.</p>
+      </div>
+    </div>
+
+    <!-- Q5 deep - per class heads -->
+    <div class="qa-block depth-3" id="microtec-heads">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">You froze the backbone and instantiated one head per class. Why separate heads rather than a single multi-class head? What does this buy you in continual deployment and what does it cost?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>The industrial motivation is <strong>incremental deployment</strong>: when a new defect type appears on the production line, you attach a new head and fine-tune it in isolation, without touching the backbone or any previously trained head. The client can add defect types with minimal annotation and zero risk of disrupting existing defect detection.</p>
+        <p>This is essentially a form of <strong>modular continual learning</strong> — each head is a separate binary segmentation problem (defect vs background), so the outputs are per-class confidence maps. At inference you take the argmax (or threshold) across all heads.</p>
+        <p><strong>What it buys:</strong></p>
+        <ul>
+          <li>No catastrophic forgetting — new head training doesn't touch old heads</li>
+          <li>Class-specific fine-tuning signal — each head can be trained on data where that specific class is present</li>
+          <li>Natural handling of class imbalance — each head sees a balanced binary problem</li>
+          <li>Easy ablation — you can evaluate each defect independently with per-class F1</li>
+        </ul>
+        <p><strong>What it costs:</strong></p>
+        <ul>
+          <li>Memory scales linearly with number of classes at inference time</li>
+          <li>Potential inconsistency: two heads might both fire on the same pixel (requires post-processing)</li>
+          <li>No shared learning between classes — a scratch defect and a crack share structural features that a unified head could exploit via shared intermediate representations</li>
+          <li>Inference time grows with number of heads unless you batch their forward passes</li>
+        </ul>
+        <div class="insight green">
+          <div class="insight-label">SOTA comparison</div>
+          Mask2Former uses a unified query-based decoder that handles all classes in one pass — likely better on high-class-count problems. Your per-head approach trades inference efficiency for deployment flexibility, which was the right call for this industrial client.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 deep - label efficiency -->
+    <div class="qa-block depth-3" id="microtec-label">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">You claim 95% labeling cost reduction. What's the actual number of labeled samples per class? How did you validate that the pretrained backbone — not just more data — drove the improvement?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is a critical question and the honest answer requires separating two things: the absolute number of labeled samples needed, and the ablation that isolates the contribution of the SSL pretraining.</p>
+        <p>A 95% cost reduction means going from, say, 1000 labeled masks to ~50 per defect class. Whether that's truly due to the SSL backbone or just because the task is learnable with fewer labels (because of the inductive biases of Swin, or the specific defect structure) is the key empirical question.</p>
+        <p>The rigorous ablation would be:</p>
+        <ul>
+          <li><strong>Baseline A:</strong> Swin pretrained on ImageNet, fine-tuned with N labels — no SSL warmup</li>
+          <li><strong>Baseline B:</strong> Swin with SSL warmup on domain data, fine-tuned with N labels</li>
+          <li><strong>Baseline C:</strong> Random init Swin, fine-tuned with N labels</li>
+        </ul>
+        <p>If B significantly outperforms A at low N, the SSL warmup genuinely helps adapt the backbone to domain-specific texture statistics. If B ≈ A, the ImageNet pretraining was already sufficient and the gain came from architecture/regularization choices.</p>
+        <p>In practice for industrial texture segmentation, SSL warmup on domain data consistently helps at very low label regimes (N &lt; 50) because ImageNet features don't represent wood defect textures well. The ECCV paper documents partial results validating this.</p>
+        <div class="insight red">
+          <div class="insight-label">Honest answer if probed harder</div>
+          "The 95% figure is vs the client's original pipeline which had no pretraining and used a simpler backbone. A fully controlled ablation vs ImageNet-pretrained Swin + DPT head was not the primary scope of the client engagement — that's in the research paper." This is an acceptable industrial vs research distinction.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q7 limit probe -->
+    <div class="qa-block depth-4">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">L</span>
+        <span class="qa-q-text">If the client's defect distribution shifts significantly after deployment — new lighting, new wood species — what happens to your frozen backbone? How would you handle distribution shift in production without full retraining?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is the core failure mode of any frozen-backbone approach: if the input distribution shifts, the frozen features become increasingly mismatched to the new data. For industrial deployments this happens regularly — lighting changes with seasons, sensor calibration drifts, raw material sources change.</p>
+        <p><strong>Detection:</strong> Monitor feature distribution drift using Maximum Mean Discrepancy (MMD) or embedding-space statistics between a reference set and incoming production batches. When drift exceeds a threshold, trigger retraining.</p>
+        <p><strong>Mitigations without full retraining:</strong></p>
+        <ul>
+          <li><strong>LoRA / adapters on the backbone:</strong> Keep the pretrained weights frozen but insert low-rank adaptation modules at each transformer block. Fine-tune only the adapters on a small set of new-domain samples. Parameter cost is ~1–5% of backbone.</li>
+          <li><strong>Test-time adaptation (TTA):</strong> At inference, briefly adapt BatchNorm statistics (or LayerNorm) to the incoming batch distribution. Works without any labels.</li>
+          <li><strong>Prompt tuning / visual prompting:</strong> Prepend learnable tokens to the input sequence that steer the frozen backbone's attention. Fine-tune only the prompt tokens.</li>
+          <li><strong>Continual pretraining of the backbone:</strong> Periodically run a short MIM warmup on new unlabeled production images to update the backbone representations. This is the cleanest solution but requires compute budget.</li>
+        </ul>
+        <div class="insight purple">
+          <div class="insight-label">limit — be honest here</div>
+          The theoretical grounding for when LoRA vs full fine-tune vs TTA is optimal under a given distributional shift is not well-settled. You can cite TENT (test-time entropy minimization), CoTTA (continual test-time adaptation), and TTT++ but this is an open research problem. Acknowledging this is stronger than pretending you know the answer.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q8 limit probe -->
+    <div class="qa-block depth-4">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">L</span>
+        <span class="qa-q-text">MIM reconstructs pixels — but pixel-space MSE doesn't necessarily correlate with semantic quality. Have you considered perceptual losses, SSIM, or feature-space reconstruction targets? What would you use if you were redesigning this today?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is a genuine limitation of pixel-space MSE: two images can be perceptually identical but have very different MSE, and vice versa. For natural image texture, the loss of high-frequency detail in blurry predictions is "cheap" in MSE terms but semantically costly.</p>
+        <p><strong>What I'd consider redesigning toward:</strong></p>
+        <ul>
+          <li><strong>Feature-space reconstruction (BEiT / data2vec target):</strong> Instead of predicting raw pixels, predict the DINO or CLIP feature of the masked patch. This forces the model to learn semantically meaningful representations, not just texture patterns. BEiT uses discrete visual tokens from a DALL-E tokenizer as targets; data2vec uses a rolling EMA of the model's own representations.</li>
+          <li><strong>SSIM loss:</strong> Structural Similarity accounts for luminance, contrast, and structure jointly. More perceptually meaningful than MSE but harder to optimize — SSIM isn't always differentiable at all points.</li>
+          <li><strong>PatchGAN discriminator:</strong> Add an adversarial loss at the patch level to push reconstructions toward realistic textures. Relevant for industrial texture where MSE produces blurry averages over ambiguous regions.</li>
+          <li><strong>Masked Feature Prediction (MaskFeat):</strong> Predict HOG features of masked regions instead of pixels — HOG captures local texture and gradient orientation which is exactly what industrial defect detectors need.</li>
+        </ul>
+        <p>For this specific problem (wood defect texture), MaskFeat or feature-space targets would likely produce better downstream segmentation than pixel-space MSE, at the cost of additional complexity in the pretraining setup.</p>
+      </div>
+    </div>
+
+    </div><!-- end microtec-qs -->
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--   PROJECT 2 — DIFFUSION INPAINTING (PIRELLI)         -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <div class="project-block" id="pirelli">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--accent2)">Project 02 · Pirelli · Synthetic Data via Diffusion Inpainting</div>
+      <div class="project-name">DDPM Inpainting on 30,000×5,000 Industrial Tyre Images</div>
+      <p class="project-context">
+        Built a diffusion model pipeline (UNet + DDPM, noise-removal target) to inpaint masked regions of industrial tyre surface images.
+        Images were 30,000×5,000 pixels. Initial inference: 3 min/image. Optimized to ~10 sec via coarse-to-fine patch inference
+        (prior model provides approximation, refinement model corrects the delta). Published at CVPR 2025 Synthetic Data Workshop.
+      </p>
+      <div class="project-meta">
+        <div class="meta-item">Architecture<span>UNet + DDPM</span></div>
+        <div class="meta-item">Conditioning<span>inpainting mask</span></div>
+        <div class="meta-item">Image size<span>30,000 × 5,000</span></div>
+        <div class="meta-item">Speedup<span>3 min → 10 sec</span></div>
+        <div class="meta-item">Published<span>CVPR 2025 Synth. Data Workshop</span></div>
+      </div>
+    </div>
+
+    <div class="expand-row">
+      <button class="exp-btn" onclick="expandAll('pirelli-qs')">expand all</button>
+      <button class="exp-btn" onclick="collapseAll('pirelli-qs')">collapse all</button>
+    </div>
+
+    <div id="pirelli-qs">
+
+    <!-- Q1 surface -->
+    <div class="qa-block depth-1" id="pirelli-ddpm">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">S</span>
+        <span class="qa-q-text">Explain the DDPM formulation you used for inpainting. How does mask conditioning work at training time vs inference time?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p><strong>DDPM (Ho et al., 2020)</strong> defines a forward process that gradually adds Gaussian noise to an image over T steps until the image becomes pure noise, and a reverse process that learns to denoise step by step. The UNet is trained to predict the noise <code>ε</code> added at step <code>t</code> given the noisy image <code>xₜ</code>:</p>
+        <pre>L = E[||ε - ε_θ(xₜ, t)||²]   ← noise prediction target</pre>
+        <p><strong>For inpainting, conditioning on the mask works differently at training vs inference:</strong></p>
+        <p><strong>Training:</strong> The model receives as input the concatenation of the noisy image and the inpainting mask (and optionally the known/unmasked pixels): <code>input = concat(xₜ, mask, x₀ * (1-mask))</code>. The UNet input channels expand from 3 (RGB) to 3 + 1 + 3 = 7. The model learns to produce consistent predictions for the masked region given the surrounding unmasked context.</p>
+        <p><strong>Inference (RePaint / outpainting style):</strong> At each denoising step, after predicting the denoised image, you "re-impose" the known pixels by replacing the unmasked region with the forward-noised version of the original image at step t — keeping only the masked region from the model's prediction. This ensures the generated region blends with the true unmasked pixels at every step.</p>
+        <div class="insight">
+          <div class="insight-label">RePaint vs direct conditioning</div>
+          RePaint (Lugmayr et al., 2022) applies this re-injection iteratively and uses backtracking (re-noising) for better harmony at boundaries. Your direct concatenation approach is simpler and faster but may produce less coherent boundaries on complex textures.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2 technical - why not latent diffusion -->
+    <div class="qa-block depth-2">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">Why did you train a pixel-space DDPM rather than a latent diffusion model (LDM / Stable Diffusion style)? For 30k×5k images, the memory footprint must have been enormous.</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is the right question to ask. LDMs (Rombach et al., 2022) compress images to a latent space using a pretrained VAE (typically 8× spatial downsampling) and run the diffusion process in that compressed space. This makes DDPM on high-resolution images tractable — SD 2.1 generates 768×768 images in latent space that's only 96×96.</p>
+        <p>For 30,000×5,000 pixel-space DDPM, the memory footprint would be catastrophic if you tried to process the full image at once. The key insight is that <strong>you never process the full image</strong> — you work on patches. Pixel-space was chosen because:</p>
+        <ul>
+          <li><strong>No VAE needed:</strong> Training a good VAE that faithfully encodes industrial tyre texture at 30k×5k is itself a hard problem. Any VAE compression would blur fine-grained surface defects.</li>
+          <li><strong>No pretrained prior available:</strong> LDMs leverage pretrained VAEs trained on natural images (LAION, OpenImages). These don't generalize to highly structured industrial textures with micron-scale features.</li>
+          <li><strong>Patch-local coherence is sufficient:</strong> The inpainting regions are local — you don't need global semantic coherence across the full 30k image. Pixel-space on patches is the right abstraction.</li>
+        </ul>
+        <p>The trade-off is that pixel-space DDPM is slower per step (full UNet on patch resolution vs compact UNet on latent) and requires more steps for good quality. That's exactly the problem you then solved with the coarse-to-fine trick.</p>
+      </div>
+    </div>
+
+    <!-- Q3 technical - inference speed -->
+    <div class="qa-block depth-2" id="pirelli-speed">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">Break down where the 3-minute inference time came from. How many denoising steps were you running? What was the patch size and stride?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>The 3-minute bottleneck had several compounding contributors:</p>
+        <ul>
+          <li><strong>Denoising steps:</strong> Standard DDPM uses T=1000 steps. Even with DDIM acceleration (50–250 steps), each step requires a full UNet forward pass.</li>
+          <li><strong>Patch extraction and tiling:</strong> A 30,000×5,000 image with patch size 512×512 and stride 256 produces hundreds to thousands of overlapping patches. Each patch requires T denoising steps independently.</li>
+          <li><strong>Sequential inference:</strong> If patches were processed sequentially rather than batched, GPU utilization would be poor — most time spent on CPU overhead and data movement.</li>
+        </ul>
+        <p>A rough calculation: 1000 patches × 100 DDIM steps × ~30ms per UNet forward pass = 3000 seconds = 50 minutes. So the original 3 minutes implies either fewer patches (small inpainting region), highly parallel batching, or something else was the bottleneck — possibly I/O from reading/writing the 30k image.</p>
+        <div class="insight orange">
+          <div class="insight-label">Key honest point</div>
+          Be precise about what the 3 minutes actually included — was it end-to-end (I/O + inference + blending)? Or just inference? If the interviewer pushes on numbers, being honest about the breakdown is better than guessing.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q4 deep - coarse to fine -->
+    <div class="qa-block depth-3" id="pirelli-coarse">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">The core trick was "conditioning the model to predict the delta w.r.t. a coarse prior." Describe this precisely. How do you train the refinement model? What does its loss look like?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is a <strong>residual learning / cascaded diffusion</strong> approach. Instead of generating the inpainted region from pure noise (which requires the full 1000 steps to build up texture from scratch), you start from a coarse approximation and only denoise the <em>residual</em>.</p>
+        <p><strong>Stage 1 — Coarse model:</strong> A fast, lightweight model (could be a simple CNN inpainter, or a very low-step DDPM) produces a rough approximation of the missing region. This is low-quality but fast — it handles large-scale structure (color, shading gradients) but misses fine texture detail.</p>
+        <p><strong>Stage 2 — Refinement model:</strong> The refinement diffusion model takes as input the coarse prediction and learns to correct it. Critically, it starts the reverse diffusion process from a lower noise level (e.g., t=200 instead of t=1000) because the coarse image is already close to the target:</p>
+        <pre>x_start = coarse_prediction
+x_t     = forward_noising(x_start, t=200)   <span class="c-cm"># add modest noise</span>
+x_0_hat = refinement_ddpm(x_t, t=200)       <span class="c-cm"># denoise from t=200 → 0</span>
+delta   = x_0_hat - x_start                 <span class="c-cm"># the learned correction</span></pre>
+        <p>The refinement model's training loss is still noise prediction MSE, but training data pairs are (noisy coarse prediction, ground truth residual). You can also formulate it as predicting the delta directly with an L1 or perceptual loss.</p>
+        <p>The speedup comes from: (1) coarse model runs in milliseconds, (2) refinement only needs ~20–50 steps starting from t=200 instead of 1000 steps from t=1000 — roughly 5–50× fewer denoising iterations.</p>
+        <div class="insight">
+          <div class="insight-label">Related work</div>
+          This is conceptually close to <strong>Cascaded Diffusion Models (Ho et al., 2022)</strong> and <strong>SDEdit</strong> — which adds noise to a coarse prediction and runs the reverse process from that intermediate step. Knowing these papers and positioning your solution in that context would impress an interviewer.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q5 deep - patch inference -->
+    <div class="qa-block depth-3" id="pirelli-patch">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">Patch inference at 30k×5k introduces boundary artifacts. How did you handle seam blending? What happens at the boundary of an inpainting mask that falls across two patches?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>Boundary artifacts at patch seams are one of the hardest problems in tiled inference. Two types of artifacts occur:</p>
+        <ul>
+          <li><strong>Photometric seams:</strong> Adjacent patches generated independently have slightly different mean color/brightness — visible as grid-like discontinuities in the output.</li>
+          <li><strong>Texture discontinuities:</strong> The model generates texture patterns independently in each patch. Without knowing the neighboring patch's content, it can produce textures that clash at boundaries.</li>
+        </ul>
+        <p><strong>Overlap + Gaussian blending:</strong> The standard solution is overlapping patches with alpha blending. Extract patches with stride &lt; patch_size (e.g. patch=512, stride=256, so 50% overlap). In the overlap region, blend two predictions using a Gaussian weight window that peaks at the center of each patch and falls to zero at edges. This smooths color discontinuities but doesn't fix texture mismatches.</p>
+        <p><strong>For inpainting mask boundaries across patches:</strong> The mask region may span multiple patches. If patch A generates the left half of a masked region and patch B generates the right half independently, they won't be consistent. The solution is to include surrounding context in both patches and use only the central crop of each patch's output (discard the prediction near patch edges where context is thin). For DDPM specifically, RePaint-style re-injection of known pixels at every denoising step helps anchor both patches to the same unmasked context.</p>
+        <div class="insight red">
+          <div class="insight-label">Harder version</div>
+          For long-range structural coherence (e.g., a tyre tread pattern that continues across 50 patches), neither overlap blending nor RePaint fully solves the problem. MultiDiffusion (Bar-Tal et al., 2023) proposes running the denoising jointly across all overlapping patches at each step, averaging predictions in shared regions — at the cost of more computation per step. This is the right SOTA answer.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 limit probe -->
+    <div class="qa-block depth-4">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">L</span>
+        <span class="qa-q-text">How did you evaluate the quality of the synthetic data? FID, SSIM? And more importantly — did synthetic data actually improve the downstream defect detection model? How did you demonstrate that?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is the fundamental evaluation problem of synthetic data for industrial inspection: <em>the goal isn't photorealism, it's whether synthetic images improve downstream task performance.</em> FID and SSIM measure perceptual realism but have weak correlation with task utility.</p>
+        <p><strong>Relevant evaluation metrics:</strong></p>
+        <ul>
+          <li><strong>FID (Fréchet Inception Distance):</strong> Measures distance between real and generated image distributions in Inception-v3 feature space. Works poorly for domain-specific images (tyres) because Inception was trained on ImageNet — its features don't represent tyre texture meaningfully.</li>
+          <li><strong>Task-specific downstream evaluation:</strong> Train a segmentation model on (real + synthetic) data and compare vs training on real only. If the segmentation F1 improves, the synthetic data is useful. This is the only metric that matters for the client.</li>
+          <li><strong>Distribution matching in feature space:</strong> Embed real and synthetic images using your pretrained Swin backbone (domain-specific features) and compare distributions. This is more meaningful than FID for industrial domains.</li>
+        </ul>
+        <p>For the CVPR paper, the evaluation was bounding-box guided: the paper proposes generating synthetic images conditioned on bounding boxes and evaluates on standard segmentation benchmarks with and without synthetic augmentation.</p>
+        <div class="insight purple">
+          <div class="insight-label">Honest limit</div>
+          The fundamental question "does synthetic data help enough to justify the pipeline complexity vs simply collecting more real data?" often has the uncomfortable answer "it depends on how rare the defect is and how hard real collection is." For very rare defects (1 in 10,000 images), synthetic augmentation is critical. For common defects, simpler augmentation strategies (copy-paste, color jitter) may be competitive.
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end pirelli-qs -->
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--   PROJECT 3 — CONTINUAL LEARNING (LEONARDO / PhD)    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <div class="project-block" id="continual">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--accent3)">Project 03 · Leonardo S.p.A. · Continual Learning + Machine Unlearning</div>
+      <div class="project-name">MIND — Multi-Task Incremental Network Distillation (AAAI 2024 Oral)</div>
+      <p class="project-context">
+        Built a continual learning framework based on neural network submodules. AAAI oral. Also initiated
+        a machine unlearning methodology (DUCK — Distance-based Unlearning via Centroid Kinematics).
+        PhD published 8 papers across CVPR, AAAI, ECCV, IJCNN on continual learning.
+      </p>
+    </div>
+
+    <div class="expand-row">
+      <button class="exp-btn" onclick="expandAll('continual-qs')">expand all</button>
+      <button class="exp-btn" onclick="collapseAll('continual-qs')">collapse all</button>
+    </div>
+
+    <div id="continual-qs">
+
+    <!-- Q1 surface -->
+    <div class="qa-block depth-1" id="continual-mind">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">S</span>
+        <span class="qa-q-text">Explain the MIND architecture. What is a "submodule" in this context and how does incremental network distillation work?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p><strong>MIND (Multi-Task Incremental Network Distillation)</strong> addresses the problem of learning new tasks sequentially without forgetting previously learned ones — <em>catastrophic forgetting</em>. The core insight is that instead of a monolithic network that all tasks share, you structure the network as a set of task-specific submodules.</p>
+        <p>A <strong>submodule</strong> here is a small adapter block (or a task-specific set of parameters) that is attached to a shared frozen backbone for each new task. When task T arrives, you instantiate a new submodule for T, train it (potentially with distillation from previous task models to prevent backward interference), and freeze it after training. Old task submodules remain frozen and unmodified.</p>
+        <p><strong>Incremental distillation:</strong> When training the new task submodule, you distill from the old model's predictions on shared data (if available) or on synthetic rehearsal samples. This knowledge distillation acts as a soft constraint — the new model's outputs on old tasks should match the old model's outputs — preventing the shared backbone representations from drifting in ways that would degrade old tasks.</p>
+        <p>The multi-task aspect is that at inference, you either route inputs to the correct submodule (if task identity is known) or use a task-agnostic head that learns to aggregate across submodules.</p>
+      </div>
+    </div>
+
+    <!-- Q2 technical - catastrophic forgetting -->
+    <div class="qa-block depth-2" id="continual-forget">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">Compare the three main approaches to catastrophic forgetting: replay, regularization, and architecture growth. Where does MIND sit and what are its failure modes?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p><strong>Regularization methods (EWC, SI, MAS):</strong> Add a penalty term that slows updates to parameters important for previous tasks. Cheap — no extra storage — but the penalty is an approximation (Fisher information is expensive to compute exactly) and degrades with many sequential tasks as importance estimates accumulate.</p>
+        <p><strong>Replay methods (ER, DER++, GDumb):</strong> Store (or generate) a subset of old task data in a memory buffer. Replay it when training on new tasks. Very effective but raise privacy concerns (especially for sensitive data) and the buffer size is fixed — older tasks' representation diminishes as more tasks are added.</p>
+        <p><strong>Architecture growth (PackNet, PiggyBack, ProgressiveNets):</strong> Grow the network for each task — either by adding new modules or by identifying and "packaging" task-specific parameters. MIND belongs here. Advantages: no catastrophic forgetting by construction (old parameters frozen), no need for replay buffers. Disadvantages: model size grows with task count, forward transfer is limited (new tasks can't update shared representations), and task identity is typically required at inference.</p>
+        <p><strong>MIND's failure modes:</strong></p>
+        <ul>
+          <li>Scalability: adding K tasks adds K submodule sets — memory grows linearly</li>
+          <li>Task identity assumption: requires knowing which submodule to invoke at test time</li>
+          <li>Backward transfer is zero by construction — new tasks learn nothing from structural similarities to old tasks' weights</li>
+          <li>Distillation effectiveness degrades without access to old task data (exemplar-free setting)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Q3 deep - machine unlearning -->
+    <div class="qa-block depth-3" id="continual-unlearn">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">DUCK — "Distance-based Unlearning via Centroid Kinematics." What problem does machine unlearning solve and why is it non-trivial? What's the centroid kinematics approach specifically?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p><strong>Machine unlearning</strong> addresses the right-to-erasure problem: given a trained model and a "forget set" (data that should be erased — e.g., GDPR requests, data poisoning correction), produce a model that behaves as if it was never trained on that data. Naïve retraining from scratch is the ground truth but prohibitively expensive for large models.</p>
+        <p>It's non-trivial because neural networks don't store data — they store distributed representations. A single sample's influence is spread across millions of parameters through gradient descent. You can't simply "delete" a data point's contribution without re-running the entire training.</p>
+        <p><strong>DUCK's approach (centroid kinematics):</strong> The key insight is that in the model's feature space, the centroid of each class cluster moves predictably when data is removed. DUCK tracks where the class centroid would move after unlearning the forget set (the "kinematics" of the centroid) and directly adjusts the model's parameters to reflect this shift — without retraining.</p>
+        <p>Concretely: compute the centroid of the forget set in feature space, estimate its contribution to the class centroid, compute the centroid's trajectory under the removal of those samples (using influence functions or a closed-form approximation), and update a lightweight adapter to move the model's class representations accordingly.</p>
+        <div class="insight purple">
+          <div class="insight-label">Honest limit — be prepared</div>
+          Machine unlearning verification is an open problem. How do you prove the model truly "forgot"? Membership inference attacks (MIA) are the standard probe — if an attacker can still distinguish forget-set samples from non-training samples, unlearning failed. DUCK should be evaluated with MIA. If pushed to the limit of what certifiable unlearning looks like, the honest answer is that certified unlearning (with provable guarantees) only exists for convex models today.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q4 limit probe -->
+    <div class="qa-block depth-4">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">L</span>
+        <span class="qa-q-text">Your CVPR 2022 paper is titled "Simpler Is Better: off-the-shelf Continual Learning through Pretrained Backbones." That's essentially an argument that the field overcomplicated continual learning. Do you still believe that? What has the field learned since?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>The paper's thesis was empirically motivated: a frozen pretrained ViT backbone with a simple linear head per task dramatically outperforms complex continual learning methods (EWC, PackNet, DER++) — not because those methods are wrong, but because they were benchmarked against weak baselines that trained from scratch or fine-tuned the full network.</p>
+        <p><strong>Why this was true in 2022:</strong> The continual learning community was primarily benchmarking on Split-CIFAR, Permuted-MNIST, and similar low-resolution tasks where pretrained representations didn't exist. When you move to ImageNet-pretrained ViT features, the inter-task interference that CL methods try to solve largely disappears — the representations are already general enough.</p>
+        <p><strong>What the field has learned since:</strong></p>
+        <ul>
+          <li>The "simple baseline" finding has been confirmed and extended by multiple groups — CLIP/DINOv2 pretrained backbones make most classical CL methods redundant on standard benchmarks</li>
+          <li>The remaining hard problem is <em>domain-specific</em> continual learning where pretrained features don't transfer well (medical imaging, industrial inspection) — this is where the original methods recover relevance</li>
+          <li>The community has pivoted toward evaluating on harder benchmarks (Seq-DomainNet, FACIL) that require genuine adaptation of the backbone</li>
+          <li>Foundation model fine-tuning methods (LoRA, adapters) are now the practical approach — they provide CL for free (freeze backbone, add adapters per task) while enabling adaptation</li>
+        </ul>
+        <p>So: yes, I still believe the core insight — frozen strong priors beat sophisticated CL methods on tasks where the prior generalizes. But the paper's scope was limited and the interesting cases are exactly where it fails.</p>
+      </div>
+    </div>
+
+    </div><!-- end continual-qs -->
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--   CROSS-CUTTING TOPICS                               -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <div class="project-block" id="class-imbalance">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--green)">Cross-Cutting · ECCV 2024 Paper</div>
+      <div class="project-name">Dynamic Label Injection for Imbalanced Industrial Defect Segmentation</div>
+      <p class="project-context">The ECCV VISION Workshop paper title directly names the problem: class imbalance in defect segmentation. Be ready to defend every design choice.</p>
+    </div>
+
+    <div id="imbalance-qs">
+
+    <div class="qa-block depth-2">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">What is "dynamic label injection" and why is it better than standard techniques like class-weighted loss, focal loss, or oversampling?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>Standard approaches to class imbalance in segmentation:</p>
+        <ul>
+          <li><strong>Class-weighted cross-entropy:</strong> Multiply the loss of rare class pixels by a large weight. Simple but static — the weight doesn't adapt as training progresses and the model's confidence evolves.</li>
+          <li><strong>Focal loss:</strong> Down-weights easy examples (high confidence correct predictions) regardless of class. Helps with extreme background domination but doesn't specifically target rare classes.</li>
+          <li><strong>Oversampling:</strong> Duplicate training images containing rare classes. Effective but risks memorizing those specific images — the rare class appears only in fixed spatial contexts.</li>
+        </ul>
+        <p><strong>Dynamic label injection</strong> refers to adapting the training supervision signal on the fly based on the model's current performance per class. The "injection" part means introducing additional pseudo-annotations (or re-weighting existing ones) for underperforming classes as training progresses.</p>
+        <p>Concretely: monitor per-class F1 at regular intervals. Classes where the model is underperforming get their loss weight increased, or their training samples over-represented in the next epoch's batch composition. This closes the feedback loop between model performance and training data distribution — something static weighting can't do.</p>
+        <div class="insight">
+          <div class="insight-label">Related</div>
+          This is related to curriculum learning and hard example mining (OHEM — Online Hard Example Mining). OHEM selects the highest-loss pixels for backpropagation. Dynamic label injection is complementary — it operates at the sample/class level rather than the pixel level.
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block depth-3">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">Why use F1 as the primary metric for defect segmentation rather than mIoU? What does F1 fail to capture that mIoU would catch?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p><strong>F1 per defect class</strong> measures precision × recall balance for each defect category independently. In industrial inspection, missing a defect (false negative) is far more costly than a false alarm (false positive). F1 captures this trade-off cleanly and the per-class breakdown allows you to monitor each defect type separately — critical for a client who cares about specific defect classes rather than aggregate performance.</p>
+        <p><strong>mIoU (mean Intersection over Union)</strong> measures spatial overlap: (true positive pixels) / (TP + FP + FN pixels). It is more sensitive to the spatial precision of segmentation masks — a prediction that covers the right area but extends slightly outside the defect boundary will have lower IoU than F1 would penalize.</p>
+        <p><strong>What F1 misses that mIoU catches:</strong></p>
+        <ul>
+          <li>Spatial precision: two models with identical F1 can have very different boundary quality — one produces tight masks, the other blobby regions</li>
+          <li>Over-prediction penalty: F1 still rewards models that predict very large regions (high recall, low precision) more than IoU does, because IoU penalizes false positives in the denominator more heavily</li>
+          <li>For very large defects, F1 over a threshold (is the defect detected?) doesn't account for partial coverage — IoU would penalize a prediction covering only 30% of a large defect even if the recall threshold is met</li>
+        </ul>
+        <p>For industrial quality control where <em>detection</em> matters more than <em>spatial delineation</em> (downstream: reject the piece vs pass it), F1 is the right metric. If the output feeds a robot cutting system that needs precise defect boundaries, mIoU would be preferable.</p>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <div class="project-block" id="weakly">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--green)">Cross-Cutting · Durst · Weakly Supervised</div>
+      <div class="project-name">Weakly Supervised Learning — 75% Labeling Cost Reduction</div>
+    </div>
+    <div id="weakly-qs">
+    <div class="qa-block depth-2">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">What does "weakly supervised" mean in this context? Image-level labels? Bounding boxes? Scribbles? And how did you derive dense segmentation masks from weak supervision?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>Weak supervision covers any form of annotation that is cheaper than pixel-level masks. The spectrum from weakest to strongest: image-level tags → point annotations → scribbles → bounding boxes → polygon masks → pixel masks.</p>
+        <p><strong>Image-level labels + Class Activation Maps (CAMs):</strong> The most common weakly supervised segmentation approach. Train a classifier on image-level labels. The classifier's gradient w.r.t. input (GradCAM) or the activations of the last conv layer highlight the discriminative regions. These are thresholded to produce coarse segmentation seeds, which are then refined with CRF (Dense CRF) or with a separate refinement network trained on the CAM outputs as pseudo-labels.</p>
+        <p><strong>Bounding boxes:</strong> Use the box as a loose constraint — pixels inside the box belong to the class, pixels outside don't. GrabCut or MCG can propagate this to pixel-level labels. More recently, BoxInstSeg and BoxPolyp use diffusion / SAM to generate high-quality masks from boxes.</p>
+        <p>For the Durst project (printing press inspection), the "dataset ablation" framing suggests this was more about finding the minimal label set that preserves model performance — rather than a specific WS architecture. The 75% reduction came from identifying redundant labels via embedding-space clustering (CLIP/DINO embeddings) and removing near-duplicates from the training set.</p>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="project-block" id="prod">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--orange)">Cross-Cutting · MLOps & Production</div>
+      <div class="project-name">Shipping Research-Grade Models to Industrial Clients</div>
+    </div>
+    <div id="prod-qs">
+    <div class="qa-block depth-2">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">T</span>
+        <span class="qa-q-text">You use wandb, dvc, docker, uv. In the Alupress project you delivered a production POC in 2 weeks. Walk me through how you version a model, its training data, and its configuration in a way that's reproducible six months later.</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>Reproducibility requires versioning three orthogonal things: code, data, and configuration — and linking them to a specific experiment run.</p>
+        <ul>
+          <li><strong>Code:</strong> Git commit hash + tag. Every wandb run logs the git hash automatically. Docker image built from that commit hash ensures the environment (CUDA version, library versions) is frozen.</li>
+          <li><strong>Data:</strong> DVC tracks the dataset as a versioned artifact — a <code>.dvc</code> file is committed to git and points to the actual data in remote storage (S3, GCS). Running <code>dvc pull</code> at the same git commit restores the exact training set. DVC also hashes data content, so you can detect if files changed.</li>
+          <li><strong>Configuration:</strong> All hyperparameters, augmentation strategies, and training settings live in a YAML/TOML config file committed to git. No magic numbers in code. wandb logs the full config dict at run start.</li>
+          <li><strong>Model checkpoint:</strong> Logged as a wandb artifact with metadata linking back to the git hash, DVC dataset version, and wandb run ID. This creates a full lineage: checkpoint → config → code → data.</li>
+        </ul>
+        <p>Six months later: <code>git checkout &lt;tag&gt;</code>, <code>dvc pull</code>, <code>docker build</code>, <code>wandb restore</code> — and you can reproduce the training exactly, or just load the checkpoint with the exact config it was trained with.</p>
+      </div>
+    </div>
+
+    <div class="qa-block depth-3">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">Your Alupress anomaly detection POC was done in 2 weeks. What shortcuts did you take that you'd fix before production? What's the technical debt?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>A 2-week POC for anomaly detection typically involves deliberate shortcuts that create technical debt:</p>
+        <ul>
+          <li><strong>No calibration:</strong> The model's confidence scores are uncalibrated — a 0.9 score doesn't mean 90% probability. In production, you'd add temperature scaling or Platt scaling so the client can set meaningful thresholds.</li>
+          <li><strong>Fixed threshold:</strong> The anomaly detection threshold is hand-tuned on the validation set. In production, the threshold should adapt as the good-sample distribution shifts over time.</li>
+          <li><strong>No data drift monitoring:</strong> The model was evaluated on data from a specific time window. No monitoring is in place to detect when production data drifts outside the training distribution.</li>
+          <li><strong>Single-GPU inference:</strong> POC inference was sequential on a single GPU. Production at scale requires batching, potentially TensorRT export, and possibly async inference queues.</li>
+          <li><strong>No failure mode analysis:</strong> What happens when the input image is corrupted? Partially occluded? The POC likely fails silently — production needs explicit input validation and graceful degradation.</li>
+        </ul>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--   WILDCARD QUESTIONS                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <div class="project-block" id="wildcard">
+    <div class="project-header">
+      <div class="project-tag" style="color:var(--accent3)">Wildcard — Questions You Didn't Expect</div>
+      <div class="project-name">The ones that come from left field</div>
+      <p class="project-context">Amazon interviewers routinely pull threads you didn't prepare. These are the questions at the intersection of your background and things you might have glossed over.</p>
+    </div>
+
+    <div id="wildcard-qs">
+
+    <div class="qa-block depth-3">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">You've used CLIP extensively (image annotation at Leonardo, weakly supervised). CLIP uses InfoNCE loss. Why does InfoNCE work? What is the temperature parameter actually doing and what happens if you set it wrong?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>InfoNCE is a contrastive loss: for a batch of N image-text pairs, pull each image embedding toward its matching text embedding while pushing it away from all N-1 non-matching texts (and vice versa). It's an N-way classification problem — "which text matches this image?" — optimized with cross-entropy.</p>
+        <p>The temperature τ appears as a divisor of the dot product scores before softmax: <code>logits = (img @ text.T) / τ</code>. It controls the sharpness of the distribution:</p>
+        <ul>
+          <li><strong>Low τ (e.g., 0.01):</strong> Softmax becomes very sharp — almost a hard max. The model is pushed to make extremely confident distinctions. Hard negatives (semantically similar but non-matching pairs) will be penalized heavily, which can help fine-grained discrimination but makes optimization unstable early in training when all embeddings are random.</li>
+          <li><strong>High τ (e.g., 1.0):</strong> Softmax is flat — the model is penalized equally for all negatives. Loses the ability to focus on hard negatives. Training signal becomes weak.</li>
+          <li><strong>CLIP uses τ = 0.07 (learned):</strong> Making τ a learnable parameter is the right approach — it adapts to the effective hardness of negatives as the model improves. CLIP learns τ alongside other parameters.</li>
+        </ul>
+        <p>If τ is too low: training collapses early (random init produces random logits, low τ makes the loss gradient near-zero for random embeddings). If τ is too high: the model learns slowly and may not achieve fine-grained alignment.</p>
+      </div>
+    </div>
+
+    <div class="qa-block depth-4">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">L</span>
+        <span class="qa-q-text">Your PhD thesis is on continual learning and you've now moved to generative models and SSL. What's the connection you see between them? Is there a unified principle you're working toward?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is a reflective question meant to probe intellectual coherence, not just resume coverage. The honest answer that would resonate:</p>
+        <p>The common thread across continual learning, SSL, and generative models is <strong>learning representations that don't rely on scarce human supervision</strong>. Continual learning asks: how do we maintain representations across time without forgetting? SSL asks: can we learn representations from structure in the data itself? Generative models ask: can we learn representations rich enough to synthesize data?</p>
+        <p>In industrial settings, these three converge on the same practical problem: <em>you can't afford to label everything, your data distribution changes, and you need to adapt efficiently</em>. The self-supervised Microtec pipeline is exactly this intersection — SSL pretraining for representation quality, modular heads for continual deployment, generative inpainting for data augmentation where real samples are rare.</p>
+        <p>The deeper principle I find interesting: <strong>the quality of representations is the bottleneck</strong>. Whether you're doing CL, SSL, or generation, the models that work well are the ones where the learned representation captures the structure of the domain — not just the labels of the training task. Everything else (the specific loss, the architecture) is engineering around that core idea.</p>
+        <div class="insight purple">
+          <div class="insight-label">This question has no wrong answer</div>
+          The interviewer is checking intellectual honesty and narrative coherence. Don't try to sound like you had a grand plan — it's more credible to say "I followed the problems my clients had" and then show the underlying principle you see in retrospect.
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block depth-4">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">L</span>
+        <span class="qa-q-text">If you had to re-do the Pirelli project today with access to a fine-tuned Stable Diffusion 3 or FLUX model — would the coarse-to-fine patch inference trick still be necessary? What would your architecture look like?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This tests whether you're tracking the state of the art and can reason about architectural trade-offs honestly.</p>
+        <p><strong>What SD3/FLUX changes:</strong> Both are latent diffusion models with rectified flow matching (instead of DDPM noise schedules), much faster convergence (16–30 steps vs 50–250), and Transformer-based architectures (DiT) rather than UNet. They produce high-quality results faster per sample.</p>
+        <p><strong>Would the coarse-to-fine trick still be needed?</strong> Partially. The per-step speed improvement from rectified flow reduces the step-count bottleneck. But the fundamental patch tiling problem for 30k×5k images remains — you still can't run a single forward pass on the full image even in latent space (latent would be ~3750×625 for an 8× VAE).</p>
+        <p><strong>What I'd do differently today:</strong></p>
+        <ul>
+          <li>Fine-tune FLUX or SD3 on industrial tyre texture using LoRA (parameter-efficient, preserves the strong prior)</li>
+          <li>Use MultiDiffusion for spatially coherent patch inference — average denoising predictions across overlapping patches at each step</li>
+          <li>Skip the separate coarse model: FLUX's faster steps (16 steps to good quality) may make the two-stage approach unnecessary</li>
+          <li>Use ControlNet conditioning on the inpainting mask rather than channel concatenation</li>
+          <li>Evaluate with a domain-specific perceptual metric rather than FID</li>
+        </ul>
+        <p>The honest caveat: fine-tuning a 12B parameter FLUX model for industrial tyre texture with a small dataset risks mode collapse. The coarse-to-fine trick was also a way of regularizing the model to stay close to the real texture distribution — which LoRA + smaller step counts may or may not replace adequately.</p>
+      </div>
+    </div>
+
+    <div class="qa-block depth-3">
+      <div class="qa-question" onclick="toggle(this)">
+        <span class="qa-q-marker">D</span>
+        <span class="qa-q-text">Amazon is big on metrics and impact. Your resume says "reduced labeling cost by ~95%." How did you actually measure that? Is that cost reduction monetizable — did you quantify it in euros or hours?</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>This is a fair challenge and a good reminder to be precise about what "cost reduction" means operationally.</p>
+        <p><strong>How to measure it properly:</strong> Count the number of pixel-level annotations the client needed with the old pipeline vs the new one for equivalent model performance. If old pipeline needed 2000 annotated images and new needs 100, that's a 95% reduction in annotation volume.</p>
+        <p><strong>Translating to money/hours:</strong> Industrial pixel annotation typically costs €0.5–€5 per image (depending on complexity and whether done in-house or outsourced). At 2000 images × €2 = €4000 saved per model training cycle. If they retrain quarterly across 10 defect types, that's ~€160,000/year in annotation cost — which is a meaningful number for an SME client.</p>
+        <p><strong>The caveat to be honest about:</strong> The comparison is against the client's baseline, not a state-of-the-art supervised model. If a better-engineered supervised model with strong augmentation could also work with 200 labels instead of 2000, the SSL contribution might be smaller than it appears. The real baseline comparison that would be rigorous — SimMIM on industrial data vs ImageNet-pretrained Swin with aggressive augmentation at the same label count — was not the primary scope of the client engagement.</p>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <div style="margin-top:3rem;padding:1.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:6px;">
+    <p style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.6rem;opacity:.6;">interview meta-advice</p>
+    <p style="font-size:13.5px;color:var(--muted);line-height:1.85;">
+      Amazon's bar-raisers specifically look for the moment you reach your knowledge boundary and <em>acknowledge it clearly</em>.
+      Saying "I don't know the exact answer but here's how I'd think about it" scores higher than
+      confidently wrong answers. The questions marked <span style="color:var(--accent3);font-family:'DM Mono',monospace;font-size:11px;">L</span> (limit probe)
+      are designed to find that boundary — they expect partial answers. Cite your papers where relevant,
+      but be ready to explain <em>why you made the choices you made</em>, not just <em>what you did</em>.
+    </p>
+  </div>
+
+</main>
+</div>
+
+<script>
+function toggle(el) {
+  const block = el.closest('.qa-block');
+  block.classList.toggle('open');
+}
+
+function expandAll(containerId) {
+  document.getElementById(containerId)
+    .querySelectorAll('.qa-block')
+    .forEach(b => b.classList.add('open'));
+}
+
+function collapseAll(containerId) {
+  document.getElementById(containerId)
+    .querySelectorAll('.qa-block')
+    .forEach(b => b.classList.remove('open'));
+}
+</script>
+</body>
+</html>

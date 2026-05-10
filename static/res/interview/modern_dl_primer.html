@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Deep Learning — Concepts & Tricks Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #111;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.nav-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+.nav-section {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 1.4rem 0 0.4rem;
+  font-weight: 500;
+  opacity: 0.55;
+}
+nav a {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+  font-weight: 300;
+}
+nav a:hover { color: var(--accent); }
+
+.tag-new {
+  display: inline-block;
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  background: rgba(122,200,122,0.15);
+  border: 1px solid rgba(122,200,122,0.3);
+  color: var(--green);
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.nav-bottom {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.nav-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 2px 0;
+  font-family: 'DM Mono', monospace;
+}
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 1rem;
+  font-family: 'DM Mono', monospace;
+}
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.1rem, 4vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 1.2rem;
+}
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+.pill.green {
+  background: rgba(122,200,122,0.08);
+  border-color: rgba(122,200,122,0.25);
+  color: var(--green);
+}
+
+/* ── Sections ── */
+section { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+h2 .num {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+h2 .tag {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+h2 .tag.vision { background: rgba(122,191,200,0.12); border: 1px solid rgba(122,191,200,0.3); color: var(--accent2); }
+h2 .tag.llm    { background: rgba(200,185,122,0.12); border: 1px solid rgba(200,185,122,0.3); color: var(--accent); }
+h2 .tag.train  { background: rgba(200,122,178,0.12); border: 1px solid rgba(200,122,178,0.3); color: var(--accent3); }
+h2 .tag.infra  { background: rgba(200,149,106,0.12); border: 1px solid rgba(200,149,106,0.3); color: var(--orange); }
+h2 .tag.hot    { background: rgba(122,200,122,0.12); border: 1px solid rgba(122,200,122,0.3); color: var(--green); }
+
+h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin: 1.8rem 0 0.6rem;
+  font-weight: 500;
+}
+
+p { margin-bottom: 0.9rem; }
+strong { font-weight: 500; color: var(--text); }
+
+/* ── Code ── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1.25rem 1.4rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  position: relative;
+}
+.code-label {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9c0b0;
+}
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #4a4740; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+
+p code, li code, td code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2px solid var(--accent);
+  background: rgba(200,185,122,0.05);
+  padding: 1rem 1.25rem;
+  margin: 1.2rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.75;
+}
+.callout.blue   { border-left-color: var(--accent2); background: rgba(122,191,200,0.05); }
+.callout.red    { border-left-color: var(--red);     background: rgba(200,122,122,0.05); }
+.callout.green  { border-left-color: var(--green);   background: rgba(122,200,122,0.05); }
+.callout.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.callout.orange { border-left-color: var(--orange);  background: rgba(200,149,106,0.05); }
+
+.callout-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  opacity: 0.55;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Math ── */
+.math {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  padding: 1rem 1.3rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 2;
+}
+.math .label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.math .dim  { color: var(--accent2); }
+.math .note { color: var(--muted); font-style: italic; font-size: 12px; }
+.math .hi   { color: var(--text); font-weight: 500; }
+
+/* ── Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+}
+.card-title {
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* ── Model card ── */
+.model-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem;
+  margin: 1rem 0;
+}
+.model-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+.model-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent2);
+}
+.model-org {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+.model-date {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  margin-left: auto;
+}
+.model-desc { font-size: 13.5px; color: var(--muted); line-height: 1.65; margin-bottom: 0.7rem; }
+.model-innovations { list-style: none; }
+.model-innovations li {
+  font-size: 13px;
+  color: var(--text);
+  padding: 3px 0 3px 1.2rem;
+  position: relative;
+}
+.model-innovations li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-size: 11px;
+}
+
+/* ── Table ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 1rem 0; }
+th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border2);
+  padding: 0.5rem 0.75rem;
+  font-weight: 400;
+  font-family: 'DM Mono', monospace;
+}
+td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--muted);
+}
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+/* ── Trace / timeline ── */
+.trace {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 2;
+}
+.trace .hi  { color: var(--accent);  font-weight: 500; }
+.trace .ok  { color: var(--green);  }
+.trace .inf { color: var(--accent2); }
+.trace .bad { color: var(--red);    }
+.trace .dim { color: var(--muted);  font-size: 11px; }
+
+/* ── Timeline ── */
+.timeline { margin: 1.2rem 0; }
+.tl-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  min-width: 75px;
+  padding-top: 0.1rem;
+}
+.tl-content { flex: 1; }
+.tl-title { font-size: 13.5px; color: var(--text); font-weight: 400; margin-bottom: 2px; }
+.tl-desc  { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.8rem 0; }
+.checklist li {
+  padding: 0.4rem 0 0.4rem 1.4rem;
+  position: relative;
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: '○';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+  font-size: 11px;
+  top: 0.55rem;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.4rem 4rem; }
+  .card-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">Modern DL · Primer</div>
+
+  <span class="nav-section">The Landscape</span>
+  <a href="#landscape">2024–2025 timeline</a>
+  <a href="#pillars">Four paradigm shifts</a>
+
+  <span class="nav-section">Architecture</span>
+  <a href="#norm-act">RMSNorm & SwiGLU <span class="tag-new">std</span></a>
+  <a href="#rope">RoPE & long context</a>
+  <a href="#moe-deep">MoE in depth</a>
+  <a href="#ssm">SSMs & Mamba</a>
+  <a href="#hybrid">Hybrid architectures</a>
+
+  <span class="nav-section">Vision Foundation</span>
+  <a href="#ssl-vision">Self-supervised vision</a>
+  <a href="#dinov3">DINOv3 <span class="tag-new">2025</span></a>
+  <a href="#sam3">SAM3 <span class="tag-new">2025</span></a>
+  <a href="#registers">ViT registers</a>
+
+  <span class="nav-section">Multimodal</span>
+  <a href="#clip-family">CLIP & contrastive align.</a>
+  <a href="#vlm">VLM architecture</a>
+  <a href="#qwen3">Qwen3 family <span class="tag-new">2025</span></a>
+
+  <span class="nav-section">Reasoning & RL</span>
+  <a href="#test-time">Test-time compute</a>
+  <a href="#grpo">GRPO & RLVR <span class="tag-new">hot</span></a>
+  <a href="#thinking">Thinking models</a>
+
+  <span class="nav-section">Training Tricks</span>
+  <a href="#mup">μP & hyperparameter transfer</a>
+  <a href="#data-mixing">Data mixing & curricula</a>
+  <a href="#init">Initialization tricks</a>
+
+  <span class="nav-section">Inference</span>
+  <a href="#spec-decode">Speculative decoding</a>
+  <a href="#quant">Quantization (GPTQ/AWQ)</a>
+  <a href="#serving">Serving at scale</a>
+
+  <span class="nav-section">Interview</span>
+  <a href="#checklist">Checklist</a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;opacity:.6;">2025 scale ref</div>
+    <div class="nav-stat"><span>DINOv3 teacher</span><span>7B ViT</span></div>
+    <div class="nav-stat"><span>SAM3 vision enc.</span><span>450M</span></div>
+    <div class="nav-stat"><span>Qwen3-235B-A22B</span><span>MoE</span></div>
+    <div class="nav-stat"><span>Training data</span><span>36T tokens</span></div>
+    <div class="nav-stat"><span>DINOv3 images</span><span>1.7B</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Deep Dive · Modern DL Concepts & Tricks · 2024–2025</div>
+    <h1>The ideas that are<br>actually <em>shipping</em> now</h1>
+    <p class="hero-desc">
+      A curated tour of the techniques that made it from paper to production in the last 18 months.
+      Grounded in real architectures: DINOv3's Gram anchoring, SAM3's vision-language fusion,
+      Qwen3's hybrid MoE, DeepSeek-R1's GRPO-powered reasoning. Theory where it matters,
+      code where it lands.
+    </p>
+    <div class="pill-row">
+      <span class="pill green">DINOv3</span>
+      <span class="pill green">SAM3</span>
+      <span class="pill green">Qwen3</span>
+      <span class="pill green">GRPO</span>
+      <span class="pill">RoPE</span>
+      <span class="pill">SwiGLU</span>
+      <span class="pill">MoE</span>
+      <span class="pill">Mamba</span>
+      <span class="pill">LoRA</span>
+      <span class="pill">Speculative decoding</span>
+    </div>
+  </div>
+
+  <!-- ── 1. Timeline ── -->
+  <section id="landscape">
+    <h2><span class="num">01</span> The 2024–2025 landscape</h2>
+    <p>A lot happened fast. Here's what moved the needle:</p>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-date">Jan 2025</div>
+        <div class="tl-content">
+          <div class="tl-title">DeepSeek-R1 — reasoning via pure RL</div>
+          <div class="tl-desc">GRPO + verifiable rewards, no supervised CoT data. Emergent chain-of-thought. Open weights. Matched o1 on AIME. Changed how people think about post-training.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">May 2025</div>
+        <div class="tl-content">
+          <div class="tl-title">Qwen3 — hybrid thinking / non-thinking MoE</div>
+          <div class="tl-desc">235B-A22B MoE, 36T-token corpus, 119 languages. Single model with switchable thinking budget. Backbone for VL, Omni, and audio variants.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Aug 2025</div>
+        <div class="tl-content">
+          <div class="tl-title">DINOv3 — 7B ViT teacher, 1.7B images, Gram anchoring</div>
+          <div class="tl-desc">Successor to DINOv2. Scales SSL to 7B parameters. Gram anchoring prevents dense feature degradation. State of the art across classification, depth, segmentation — frozen backbone.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Nov 2025</div>
+        <div class="tl-content">
+          <div class="tl-title">SAM3 — open-vocabulary, text-promptable segmentation</div>
+          <div class="tl-desc">Dual encoder-decoder with 450M vision encoder + 300M causal text encoder. Contrastive alignment on 5.4B image-text pairs. Segment "ripe apples" from text. Videos too.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Ongoing</div>
+        <div class="tl-content">
+          <div class="tl-title">Test-time scaling becomes a paradigm</div>
+          <div class="tl-desc">More thinking tokens → better answers. Speculative decoding, paged attention, INT4 quant, and continuous batching become table stakes for production serving.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. Four shifts ── -->
+  <section id="pillars">
+    <h2><span class="num">02</span> Four paradigm shifts</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Scale is a training recipe</div>
+        <p>Bigger models on more diverse data with better data curation — not novel architectures — drove most 2024–2025 capability jumps. Data quality > data quantity.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Post-training > pretraining (ROI)</div>
+        <p>RLHF, DPO, GRPO. The same base model with different post-training produces vastly different capabilities. RL from verifiable rewards unlocks reasoning without labeled CoT.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Modalities converge</div>
+        <p>Text, image, video, audio — one model, shared transformer backbone, modality-specific encoders. Contrastive alignment + cross-attention fusion is the dominant recipe.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Inference is a research problem</div>
+        <p>Speculative decoding, INT4 quant, continuous batching, paged KV. Test-time compute (more tokens = better answers) means inference cost is now a primary design constraint.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--           ARCHITECTURE                -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 3. RMSNorm & SwiGLU ── -->
+  <section id="norm-act">
+    <h2><span class="num">03</span> RMSNorm & SwiGLU <span class="tag train">training</span></h2>
+    <p>Two architectural micro-improvements that are now standard in every major LLM. Both improve training stability with less compute.</p>
+
+    <h3>RMSNorm — drop the mean, keep the scale</h3>
+    <div class="math">
+      <span class="label">LayerNorm vs RMSNorm</span>
+      LayerNorm: ȳ = (x − μ) / √(σ² + ε) · γ + β &nbsp;&nbsp;<span class="note">← needs mean + variance</span><br>
+      RMSNorm:  ȳ = x / RMS(x) · γ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← only RMS: √(mean(x²))</span><br>
+      <br>
+      <span class="hi">No mean subtraction. No β offset. ~10–20% faster. Same training stability.</span>
+    </div>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-cm"># RMSNorm — native in PyTorch 2.4+</span>
+norm = nn.<span class="c-fn">RMSNorm</span>(d_model)
+
+<span class="c-cm"># Manual implementation</span>
+<span class="c-kw">class</span> <span class="c-bi">RMSNorm</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d, eps=<span class="c-num">1e-8</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.gamma = nn.<span class="c-fn">Parameter</span>(torch.<span class="c-fn">ones</span>(d))
+        self.eps   = eps
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        rms = x.<span class="c-fn">pow</span>(<span class="c-num">2</span>).<span class="c-fn">mean</span>(-<span class="c-num">1</span>, keepdim=<span class="c-bi">True</span>).<span class="c-fn">add</span>(self.eps).<span class="c-fn">sqrt</span>()
+        <span class="c-kw">return</span> self.gamma * (x / rms)
+</code></pre>
+
+    <h3>SwiGLU — gated activation for FFN</h3>
+    <div class="math">
+      <span class="label">SwiGLU — used in LLaMA, Qwen3, Mistral, GPT-4</span>
+      SwiGLU(x) = SiLU(W₁x) ⊙ W₂x → W₃<br>
+      SiLU(x) = x · σ(x) &nbsp;&nbsp;<span class="note">← "swish" — smooth, non-monotonic</span><br>
+      <br>
+      <span class="note">Three weight matrices instead of two. Hidden dim = (2/3)·4d to keep FLOP count equal.</span><br>
+      <span class="hi">Consistently improves perplexity ~0.5–1 point vs ReLU FFN. All frontier models use it.</span>
+    </div>
+
+    <pre><span class="code-label">pytorch — SwiGLU FFN</span><code>
+<span class="c-kw">class</span> <span class="c-bi">SwiGLUFFN</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d_model, expand=<span class="c-num">4</span>):
+        <span class="c-fn">super</span>().__init__()
+        hidden = <span class="c-bi">int</span>(d_model * expand * <span class="c-num">2</span> / <span class="c-num">3</span>)  <span class="c-cm"># iso-FLOP to standard 4× FFN</span>
+        self.gate = nn.<span class="c-fn">Linear</span>(d_model, hidden, bias=<span class="c-bi">False</span>)
+        self.up   = nn.<span class="c-fn">Linear</span>(d_model, hidden, bias=<span class="c-bi">False</span>)
+        self.down = nn.<span class="c-fn">Linear</span>(hidden,  d_model, bias=<span class="c-bi">False</span>)
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        <span class="c-kw">return</span> self.<span class="c-fn">down</span>(F.<span class="c-fn">silu</span>(self.<span class="c-fn">gate</span>(x)) * self.<span class="c-fn">up</span>(x))
+</code></pre>
+  </section>
+
+  <!-- ── 4. RoPE & long context ── -->
+  <section id="rope">
+    <h2><span class="num">04</span> RoPE & long context <span class="tag llm">LLM</span></h2>
+    <p>
+      Rotary Position Embedding encodes <strong>relative</strong> position by rotating Q and K vectors in complex space before the attention dot product. It's the dominant position encoding in all 2024–2025 models (LLaMA-3, Qwen3, Mistral, Gemma).
+    </p>
+
+    <div class="math">
+      <span class="label">RoPE — key property</span>
+      qₘᵀkₙ = Re[(Rₘq)ᴴ(Rₙk)] = f(q, k, m−n)<br>
+      <span class="note">← attention score depends only on (m−n), not absolute positions m and n</span><br>
+      <br>
+      Rₘ = block-diagonal rotation matrix with frequency θᵢ = 10000^(−2i/d)<br>
+      <span class="dim">Applying Rₘ to a vector rotates each 2D subspace by angle m·θᵢ</span>
+    </div>
+
+    <h3>Extending context beyond training length</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">YaRN</div>
+        <p>Yet Another RoPE extensioN. Interpolates + rescales RoPE frequencies to extend context. LLaMA-3 uses YaRN to go from 8k to 128k. Add a short fine-tuning stage on long documents.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">LongRoPE</div>
+        <p>Non-uniformly rescales different frequency groups. Low-frequency dimensions (long range) scaled less than high-frequency (short range). Better quality at very long contexts.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Ring Attention</div>
+        <p>Distributes the attention computation for a single sequence across multiple GPUs in a ring topology. Enables sequences of 1M+ tokens. Used for Gemini's 2M context.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Sliding Window (Mistral)</div>
+        <p>Each token attends only to a local window (e.g. 4096 tokens) plus a few global sink tokens. O(T·W) attention. Enables very long inference with bounded KV cache.</p>
+      </div>
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">the "lost in the middle" problem persists</div>
+      Even at 128k context, models attend more reliably to tokens at the start and end.
+      Middle tokens are underweighted — empirically demonstrated across GPT-4, Claude, LLaMA-3.
+      Mitigation: put critical information at boundaries, or use retrieval (RAG) instead of stuffing everything into context.
+    </div>
+  </section>
+
+  <!-- ── 5. MoE deep ── -->
+  <section id="moe-deep">
+    <h2><span class="num">05</span> MoE — modern implementations <span class="tag llm">LLM</span></h2>
+
+    <div class="math">
+      <span class="label">Sparse MoE layer (Qwen3, Mixtral, DeepSeek-V3 style)</span>
+      G(x) = TopK(Softmax(Wg · x), k) &nbsp;&nbsp;<span class="note">← router: select k of N experts</span><br>
+      out  = Σᵢ∈TopK Gᵢ(x) · FFNᵢ(x)<br>
+      <br>
+      Qwen3-235B-A22B: N=128 experts, k=8 active &nbsp;<span class="dim">22B active / 235B total</span><br>
+      Qwen3-30B-A3B:   N=128 experts, k=8 active &nbsp;<span class="dim">3B active / 30B total</span>
+    </div>
+
+    <h3>Fine-grained expert design (DeepSeek-V3 innovation)</h3>
+    <p>
+      Instead of N large experts, use <strong>N×m smaller "fine-grained" experts</strong> with k×m active.
+      More routing choices, better specialization, more uniform load. DeepSeek-V3 uses 256 fine-grained experts
+      with 8 always-on "shared" experts that every token passes through regardless of routing.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Load balancing loss</div>
+        <p>Auxiliary loss encouraging uniform expert utilization. Without it: routing collapse (1–2 experts dominate). Applied with small weight (α≈0.01) alongside main loss.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Expert parallelism (EP)</div>
+        <p>Different experts on different GPUs. Each token is routed via all-to-all communication. Requires large batch sizes to fully utilize all GPUs. Combined with TP and PP.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Shared experts</div>
+        <p>A small number of experts that every token must use (non-routed). Ensures all tokens share a common processing backbone. Prevents routing instability for rare inputs.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Token-choice vs expert-choice</div>
+        <p>Token-choice: each token picks its experts. Expert-choice: each expert picks its top tokens. Expert-choice ensures perfect load balance but can drop tokens — not suitable for autoregressive generation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 6. SSMs & Mamba ── -->
+  <section id="ssm">
+    <h2><span class="num">06</span> State Space Models & Mamba <span class="tag train">architecture</span></h2>
+    <p>
+      Attention is O(T²) in memory. State Space Models (SSMs) process sequences in O(T) with constant memory —
+      making them attractive for very long sequences. Mamba (2023–2025) is the leading SSM for language.
+    </p>
+
+    <div class="math">
+      <span class="label">SSM — continuous state space</span>
+      h'(t) = Ah(t) + Bx(t)   <span class="note">← hidden state evolution (ODE)</span><br>
+      y(t)  = Ch(t)            <span class="note">← output projection</span><br>
+      <br>
+      <span class="label">Mamba — selective (input-dependent) SSM</span>
+      Δ, B, C = <span class="hi">f(x)</span>  &nbsp;&nbsp;<span class="note">← parameters are now functions of the input (selectivity)</span><br>
+      <span class="dim">Standard SSMs: A,B,C fixed. Mamba: B,C,Δ depend on token → can "forget" irrelevant context</span>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">why Mamba matters for long sequences</div>
+      A recurrent model keeps a fixed-size state across all prior tokens — O(1) memory, O(T) compute.
+      Mamba's selectivity lets it decide what to keep in state vs forget, similar to an LSTM gate
+      but for much longer sequences. Parallel scan allows training as fast as attention.
+      Weakness: cannot attend to arbitrary past tokens; recall is compressed into a fixed state.
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">Mamba-2 & Jamba (hybrid)</div>
+      Mamba-2 simplifies the selective SSM to be faster on modern hardware. Jamba (AI21 Labs)
+      interleaves attention and Mamba layers — getting O(T) for most context with attention layers
+      for tasks requiring precise long-range recall. Hybrid = best of both worlds in practice.
+    </div>
+  </section>
+
+  <!-- ── 7. Hybrid ── -->
+  <section id="hybrid">
+    <h2><span class="num">07</span> Hybrid architectures <span class="tag train">architecture</span></h2>
+    <p>
+      The most practical 2025 trend: mix transformer attention with recurrent or local layers.
+      Pure attention struggles at very long context; pure SSMs struggle at precise recall.
+    </p>
+    <table>
+      <thead><tr><th>Model</th><th>Mix</th><th>Win</th></tr></thead>
+      <tbody>
+        <tr><td>Jamba</td><td>Attn + Mamba + MoE</td><td>128k context, ~3× faster than pure transformer</td></tr>
+        <tr><td>Zamba</td><td>Shared attn layer every N Mamba layers</td><td>Tiny memory footprint at inference</td></tr>
+        <tr><td>Qwen3-Next</td><td>Gated Delta Networks + MoE</td><td>Efficient long-sequence processing on Blackwell</td></tr>
+        <tr><td>Mistral sliding window</td><td>Local attn + global attn every K layers</td><td>Bounded KV cache, strong performance</td></tr>
+        <tr><td>RWKV-7</td><td>Linear attention (no softmax)</td><td>O(T) inference, RNN-mode for streaming</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--        VISION FOUNDATION              -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 8. SSL Vision ── -->
+  <section id="ssl-vision">
+    <h2><span class="num">08</span> Self-supervised vision — the DINO lineage <span class="tag vision">vision</span></h2>
+    <p>
+      DINO/DINOv2/DINOv3 is the dominant self-supervised vision paradigm.
+      A student ViT learns to match the outputs of a momentum-averaged teacher ViT,
+      using no labels — just augmented views of the same image.
+    </p>
+
+    <div class="math">
+      <span class="label">DINO self-distillation objective</span>
+      L = −P_teacher(x') · log P_student(x)<br>
+      <span class="note">← teacher sees global crop x', student sees local crop x</span><br>
+      <br>
+      Teacher params = EMA(student params): θ_T ← λ·θ_T + (1−λ)·θ_S<br>
+      <span class="dim">λ ≈ 0.996–0.9999 — teacher updates slowly, provides stable targets</span><br>
+      <br>
+      Centering: subtract running mean of teacher outputs to prevent collapse<br>
+      Sharpening: low temperature on teacher softmax to make targets peaky
+    </div>
+
+    <pre><span class="code-label">pytorch — DINO loss (simplified)</span><code>
+<span class="c-kw">def</span> <span class="c-fn">dino_loss</span>(student_out, teacher_out, center, temp_s=<span class="c-num">0.1</span>, temp_t=<span class="c-num">0.04</span>):
+    <span class="c-cm"># Center + sharpen teacher output (prevents collapse)</span>
+    teacher_p = F.<span class="c-fn">softmax</span>((teacher_out - center) / temp_t, dim=-<span class="c-num">1</span>)
+    student_lp = F.<span class="c-fn">log_softmax</span>(student_out / temp_s, dim=-<span class="c-num">1</span>)
+    loss = -(teacher_p * student_lp).<span class="c-fn">sum</span>(dim=-<span class="c-num">1</span>).<span class="c-fn">mean</span>()
+    <span class="c-cm"># Update center with EMA of teacher outputs</span>
+    center = center * <span class="c-num">0.9</span> + teacher_out.<span class="c-fn">mean</span>(dim=<span class="c-num">0</span>) * <span class="c-num">0.1</span>
+    <span class="c-kw">return</span> loss, center
+</code></pre>
+
+    <div class="callout">
+      <div class="callout-label">DINOv2 additions (2023)</div>
+      Added iBOT (masked image modeling, patch-level distillation), SwAV (cluster assignment), and KoLeo regularization (spread embeddings uniformly) on top of DINO. The combination of global + patch-level objectives gives DINOv2 its excellent dense feature quality.
+    </div>
+  </section>
+
+  <!-- ── 9. DINOv3 ── -->
+  <section id="dinov3">
+    <h2><span class="num">09</span> DINOv3 (Meta, Aug 2025) <span class="tag vision">vision</span></h2>
+
+    <div class="model-card">
+      <div class="model-header">
+        <span class="model-name">DINOv3</span>
+        <span class="model-org">Meta AI</span>
+        <span class="model-date">Aug 13, 2025</span>
+      </div>
+      <div class="model-desc">
+        7B-parameter ViT teacher self-distilled on 1.7B curated images (LVD-1689M).
+        State of the art on classification, depth estimation, segmentation — frozen backbone, no fine-tuning.
+        Closes the gap between self-supervised and supervised foundation models.
+      </div>
+      <ul class="model-innovations">
+        <li><strong>Scale:</strong> 7B ViT teacher (vs ~1B in DINOv2). Student models: ViT-S/B/L/H/g. All released.</li>
+        <li><strong>Data curation (LVD-1689M):</strong> Embed all images with a DINOv2 encoder, retrieve 4-NN per curated seed image, k-means cluster to avoid duplicates. 1.7B images vs 142M in DINOv2.</li>
+        <li><strong>Gram anchoring:</strong> New loss term stabilizing dense feature quality during long training schedules. Computes Gram matrix of patch features (captures style/texture correlations) and anchors it to early-training values, preventing degradation.</li>
+        <li><strong>High-resolution training stage:</strong> Final training phase at higher resolution to sharpen dense features for segmentation and depth tasks.</li>
+        <li><strong>Frozen backbone:</strong> All downstream tasks use linear probing or a lightweight head on frozen DINOv3 features — no full fine-tuning needed.</li>
+      </ul>
+    </div>
+
+    <h3>Gram anchoring — the key innovation</h3>
+    <div class="math">
+      <span class="label">Gram matrix of patch features</span>
+      G = FᵀF / (H·W) &nbsp;&nbsp;<span class="dim">F: (H·W)×d patch features · G: d×d</span><br>
+      <br>
+      Gram anchoring loss: L_gram = ‖G_current − G_anchor‖²F<br>
+      <span class="note">← G_anchor set from early training · prevents feature drift during long schedules</span><br>
+      <span class="hi">Fixes the known DINOv2 problem: dense features degrade after too many training steps.</span>
+    </div>
+
+    <pre><span class="code-label">pytorch — Gram anchoring loss</span><code>
+<span class="c-kw">def</span> <span class="c-fn">gram_matrix</span>(features):
+    <span class="c-cm"># features: (B, HW, d) patch tokens from ViT</span>
+    B, N, d = features.shape
+    G = torch.<span class="c-fn">bmm</span>(features.<span class="c-fn">transpose</span>(<span class="c-num">1</span>, <span class="c-num">2</span>), features) / N  <span class="c-cm"># (B, d, d)</span>
+    <span class="c-kw">return</span> G
+
+<span class="c-kw">def</span> <span class="c-fn">gram_anchoring_loss</span>(student_patches, anchor_gram, weight=<span class="c-num">0.1</span>):
+    G_current = <span class="c-fn">gram_matrix</span>(student_patches)
+    loss = weight * ((G_current - anchor_gram)**<span class="c-num">2</span>).<span class="c-fn">mean</span>()
+    <span class="c-kw">return</span> loss
+</code></pre>
+
+    <div class="callout blue">
+      <div class="callout-label">why dense features degrade</div>
+      Long DINO training schedules optimize global (CLS token) objectives.
+      Over time, patch-level features become less discriminative — they collapse toward the CLS representation.
+      Gram anchoring preserves the second-order patch statistics (texture correlations) throughout training,
+      keeping patch features useful for dense tasks like depth and segmentation.
+    </div>
+  </section>
+
+  <!-- ── 10. SAM3 ── -->
+  <section id="sam3">
+    <h2><span class="num">10</span> SAM3 (Meta, Nov 2025) <span class="tag vision">vision</span></h2>
+
+    <div class="model-card">
+      <div class="model-header">
+        <span class="model-name">SAM3</span>
+        <span class="model-org">Meta AI</span>
+        <span class="model-date">Nov 2025</span>
+      </div>
+      <div class="model-desc">
+        The Segment Anything Model leap from geometric prompting to semantic concept reasoning.
+        SAM1 segmented by clicks/boxes. SAM2 added video via temporal memory. SAM3 adds language:
+        "segment all ripe apples" — open vocabulary, multi-instance, video.
+      </div>
+      <ul class="model-innovations">
+        <li><strong>Dual encoder-decoder:</strong> 450M vision encoder (Perception Encoder backbone) + 300M causal text encoder trained on 5.4B image-text pairs via contrastive learning.</li>
+        <li><strong>Vision-language fusion:</strong> Cross-attention aligns visual tokens and text embeddings. Enables text-prompt → mask without geometric click.</li>
+        <li><strong>Multi-instance open-vocabulary:</strong> One text prompt segments all instances (e.g. all apples in a scene). SAM1/2 required per-object prompts.</li>
+        <li><strong>Exemplar-based prompting:</strong> Provide an image crop of the concept → segment all matching instances. Few-shot visual grounding.</li>
+        <li><strong>Joint training objectives:</strong> Segmentation mask loss + contrastive alignment loss + semantic grounding consistency + temporal memory (inherited from SAM2).</li>
+      </ul>
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">SAM1 → SAM2 → SAM3 progression</div>
+      <strong>SAM1 (2023):</strong> Large ViT encoder + prompt encoder + mask decoder. Points/boxes/masks → image segmentation.<br>
+      <strong>SAM2 (2024):</strong> Adds streaming temporal memory (key-value store across frames). Propagates masks across video.<br>
+      <strong>SAM3 (2025):</strong> Adds text encoder + contrastive alignment. Geometric → semantic. One text prompt → all instances → all frames.
+    </div>
+
+    <pre><span class="code-label">pytorch — SAM3 style inference (pseudocode)</span><code>
+<span class="c-cm"># SAM3: text prompt → segment all matching instances</span>
+image_tokens = vision_encoder(image)           <span class="c-cm"># (HW, d_vis)</span>
+text_tokens  = text_encoder(<span class="c-str">"ripe apples"</span>)      <span class="c-cm"># (T, d_text)</span>
+
+<span class="c-cm"># Cross-attention: text queries image</span>
+fused = cross_attention(
+    query=text_tokens,                         <span class="c-cm"># text as query</span>
+    key=image_tokens, value=image_tokens       <span class="c-cm"># image as key/value</span>
+)
+
+<span class="c-cm"># Concept-conditioned mask decoder (multi-instance)</span>
+masks = mask_decoder(fused, image_tokens)      <span class="c-cm"># → N binary masks, one per instance</span>
+</code></pre>
+  </section>
+
+  <!-- ── 11. ViT Registers ── -->
+  <section id="registers">
+    <h2><span class="num">11</span> ViT registers <span class="tag vision">vision</span></h2>
+    <p>
+      A 2023 paper from Meta (used in DINOv2+ and DINOv3) that fixes a subtle artifact in ViT attention maps:
+      certain background patches develop anomalously high attention norms, polluting dense features.
+    </p>
+
+    <div class="callout">
+      <div class="callout-label">the artifact — and the fix</div>
+      In large ViTs, some uninformative background patch tokens develop very high-norm representations
+      and attract disproportionate attention. The fix: add a small number of learnable <strong>register tokens</strong>
+      (like extra [CLS] tokens) that "absorb" this global information, freeing patch tokens to carry purely local features.
+      Result: cleaner, smoother attention maps. Better performance on dense tasks.
+    </div>
+
+    <pre><span class="code-label">pytorch — registers in ViT</span><code>
+<span class="c-kw">class</span> <span class="c-bi">ViTWithRegisters</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d_model, n_registers=<span class="c-num">4</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.cls_token  = nn.<span class="c-fn">Parameter</span>(torch.<span class="c-fn">randn</span>(<span class="c-num">1</span>, <span class="c-num">1</span>, d_model))
+        self.registers  = nn.<span class="c-fn">Parameter</span>(torch.<span class="c-fn">randn</span>(<span class="c-num">1</span>, n_registers, d_model))
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, patch_tokens):   <span class="c-cm"># (B, N, d)</span>
+        B = patch_tokens.shape[<span class="c-num">0</span>]
+        cls  = self.cls_token.<span class="c-fn">expand</span>(B, -<span class="c-num">1</span>, -<span class="c-num">1</span>)
+        regs = self.registers.<span class="c-fn">expand</span>(B, -<span class="c-num">1</span>, -<span class="c-num">1</span>)
+        <span class="c-cm"># Prepend CLS + registers to patch sequence</span>
+        tokens = torch.<span class="c-fn">cat</span>([cls, regs, patch_tokens], dim=<span class="c-num">1</span>)
+        tokens = self.<span class="c-fn">transformer</span>(tokens)
+        <span class="c-cm"># Discard registers at output; use only CLS + patch tokens</span>
+        <span class="c-kw">return</span> tokens[:, <span class="c-num">0</span>], tokens[:, <span class="c-num">1</span> + <span class="c-bi">len</span>(regs[<span class="c-num">0</span>]):]
+</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--            MULTIMODAL                 -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 12. CLIP & contrastive ── -->
+  <section id="clip-family">
+    <h2><span class="num">12</span> CLIP & contrastive alignment <span class="tag vision">multimodal</span></h2>
+    <p>
+      Contrastive image-text pretraining is the foundation for all multimodal models: CLIP's image encoder
+      is the starting point for SAM3's vision backbone, LLaVA's visual projector, and Qwen3-VL's vision encoder.
+    </p>
+
+    <div class="math">
+      <span class="label">CLIP InfoNCE loss (symmetric)</span>
+      L = −(1/N) Σᵢ [ log(exp(simᵢᵢ/τ) / Σⱼ exp(simᵢⱼ/τ))   <span class="note">← image→text</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ log(exp(simᵢᵢ/τ) / Σⱼ exp(simⱼᵢ/τ)) ] <span class="note">← text→image</span><br>
+      <br>
+      sim(i,j) = (v̂ᵢ · ẑⱼ) &nbsp;&nbsp;<span class="note">← cosine similarity, L2-normalized embeddings</span><br>
+      τ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = learned temperature scalar (typically 0.07)
+    </div>
+
+    <h3>2025 improvements over vanilla CLIP</h3>
+    <table>
+      <thead><tr><th>Technique</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>SigLIP</td><td>Sigmoid loss instead of softmax — no need for global batch normalization. Each pair is independent. Scales better to large batches.</td></tr>
+        <tr><td>CoCa</td><td>Add captioning head to the image encoder. Contrastive + generative objectives. Better representation quality.</td></tr>
+        <tr><td>EVA-CLIP</td><td>Reconstruction objectives (like MAE) on top of CLIP. 18B-parameter CLIP. Used in Qwen3-VL.</td></tr>
+        <tr><td>Hard negatives</td><td>Mine confusingly similar pairs (e.g., two similar dogs) as negatives. Much harder training signal, better fine-grained discrimination.</td></tr>
+        <tr><td>Region-level CLIP</td><td>Align image regions (crops) to sub-sentence spans. Enables open-vocabulary detection (GLIP, Grounding DINO).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 13. VLM architecture ── -->
+  <section id="vlm">
+    <h2><span class="num">13</span> Vision-Language Model architecture <span class="tag vision">multimodal</span></h2>
+    <p>
+      VLMs (LLaVA, Qwen-VL, InternVL) share a common three-part structure: a frozen vision encoder,
+      a learned projector, and a language model decoder. The projector bridges the two representation spaces.
+    </p>
+
+    <div class="trace">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem;color:var(--muted);">VLM forward pass</span>
+      Image → <span class="hi">ViT encoder</span> → patch tokens (H×W, d_vis)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="hi">Projector</span> (MLP or Q-Former) → visual tokens (N', d_model)<br>
+      Text  → <span class="hi">Tokenizer</span> → token ids → token embeddings (T, d_model)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Concat [visual tokens | text tokens] → <span class="hi">LLM decoder</span> → next token<br>
+      <span class="dim">Loss computed on text tokens only; visual tokens are never predicted</span>
+    </div>
+
+    <h3>DeepStack — Qwen3-VL's multi-level vision fusion</h3>
+    <div class="callout blue">
+      <div class="callout-label">beyond single-layer visual features</div>
+      Standard VLMs extract features from only the last ViT layer. DeepStack (Qwen3-VL, 2025)
+      injects visual tokens from <strong>multiple intermediate ViT layers</strong> into early LLM transformer layers
+      via cross-attention. Low layers carry texture/edges; high layers carry semantics.
+      The LLM can query different levels of visual detail as needed.
+      This is similar to FPN (Feature Pyramid Network) in detection — multi-scale feature fusion.
+    </div>
+
+    <h3>Dynamic resolution & native-resolution encoding</h3>
+    <p>
+      Standard VLMs resize images to a fixed resolution (e.g., 224×224), destroying detail.
+      Qwen3-VL processes images at their <strong>native resolution</strong> using dynamic patch allocation:
+      the image is divided into patches, and the number of visual tokens scales with image area.
+      A 4K image gets ~4× more tokens than a thumbnail — detail is preserved.
+    </p>
+  </section>
+
+  <!-- ── 14. Qwen3 ── -->
+  <section id="qwen3">
+    <h2><span class="num">14</span> Qwen3 family (Alibaba, 2025) <span class="tag llm">LLM</span></h2>
+
+    <div class="model-card">
+      <div class="model-header">
+        <span class="model-name">Qwen3</span>
+        <span class="model-org">Alibaba / Qwen Team</span>
+        <span class="model-date">May 2025</span>
+      </div>
+      <div class="model-desc">
+        Dense (0.6B–32B) + sparse MoE (30B-A3B, 235B-A22B). Trained on 36T tokens across 119 languages.
+        Flagship innovation: a single model that can switch between "thinking" (extended CoT) and "non-thinking" (fast response) modes by adjusting a budget parameter — no separate model deployments needed.
+      </div>
+      <ul class="model-innovations">
+        <li><strong>Hybrid thinking:</strong> Budget token parameter scales reasoning depth. High budget → think more → better on hard math. Low budget → skip CoT → fast chat. One model serves both use cases.</li>
+        <li><strong>Architecture:</strong> GQA (grouped-query attention), SwiGLU FFN, RMSNorm, RoPE. Standard modern stack.</li>
+        <li><strong>151,669 vocab:</strong> Byte-level BPE. Better multilingual tokenization efficiency vs GPT-4's cl100k.</li>
+        <li><strong>Multimodal extensions:</strong> Qwen3-VL (256k context, DeepStack, native resolution, interleaved video), Qwen3-Omni (Thinker-Talker MoE for speech), Qwen3-TTS (streaming speech synthesis).</li>
+      </ul>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">MRoPE — multimodal rotary position encoding</div>
+      Standard RoPE encodes 1D position. For video+text, Qwen3-VL uses MRoPE:
+      three separate rotary encoding streams for temporal position, image height, and image width.
+      A video frame token has a (t, h, w) triplet; a text token has (pos, 0, 0).
+      This allows the model to reason about "token at time t, row h, column w"
+      while sharing a unified position encoding space with text.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--        REASONING & RL                 -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 15. Test-time compute ── -->
+  <section id="test-time">
+    <h2><span class="num">15</span> Test-time compute scaling <span class="tag hot">🔥 hot</span></h2>
+    <p>
+      The 2024–2025 insight that changed post-training: <strong>more tokens at inference → better answers on hard problems</strong>.
+      Scaling training compute has diminishing returns; scaling inference compute (thinking tokens) is a new axis.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Chain-of-thought (CoT)</div>
+        <p>Generate reasoning steps in text before the answer. Each step is a token — the model can use it as a scratch-pad. "Let's think step by step" → 10–30% accuracy gain on math.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Extended thinking / thinking tokens</div>
+        <p>&lt;think&gt;…&lt;/think&gt; tokens before the final answer. The model is trained to use these for exploration, self-correction, and verification. o1/R1 style.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Best-of-N / majority voting</div>
+        <p>Sample N independent outputs; take the majority answer (for math) or use a verifier to pick the best. N=64 samples often beats a model 10× larger at N=1.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Tree search (MCTS)</div>
+        <p>Monte Carlo Tree Search over reasoning steps. Expand promising branches, backtrack from bad ones. Highest accuracy at high compute budgets. PRM (Process Reward Model) scores each step.</p>
+      </div>
+    </div>
+
+    <div class="math">
+      <span class="label">test-time scaling — compute trade-offs</span>
+      N=1, T tokens: baseline<br>
+      N=K samples, T tokens each: K× compute, ~√K accuracy gain (diminishing)<br>
+      N=1, K×T thinking tokens: K× compute, often better than K samples for structured reasoning<br>
+      <span class="hi">Key insight: quality scales more predictably with thinking tokens than with samples</span>
+    </div>
+  </section>
+
+  <!-- ── 16. GRPO ── -->
+  <section id="grpo">
+    <h2><span class="num">16</span> GRPO & RLVR (DeepSeek-R1, 2025) <span class="tag hot">🔥 hot</span></h2>
+    <p>
+      Group Relative Policy Optimization is the RL algorithm behind DeepSeek-R1's reasoning.
+      It eliminates the critic (value function) of PPO, reducing memory by ~50%, while achieving
+      comparable or better results for reasoning tasks.
+    </p>
+
+    <div class="math">
+      <span class="label">GRPO objective</span>
+      For prompt q, sample G outputs {o₁,…,oG} from old policy π_θ_old<br>
+      Compute rewards {r₁,…,rG} (rule-based: correct=1, wrong=0)<br>
+      <br>
+      Advantage: Â_i = (rᵢ − mean(r)) / std(r)  <span class="note">← group-relative baseline</span><br>
+      <br>
+      L_GRPO = −E[ min(ρᵢ·Âᵢ, clip(ρᵢ, 1±ε)·Âᵢ) ] + β·KL(π_θ ‖ π_ref)<br>
+      <span class="dim">ρᵢ = π_θ(oᵢ|q) / π_θ_old(oᵢ|q)  ← probability ratio (same as PPO)</span>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">GRPO vs PPO — the key difference</div>
+      PPO needs a critic network (same size as the policy) to estimate V(s) as the baseline.
+      GRPO replaces V(s) with the group mean reward — no separate network needed.
+      For reasoning tasks (where the only signal is "correct/incorrect"), group mean is a better
+      baseline anyway. Result: half the memory, same or better reasoning performance.
+    </div>
+
+    <h3>RLVR — Reinforcement Learning from Verifiable Rewards</h3>
+    <div class="callout blue">
+      <div class="callout-label">why verifiable rewards beat neural reward models</div>
+      Neural reward models (RLHF) are vulnerable to reward hacking — the policy learns to generate
+      text that scores high on the RM without being actually correct.
+      Verifiable rewards (math correctness via symbolic checker, code via compiler/test cases)
+      can't be hacked — either the answer is right or it isn't.
+      DeepSeek-R1-Zero used only two reward signals: accuracy (is the answer correct?) and
+      format (did the model use &lt;think&gt; tags?). Nothing else — and it learned to reason.
+    </div>
+
+    <pre><span class="code-label">python — GRPO reward computation</span><code>
+<span class="c-kw">def</span> <span class="c-fn">compute_grpo_advantages</span>(rewards: list[float]) -> list[float]:
+    <span class="c-cm"># rewards: list of G scalar rewards for one prompt's outputs</span>
+    mean = <span class="c-fn">sum</span>(rewards) / <span class="c-fn">len</span>(rewards)
+    std  = (<span class="c-fn">sum</span>((r - mean)**<span class="c-num">2</span> <span class="c-kw">for</span> r <span class="c-kw">in</span> rewards) / <span class="c-fn">len</span>(rewards)) ** <span class="c-num">0.5</span>
+    <span class="c-kw">return</span> [(r - mean) / (std + <span class="c-num">1e-8</span>) <span class="c-kw">for</span> r <span class="c-kw">in</span> rewards]
+
+<span class="c-cm"># Verifiable reward: math correctness check</span>
+<span class="c-kw">def</span> <span class="c-fn">math_reward</span>(prediction: str, ground_truth: str) -> float:
+    <span class="c-kw">return</span> <span class="c-num">1.0</span> <span class="c-kw">if</span> <span class="c-fn">parse_answer</span>(prediction) == ground_truth <span class="c-kw">else</span> <span class="c-num">0.0</span>
+</code></pre>
+  </section>
+
+  <!-- ── 17. Thinking models ── -->
+  <section id="thinking">
+    <h2><span class="num">17</span> Thinking models — emergent behaviors <span class="tag hot">🔥 hot</span></h2>
+    <p>
+      DeepSeek-R1-Zero showed that pure RL (no supervised CoT) causes emergent reasoning behaviors.
+      The model is never told <em>how</em> to reason — it discovers strategies through trial and error.
+    </p>
+
+    <div class="callout purple">
+      <div class="callout-label">emergent behaviors from RL training</div>
+      <strong>Increasing response length:</strong> The model naturally generates longer chains of thought as training progresses — not because it's rewarded for length, but because more thinking = more correct answers = more reward.<br><br>
+      <strong>Self-correction / reflection:</strong> The model learns to re-evaluate intermediate steps, backtrack, and try alternative approaches — discovering metacognition through reward signals alone.<br><br>
+      <strong>"Aha moments":</strong> The model produces statements like "Wait, let me reconsider..." — a self-improvement strategy that emerged from RL, never explicitly trained.
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">pitfalls of GRPO — length bias</div>
+      Vanilla GRPO has a bias toward longer outputs: incorrect responses get pushed to be longer
+      (the model hedges with more tokens). The Dr. GRPO paper (2025) identifies this as a normalization
+      artifact and removes the length and std normalization terms, getting better token efficiency
+      while maintaining reasoning quality. Lesson: every loss function has inductive biases worth auditing.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--           TRAINING TRICKS             -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 18. μP ── -->
+  <section id="mup">
+    <h2><span class="num">18</span> μP — Maximal Update Parametrization <span class="tag train">training</span></h2>
+    <p>
+      The standard parametrization (SP) does not transfer hyperparameters across model widths.
+      The optimal learning rate for a 125M model is different from a 13B model — so you'd have to tune for each size.
+      μP (Greg Yang, 2022, now standard in frontier labs) fixes this.
+    </p>
+
+    <div class="math">
+      <span class="label">μP — key change to initialization and learning rates</span>
+      Standard: W ~ N(0, 1/fan_in)  → lr needs re-tuning as width d changes<br>
+      μP: &nbsp;&nbsp;&nbsp;&nbsp; W ~ N(0, 1/fan_in)  → lr scales as 1/d for weight matrices<br>
+      <br>
+      <span class="hi">Result: tune lr, momentum, wd on a tiny "proxy" model → transfer to 70B model unchanged</span><br>
+      <span class="note">Used by Cerebras, DeepMind (Chinchilla), Microsoft (Phi series), EleutherAI</span>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">why this matters in practice</div>
+      Hyperparameter sweeps at 70B scale cost millions of dollars.
+      μP lets you sweep on a 100M parameter model, then transfer the optimal config to 70B.
+      The key insight: in standard parametrization, features update by O(1) per step regardless of width —
+      too large for wide models. μP scales updates to O(1/√width) so the effective LR stays constant.
+    </div>
+  </section>
+
+  <!-- ── 19. Data mixing ── -->
+  <section id="data-mixing">
+    <h2><span class="num">19</span> Data mixing & training curricula <span class="tag train">training</span></h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Domain mixing ratios</div>
+        <p>Web text vs code vs math vs books vs scientific papers. Code improves reasoning; math improves structured thinking. Ratios are treated as hyperparameters tuned on validation perplexity per domain.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Multi-epoch risks</div>
+        <p>Training on the same data more than once causes memorization. Chinchilla-style: scale tokens proportionally with parameters. For "overtrained" small models (LLaMA-3 8B on 15T): accept some memorization, gain better inference economics.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Curriculum learning</div>
+        <p>Train on easier examples first, progressively increase difficulty. For reasoning models: start with short proofs, scale to multi-step problems. Reduces instabilities from hard examples early in training.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Cooldown phase</div>
+        <p>Final training phase with a small, high-quality curated dataset. LR drops to near-zero. "Knowledge consolidation" — improves downstream benchmark performance without much additional compute.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">data quality > data quantity (LIMA principle)</div>
+      The LIMA paper (2023) showed 1,000 carefully curated SFT examples outperform 50,000 noisy ones.
+      DINOv3's LVD curation and Qwen3's data filtering apply the same principle at pretraining scale:
+      the signal-to-noise ratio of training data is as important as the total token count.
+    </div>
+  </section>
+
+  <!-- ── 20. Init tricks ── -->
+  <section id="init">
+    <h2><span class="num">20</span> Initialization & training stability <span class="tag train">training</span></h2>
+
+    <table>
+      <thead><tr><th>Trick</th><th>What it does</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td>Scaled init (1/√N layers)</td><td>Scale residual branch weights by 1/√N_layers at init. Prevents variance explosion at depth.</td><td>Deep models (32+ layers)</td></tr>
+        <tr><td>QK-norm</td><td>L2-normalize Q and K before dot product. Prevents attention logits from exploding → entropy collapse.</td><td>Large models, long sequences</td></tr>
+        <tr><td>Logit softcapping</td><td>tanh(logits/cap)×cap — soft bounds on attention logits. Gemma/Gemini trick. No hard clipping.</td><td>Long context, large models</td></tr>
+        <tr><td>Gradient clipping</td><td>Clip gradient norm to 1.0. Prevents explosive updates from outlier batches. Always use.</td><td>Universal</td></tr>
+        <tr><td>bfloat16 over float16</td><td>BF16 has the same exponent range as FP32 — doesn't overflow. FP16 overflows at 65504. Use BF16 for training.</td><td>Mixed precision training</td></tr>
+        <tr><td>z-loss</td><td>Penalize large logit norms: z_loss = ε·log²(Σexp(logits)). Prevents logits from diverging.</td><td>Attention + output projection</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--           INFERENCE                   -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 21. Speculative decoding ── -->
+  <section id="spec-decode">
+    <h2><span class="num">21</span> Speculative decoding <span class="tag infra">inference</span></h2>
+    <p>
+      Autoregressive generation is memory-bandwidth-bound: each step loads the entire model from HBM.
+      Speculative decoding amortizes this cost by verifying k draft tokens in a single large-model forward pass.
+    </p>
+
+    <div class="math">
+      <span class="label">speculative decoding — algorithm</span>
+      1. Draft model generates k tokens: [t₁, t₂, …, tₖ]<br>
+      2. Target model scores all k tokens in one forward pass (parallel)<br>
+      3. Accept tᵢ with probability min(1, p_target(tᵢ) / p_draft(tᵢ))<br>
+      4. On first rejection, resample from corrected distribution; stop<br>
+      <br>
+      <span class="hi">Lossless: output distribution identical to pure target model sampling</span><br>
+      <span class="dim">Speedup: 2–3× typical. Scales with acceptance rate α^k</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">EAGLE-2 (2025)</div>
+        <p>Draft model uses a single transformer layer on top of target model's hidden states — no separate model. High acceptance rate because draft sees target's features. ~3× speedup on Llama-3.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Self-speculative (Mamba)</div>
+        <p>Use shallower layers of the same model as the draft. Works naturally with recurrent architectures. No second model needed — just early exit.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Lookahead decoding</div>
+        <p>Maintain multiple parallel "branches" without a draft model. Fills a Jacobi iteration matrix in parallel. Works on any model. Lower acceptance but no draft model needed.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Reasoning-aware speculative</div>
+        <p>Reasoning models repeat patterns (verification steps, arithmetic). N-gram models can draft these cheaply. STAND (2025): 60–65% latency reduction on AIME/GPQA.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 22. Quantization ── -->
+  <section id="quant">
+    <h2><span class="num">22</span> Quantization — GPTQ, AWQ, INT4 <span class="tag infra">inference</span></h2>
+
+    <table>
+      <thead><tr><th>Method</th><th>How</th><th>Quality vs FP16</th></tr></thead>
+      <tbody>
+        <tr><td>INT8 (LLM.int8)</td><td>Decompose into 8-bit + outlier FP16 mix. No calibration data.</td><td>~1% degradation</td></tr>
+        <tr><td>GPTQ</td><td>Layer-wise quantization minimizing ‖WX − Ŵ X‖. Needs small calibration set (~128 samples).</td><td>&lt;1% on INT4</td></tr>
+        <tr><td>AWQ</td><td>Activation-aware: protect salient weights (high activation magnitude) with higher precision. Fast, calibration-free.</td><td>&lt;1% on INT4</td></tr>
+        <tr><td>GGUF / Q4_K_M</td><td>k-quant: different bit depths per layer. Used by llama.cpp. Runs 70B on a single RTX 4090.</td><td>&lt;2% on 4-bit</td></tr>
+        <tr><td>FP8 (H100/B200)</td><td>Hardware-native 8-bit float. Used in training (DeepSeek-V3) and inference. 2× memory, 2× throughput vs BF16.</td><td>~0% degradation</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout orange">
+      <div class="callout-label">the sweet spot in 2025</div>
+      INT4 (AWQ or GPTQ) for serving open models. FP8 for training and high-throughput serving
+      on H100/B200. GGUF Q4_K_M for local inference on consumer hardware.
+      KV cache is often quantized separately (INT8 keys, INT8 values) — it has more tolerance for error
+      than weights since it's per-token, not per-parameter.
+    </div>
+  </section>
+
+  <!-- ── 23. Serving ── -->
+  <section id="serving">
+    <h2><span class="num">23</span> Serving at scale — vLLM, SGLang <span class="tag infra">inference</span></h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Paged attention (vLLM)</div>
+        <p>KV cache managed like OS virtual memory — fixed-size pages allocated on demand. Eliminates fragmentation. Enables much larger effective batch sizes. Foundation of vLLM.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Continuous batching</div>
+        <p>Don't wait for all sequences to finish before starting new ones. Insert new requests as slots free. Keeps GPU at near-100% utilization. 2–5× throughput vs static batching.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Prefix caching</div>
+        <p>If many requests share a common prefix (system prompt), compute it once and cache KV. vLLM and SGLang support this. Critical for agent systems with long system prompts.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Chunked prefill</div>
+        <p>Process long prompts in chunks to avoid OOM. Mix prefill and decode in the same batch. Better GPU utilization when prompt lengths vary widely.</p>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">SGLang — structured generation</div>
+      SGLang adds a RadixTree KV cache (prefix tree for shared prefixes across requests),
+      constrained decoding (JSON schema enforcement via guided decoding), and speculative decoding
+      — all in a single framework. For agent and tool-use scenarios, it dramatically reduces
+      latency for repeated system prompts and structured output requirements.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── Checklist ── -->
+  <section id="checklist">
+    <h2><span class="num">24</span> What to know cold</h2>
+    <ul class="checklist">
+      <li>RMSNorm over LayerNorm: no mean subtraction, no β, ~15% faster, same stability</li>
+      <li>SwiGLU: three matrices, SiLU gate, hidden = (2/3)×4d for iso-FLOP. Consistently better than ReLU.</li>
+      <li>RoPE: encodes relative position by rotating Q/K. Basis for all long-context extensions (YaRN, LongRoPE)</li>
+      <li>MoE: active params per token << total params. Load balancing loss prevents routing collapse. Fine-grained + shared experts = DeepSeek-V3/Qwen3 style.</li>
+      <li>Mamba: selective SSM — parameters are input-dependent. O(T) memory. Weakness: fixed-size state.</li>
+      <li>DINOv3: 7B teacher, 1.7B images, Gram anchoring prevents dense feature degradation during long training</li>
+      <li>Gram anchoring: regularizes second-order patch statistics (Gram matrix) to stay close to early-training values</li>
+      <li>ViT registers: extra learnable tokens absorb outlier attention, clean patch features for dense tasks</li>
+      <li>SAM3: geometric prompting (SAM1/2) → semantic concept reasoning. Dual encoder: 450M vision + 300M text. Text prompts → multi-instance segmentation.</li>
+      <li>VLM recipe: frozen CLIP encoder → MLP projector → LLM decoder. DeepStack = multi-layer ViT features injected at different LLM depths.</li>
+      <li>GRPO: PPO without a critic. Group mean reward as baseline. Verifiable rewards (RLVR) prevent reward hacking.</li>
+      <li>Emergent reasoning: chain-of-thought length increase, self-correction, and reflection emerge from RL signals alone — not from supervised CoT demonstrations.</li>
+      <li>Test-time scaling: more thinking tokens (extended CoT) is a separate axis from training scale. Budget parameter in Qwen3 controls this at inference time.</li>
+      <li>μP: tune hyperparameters on a small proxy model, transfer to large model. LR ∝ 1/d for weight matrices.</li>
+      <li>Speculative decoding: lossless 2–3× speedup. Draft k tokens with small model, verify in one large-model pass.</li>
+      <li>AWQ/GPTQ INT4: <1% quality loss vs FP16. AWQ protects high-activation-magnitude weights. FP8 for training on H100/B200.</li>
+    </ul>
+
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.9;">
+        The meta-lesson of 2024–2025: <strong>the architecture matters less than the recipe</strong>.
+        RMSNorm + SwiGLU + RoPE + GQA is the standard stack — every frontier model uses it.
+        What separates them is data curation (DINOv3's LVD, Qwen3's 36T), post-training methodology
+        (GRPO/RLVR for reasoning, DPO for alignment), and inference engineering (speculative decoding,
+        paged attention, prefix caching). The next capability jump is as likely to come from a better
+        training curriculum as from a new attention variant.
+      </p>
+    </div>
+  </section>
+
+</main>
+</div>
+</body>
+</html>

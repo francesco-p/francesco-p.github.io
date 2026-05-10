@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Internals — Intermediate Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #111;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex; flex-direction: column;
+}
+.nav-logo { font-family: 'Fraunces', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
+.nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 1.4rem 0 0.4rem; font-weight: 500; opacity: 0.55; }
+nav a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; padding: 3px 0; transition: color 0.15s; font-weight: 300; }
+nav a:hover { color: var(--accent); }
+.nav-bottom { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 2px 0; font-family: 'DM Mono', monospace; }
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+/* ── Hero ── */
+.hero { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 500; margin-bottom: 1rem; font-family: 'DM Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2.1rem, 4vw, 2.9rem); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 1.2rem; }
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill { font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+
+/* ── Sections ── */
+section { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+h2 {
+  font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; color: var(--text);
+  margin-bottom: 0.9rem; display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
+}
+h2 .num { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); font-weight: 400; letter-spacing: 0.06em; align-self: center; }
+
+h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent2); margin: 1.8rem 0 0.6rem; font-weight: 500; }
+
+p { margin-bottom: 0.9rem; }
+strong { font-weight: 500; color: var(--text); }
+
+/* ── Code ── */
+.code-wrap { position: relative; margin: 1rem 0; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+.code-header { display: flex; align-items: center; justify-content: space-between; background: #080808; padding: 0.45rem 1rem; border-bottom: 1px solid var(--border); }
+.code-lang { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.copy-btn { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: 3px; padding: 2px 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.06em; text-transform: uppercase; }
+.copy-btn:hover { color: var(--accent); border-color: var(--tag-border); }
+.copy-btn.ok { color: var(--green); border-color: rgba(122,200,122,0.3); }
+
+pre { background: var(--bg3); padding: 1.15rem 1.3rem; overflow-x: auto; margin: 0; }
+code { font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.75; color: #c9c0b0; display: block; }
+
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-cls { color: #e0c070; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #444240; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+.c-op  { color: #c87ab2; }
+
+p code, li code {
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  padding: 1px 5px; border-radius: 3px; color: var(--accent);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2px solid var(--accent);
+  background: rgba(200,185,122,0.05);
+  padding: 1rem 1.25rem; margin: 1.2rem 0;
+  border-radius: 0 4px 4px 0; font-size: 14px; color: var(--text); line-height: 1.75;
+}
+.callout.blue   { border-left-color: var(--accent2); background: rgba(122,191,200,0.05); }
+.callout.red    { border-left-color: var(--red);     background: rgba(200,122,122,0.05); }
+.callout.green  { border-left-color: var(--green);   background: rgba(122,200,122,0.05); }
+.callout.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.callout.orange { border-left-color: var(--orange);  background: rgba(200,149,106,0.05); }
+
+.callout-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; margin-bottom: 0.35rem; opacity: 0.55; font-family: 'DM Mono', monospace; }
+
+/* ── Compare table ── */
+.compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 1rem 0;
+}
+.compare-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.compare-title { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--border); background: #111; }
+.compare-box.bad  .compare-title { color: var(--red); }
+.compare-box.good .compare-title { color: var(--green); }
+.compare-box pre { padding: 0.8rem 0.9rem; background: var(--bg2); }
+
+/* ── Inline note ── */
+.note-row { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.4rem 0; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--border); }
+.note-row:last-child { border-bottom: none; }
+.note-row .arrow { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11px; padding-top: 2px; flex-shrink: 0; }
+
+/* ── Table ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 1rem 0; }
+th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); border-bottom: 1px solid var(--border2); padding: 0.5rem 0.75rem; font-weight: 400; font-family: 'DM Mono', monospace; }
+td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--muted); }
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.8rem 0; }
+.checklist li { padding: 0.4rem 0 0.4rem 1.4rem; position: relative; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--border); }
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before { content: '○'; position: absolute; left: 0; color: var(--muted); font-size: 11px; top: 0.55rem; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.2rem 4rem; }
+  .compare { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="nav-logo">Python Internals</div>
+
+  <span class="nav-section">Comprehensions</span>
+  <a href="#listcomp">List comprehensions</a>
+  <a href="#dictset">Dict & set comprehensions</a>
+  <a href="#nested">Nested & conditional</a>
+
+  <span class="nav-section">Functional</span>
+  <a href="#map-filter">map, filter, reduce</a>
+  <a href="#lambdas">Lambdas & closures</a>
+  <a href="#functools">functools toolkit</a>
+
+  <span class="nav-section">Iterators & Generators</span>
+  <a href="#iter-proto">Iterator protocol</a>
+  <a href="#generators">Generator functions</a>
+  <a href="#yield-from">yield from & chaining</a>
+  <a href="#genexp">Generator expressions</a>
+  <a href="#itertools">itertools</a>
+
+  <span class="nav-section">Unpacking & Assignment</span>
+  <a href="#unpack">Starred unpacking</a>
+  <a href="#walrus">Walrus operator :=</a>
+
+  <span class="nav-section">Decorators</span>
+  <a href="#decorators">Function decorators</a>
+  <a href="#class-dec">Class-based decorators</a>
+  <a href="#wraps">functools.wraps</a>
+
+  <span class="nav-section">Context Managers</span>
+  <a href="#ctx">with & __enter__/__exit__</a>
+  <a href="#contextlib">contextlib</a>
+
+  <span class="nav-section">Classes & Data</span>
+  <a href="#dunder">Dunder methods</a>
+  <a href="#dataclasses">dataclasses</a>
+  <a href="#slots">__slots__ & __dict__</a>
+  <a href="#namedtuple">namedtuple & TypedDict</a>
+
+  <span class="nav-section">Typing</span>
+  <a href="#typing">Type hints in depth</a>
+  <a href="#protocols">Protocols</a>
+
+  <span class="nav-section">Gotchas</span>
+  <a href="#gotchas">Classic traps</a>
+  <a href="#checklist">Checklist</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;opacity:.6;">topics</div>
+    <div class="nav-stat"><span>Sections</span><span>20</span></div>
+    <div class="nav-stat"><span>Code blocks</span><span>45+</span></div>
+    <div class="nav-stat"><span>Gotchas</span><span>8</span></div>
+  </div>
+</nav>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-label">Intermediate Primer · Python Internals</div>
+    <h1>Python you<br>actually <em>use</em></h1>
+    <p class="hero-desc">
+      Past <code>if</code> and <code>for</code>. This primer covers the idioms that separate
+      fluent Python from translated Java — comprehensions, generators, closures, decorators,
+      context managers, and the dunder methods that make objects feel native.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Comprehensions</span>
+      <span class="pill">Generators</span>
+      <span class="pill">yield / yield from</span>
+      <span class="pill">Decorators</span>
+      <span class="pill">Context managers</span>
+      <span class="pill">Closures</span>
+      <span class="pill">itertools</span>
+      <span class="pill">Type hints</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--       COMPREHENSIONS            -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="listcomp">
+    <h2><span class="num">01</span> List comprehensions</h2>
+    <p>
+      A list comprehension is a declarative way to build a list: it says <em>what</em> you want,
+      not <em>how</em> to loop. It's faster than an equivalent <code>for</code> + <code>.append()</code>
+      because the loop runs in C internally.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Form: [expression for item in iterable if condition]</span>
+
+squares     = [x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">10</span>)]
+evens       = [x    <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">20</span>)  <span class="c-kw">if</span> x % <span class="c-num">2</span> == <span class="c-num">0</span>]
+words_upper = [w.<span class="c-fn">upper</span>() <span class="c-kw">for</span> w <span class="c-kw">in</span> [<span class="c-str">"hello"</span>, <span class="c-str">"world"</span>]]
+
+<span class="c-cm"># Conditional expression in the output (if/else on the left)</span>
+labels = [<span class="c-str">"even"</span> <span class="c-kw">if</span> x % <span class="c-num">2</span> == <span class="c-num">0</span> <span class="c-kw">else</span> <span class="c-str">"odd"</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">5</span>)]
+<span class="c-cm"># → ['even', 'odd', 'even', 'odd', 'even']</span>
+
+<span class="c-cm"># Flatten a 2D list — nested loops left-to-right</span>
+matrix = [[<span class="c-num">1</span>,<span class="c-num">2</span>],[<span class="c-num">3</span>,<span class="c-num">4</span>],[<span class="c-num">5</span>,<span class="c-num">6</span>]]
+flat   = [x <span class="c-kw">for</span> row <span class="c-kw">in</span> matrix <span class="c-kw">for</span> x <span class="c-kw">in</span> row]
+<span class="c-cm"># → [1, 2, 3, 4, 5, 6]</span>
+
+<span class="c-cm"># Build a lookup table: {result: input}</span>
+inv_sq = {x**<span class="c-num">2</span>: x <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">5</span>)}
+</code></pre>
+    </div>
+
+    <div class="compare">
+      <div class="compare-box bad">
+        <div class="compare-title">✗ imperative</div>
+        <pre><code>result = []
+<span class="c-kw">for</span> x <span class="c-kw">in</span> data:
+    <span class="c-kw">if</span> x > <span class="c-num">0</span>:
+        result.<span class="c-fn">append</span>(x**<span class="c-num">2</span>)</code></pre>
+      </div>
+      <div class="compare-box good">
+        <div class="compare-title">✓ comprehension</div>
+        <pre><code>result = [
+    x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> data
+    <span class="c-kw">if</span> x > <span class="c-num">0</span>
+]</code></pre>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">when NOT to use a comprehension</div>
+      If the body has side effects (<code>print</code>, file writes, mutations) or exceeds two conditions — use a regular loop. Comprehensions are for building values, not orchestrating actions.
+    </div>
+  </section>
+
+  <section id="dictset">
+    <h2><span class="num">02</span> Dict & set comprehensions</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Dict comprehension — {key: value for ...}</span>
+words   = [<span class="c-str">"apple"</span>, <span class="c-str">"bat"</span>, <span class="c-str">"cherry"</span>]
+lengths = {w: <span class="c-fn">len</span>(w) <span class="c-kw">for</span> w <span class="c-kw">in</span> words}
+<span class="c-cm"># → {'apple': 5, 'bat': 3, 'cherry': 6}</span>
+
+<span class="c-cm"># Invert a dict (assumes unique values)</span>
+d    = {<span class="c-str">"a"</span>: <span class="c-num">1</span>, <span class="c-str">"b"</span>: <span class="c-num">2</span>, <span class="c-str">"c"</span>: <span class="c-num">3</span>}
+inv  = {v: k <span class="c-kw">for</span> k, v <span class="c-kw">in</span> d.<span class="c-fn">items</span>()}
+
+<span class="c-cm"># Filter a dict by value</span>
+big  = {k: v <span class="c-kw">for</span> k, v <span class="c-kw">in</span> d.<span class="c-fn">items</span>() <span class="c-kw">if</span> v >= <span class="c-num">2</span>}
+<span class="c-cm"># → {'b': 2, 'c': 3}</span>
+
+<span class="c-cm"># Set comprehension — {expression for ...} — unique values, unordered</span>
+vowels  = {c <span class="c-kw">for</span> c <span class="c-kw">in</span> <span class="c-str">"hello world"</span> <span class="c-kw">if</span> c <span class="c-kw">in</span> <span class="c-str">"aeiou"</span>}
+<span class="c-cm"># → {'e', 'o'}</span>
+
+<span class="c-cm"># Caution: {} is an empty DICT, not an empty set</span>
+empty_dict = {}
+empty_set  = <span class="c-fn">set</span>()
+</code></pre>
+    </div>
+  </section>
+
+  <section id="nested">
+    <h2><span class="num">03</span> Nested & multi-condition comprehensions</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Cartesian product of two ranges</span>
+pairs = [(x, y) <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>) <span class="c-kw">for</span> y <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>) <span class="c-kw">if</span> x != y]
+
+<span class="c-cm"># Nested list comprehension — build a matrix</span>
+identity = [[<span class="c-num">1</span> <span class="c-kw">if</span> i == j <span class="c-kw">else</span> <span class="c-num">0</span> <span class="c-kw">for</span> j <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)] <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)]
+<span class="c-cm"># → [[1,0,0],[0,1,0],[0,0,1]]</span>
+
+<span class="c-cm"># Multiple filters chained with 'and'</span>
+filtered = [x <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">100</span>) <span class="c-kw">if</span> x % <span class="c-num">3</span> == <span class="c-num">0</span> <span class="c-kw">if</span> x % <span class="c-num">5</span> == <span class="c-num">0</span>]
+<span class="c-cm"># Two 'if' clauses = AND. Equivalent to: if x%3==0 and x%5==0</span>
+
+<span class="c-cm"># Unpack tuples inside comprehension</span>
+pairs = [(1, <span class="c-str">"a"</span>), (<span class="c-num">2</span>, <span class="c-str">"b"</span>), (<span class="c-num">3</span>, <span class="c-str">"c"</span>)]
+nums  = [n <span class="c-kw">for</span> n, _ <span class="c-kw">in</span> pairs]     <span class="c-cm"># [1, 2, 3]</span>
+chars = [c <span class="c-kw">for</span> _, c <span class="c-kw">in</span> pairs]     <span class="c-cm"># ['a', 'b', 'c']</span>
+</code></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">readability rule</div>
+      If a comprehension needs a comment to explain what it does, convert it to a loop or extract a helper function. Comprehensions should be self-documenting.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--         FUNCTIONAL              -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="map-filter">
+    <h2><span class="num">04</span> map, filter, reduce</h2>
+    <p>
+      These are the classic functional trio. In modern Python, comprehensions are almost always
+      preferred over <code>map</code> and <code>filter</code> — but knowing them is essential
+      for reading code and for <code>reduce</code> which has no comprehension equivalent.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">from</span> functools <span class="c-kw">import</span> reduce
+
+nums = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>]
+
+<span class="c-cm"># map: apply function to every element → lazy iterator</span>
+squares  = <span class="c-fn">list</span>(<span class="c-fn">map</span>(<span class="c-kw">lambda</span> x: x**<span class="c-num">2</span>, nums))
+strings  = <span class="c-fn">list</span>(<span class="c-fn">map</span>(<span class="c-bi">str</span>, nums))              <span class="c-cm"># convert to strings</span>
+
+<span class="c-cm"># filter: keep elements where predicate is True → lazy iterator</span>
+evens    = <span class="c-fn">list</span>(<span class="c-fn">filter</span>(<span class="c-kw">lambda</span> x: x % <span class="c-num">2</span> == <span class="c-num">0</span>, nums))
+non_none = <span class="c-fn">list</span>(<span class="c-fn">filter</span>(<span class="c-bi">None</span>, [<span class="c-num">0</span>, <span class="c-num">1</span>, <span class="c-str">""</span>, <span class="c-str">"hi"</span>, <span class="c-bi">None</span>, <span class="c-num">42</span>]))
+<span class="c-cm"># filter(None, ...) keeps truthy values → [1, 'hi', 42]</span>
+
+<span class="c-cm"># reduce: fold left — f(f(f(a, b), c), d)</span>
+product  = <span class="c-fn">reduce</span>(<span class="c-kw">lambda</span> acc, x: acc * x, nums)    <span class="c-cm"># 120</span>
+max_val  = <span class="c-fn">reduce</span>(<span class="c-kw">lambda</span> a, b: a <span class="c-kw">if</span> a > b <span class="c-kw">else</span> b, nums)
+
+<span class="c-cm"># reduce with initial value (safe for empty iterables)</span>
+total    = <span class="c-fn">reduce</span>(<span class="c-kw">lambda</span> acc, x: acc + x, [], <span class="c-num">0</span>)   <span class="c-cm"># → 0</span>
+
+<span class="c-cm"># Map over two iterables in parallel with map(f, a, b)</span>
+a, b     = [<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>], [<span class="c-num">10</span>,<span class="c-num">20</span>,<span class="c-num">30</span>]
+sums     = <span class="c-fn">list</span>(<span class="c-fn">map</span>(<span class="c-kw">lambda</span> x, y: x + y, a, b))    <span class="c-cm"># [11, 22, 33]</span>
+<span class="c-cm"># Or cleaner:</span>
+sums     = [x + y <span class="c-kw">for</span> x, y <span class="c-kw">in</span> <span class="c-fn">zip</span>(a, b)]
+</code></pre>
+    </div>
+  </section>
+
+  <section id="lambdas">
+    <h2><span class="num">05</span> Lambdas & closures</h2>
+    <p>
+      A <code>lambda</code> is a single-expression anonymous function. A <strong>closure</strong>
+      is a function that captures variables from its enclosing scope — the variable is "closed over".
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Lambda — single expression only, no statements</span>
+sq     = <span class="c-kw">lambda</span> x: x**<span class="c-num">2</span>
+add    = <span class="c-kw">lambda</span> x, y: x + y
+clamp  = <span class="c-kw">lambda</span> x, lo, hi: <span class="c-fn">max</span>(lo, <span class="c-fn">min</span>(hi, x))
+
+<span class="c-cm"># Most common use: sort key</span>
+people = [(<span class="c-str">"Alice"</span>, <span class="c-num">30</span>), (<span class="c-str">"Bob"</span>, <span class="c-num">25</span>), (<span class="c-str">"Carol"</span>, <span class="c-num">35</span>)]
+people.<span class="c-fn">sort</span>(key=<span class="c-kw">lambda</span> p: p[<span class="c-num">1</span>])              <span class="c-cm"># sort by age</span>
+<span class="c-fn">sorted</span>(people, key=<span class="c-kw">lambda</span> p: (-p[<span class="c-num">1</span>], p[<span class="c-num">0</span>]))  <span class="c-cm"># age desc, name asc</span>
+
+<span class="c-cm"># ── Closures ──────────────────────────────────────────</span>
+<span class="c-kw">def</span> <span class="c-fn">make_adder</span>(n: int):
+    <span class="c-kw">def</span> <span class="c-fn">adder</span>(x: int) -> int:   <span class="c-cm"># captures 'n' from outer scope</span>
+        <span class="c-kw">return</span> x + n
+    <span class="c-kw">return</span> adder                 <span class="c-cm"># returns a function</span>
+
+add5 = <span class="c-fn">make_adder</span>(<span class="c-num">5</span>)
+add5(<span class="c-num">3</span>)  <span class="c-cm"># → 8</span>
+
+<span class="c-cm"># Inspect what a closure captured</span>
+add5.__closure__[<span class="c-num">0</span>].cell_contents  <span class="c-cm"># → 5</span>
+
+<span class="c-cm"># ── Classic closure trap: late binding ───────────────</span>
+funcs = [<span class="c-kw">lambda</span>: i <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)]
+[f() <span class="c-kw">for</span> f <span class="c-kw">in</span> funcs]   <span class="c-cm"># → [2, 2, 2]  ← all see i=2 at call time!</span>
+
+<span class="c-cm"># Fix: capture i by value using default argument</span>
+funcs = [<span class="c-kw">lambda</span> i=i: i <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)]
+[f() <span class="c-kw">for</span> f <span class="c-kw">in</span> funcs]   <span class="c-cm"># → [0, 1, 2]  ✓</span>
+</code></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">late binding — the classic trap</div>
+      Python closures capture the <em>variable</em>, not its value at definition time. By the time the lambda is called, <code>i</code> is already at its final loop value. Fix: bind the value as a default argument: <code>lambda i=i: i</code>.
+    </div>
+  </section>
+
+  <section id="functools">
+    <h2><span class="num">06</span> functools toolkit</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">from</span> functools <span class="c-kw">import</span> partial, lru_cache, cache, cached_property, reduce
+
+<span class="c-cm"># partial — freeze some arguments of a function</span>
+<span class="c-kw">def</span> <span class="c-fn">power</span>(base, exp): <span class="c-kw">return</span> base ** exp
+square = <span class="c-fn">partial</span>(power, exp=<span class="c-num">2</span>)
+cube   = <span class="c-fn">partial</span>(power, exp=<span class="c-num">3</span>)
+square(<span class="c-num">5</span>)  <span class="c-cm"># → 25</span>
+
+<span class="c-cm"># lru_cache — memoize with a bounded cache (LRU eviction)</span>
+<span class="c-dec">@lru_cache</span>(maxsize=<span class="c-num">128</span>)
+<span class="c-kw">def</span> <span class="c-fn">fib</span>(n: int) -> int:
+    <span class="c-kw">if</span> n <= <span class="c-num">1</span>: <span class="c-kw">return</span> n
+    <span class="c-kw">return</span> <span class="c-fn">fib</span>(n-<span class="c-num">1</span>) + <span class="c-fn">fib</span>(n-<span class="c-num">2</span>)
+
+fib.<span class="c-fn">cache_info</span>()  <span class="c-cm"># CacheInfo(hits=..., misses=..., maxsize=128, currsize=...)</span>
+fib.<span class="c-fn">cache_clear</span>() <span class="c-cm"># reset the cache</span>
+
+<span class="c-cm"># @cache — Python 3.9+: unbounded lru_cache(maxsize=None)</span>
+<span class="c-dec">@cache</span>
+<span class="c-kw">def</span> <span class="c-fn">expensive</span>(x): ...
+
+<span class="c-cm"># cached_property — compute once, store on instance</span>
+<span class="c-kw">class</span> <span class="c-cls">DataSet</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, data: list[float]):
+        self.data = data
+
+    <span class="c-dec">@cached_property</span>
+    <span class="c-kw">def</span> <span class="c-fn">mean</span>(self) -> float:       <span class="c-cm"># computed on first access, cached after</span>
+        <span class="c-kw">return</span> <span class="c-fn">sum</span>(self.data) / <span class="c-fn">len</span>(self.data)
+</code></pre>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--     ITERATORS & GENERATORS      -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="iter-proto">
+    <h2><span class="num">07</span> The iterator protocol</h2>
+    <p>
+      An <strong>iterable</strong> is anything you can pass to <code>iter()</code> — it implements <code>__iter__</code>.
+      An <strong>iterator</strong> is what <code>iter()</code> returns — it implements both <code>__iter__</code> <em>and</em> <code>__next__</code>.
+      A <code>for</code> loop is just syntactic sugar for calling these methods.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># What 'for x in obj' actually does:</span>
+_it = <span class="c-fn">iter</span>(obj)          <span class="c-cm"># calls obj.__iter__()</span>
+<span class="c-kw">while</span> <span class="c-bi">True</span>:
+    <span class="c-kw">try</span>:
+        x = <span class="c-fn">next</span>(_it)     <span class="c-cm"># calls _it.__next__()</span>
+    <span class="c-kw">except</span> <span class="c-bi">StopIteration</span>:
+        <span class="c-kw">break</span>
+
+<span class="c-cm"># Build a custom iterator class</span>
+<span class="c-kw">class</span> <span class="c-cls">Countdown</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, start: int):
+        self.current = start
+
+    <span class="c-kw">def</span> <span class="c-fn">__iter__</span>(self):
+        <span class="c-kw">return</span> self          <span class="c-cm"># iterators return themselves</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__next__</span>(self) -> int:
+        <span class="c-kw">if</span> self.current < <span class="c-num">0</span>:
+            <span class="c-kw">raise</span> <span class="c-bi">StopIteration</span>
+        val = self.current
+        self.current -= <span class="c-num">1</span>
+        <span class="c-kw">return</span> val
+
+<span class="c-fn">list</span>(<span class="c-cls">Countdown</span>(<span class="c-num">5</span>))  <span class="c-cm"># → [5, 4, 3, 2, 1, 0]</span>
+
+<span class="c-cm"># Key difference: iterable vs iterator</span>
+lst = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]         <span class="c-cm"># iterable — can call iter() multiple times</span>
+it  = <span class="c-fn">iter</span>(lst)         <span class="c-cm"># iterator — single-pass, exhausted once done</span>
+<span class="c-fn">next</span>(it)               <span class="c-cm"># → 1</span>
+<span class="c-fn">next</span>(it)               <span class="c-cm"># → 2</span>
+<span class="c-fn">list</span>(it)               <span class="c-cm"># → [3]  (only what's left)</span>
+<span class="c-fn">list</span>(it)               <span class="c-cm"># → []   (exhausted)</span>
+</code></pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">iterable vs iterator</div>
+      A <code>list</code> is an iterable — you can iterate over it many times. An iterator (from <code>iter(list)</code>) is single-pass — once exhausted, it's empty. Generators are iterators — calling them creates a fresh one each time; storing the object lets you iterate once only.
+    </div>
+  </section>
+
+  <section id="generators">
+    <h2><span class="num">08</span> Generator functions & yield</h2>
+    <p>
+      Any function containing <code>yield</code> is a <strong>generator function</strong>.
+      Calling it returns a <strong>generator object</strong> — it does not execute the body yet.
+      Execution runs up to each <code>yield</code>, pauses, and resumes on the next <code>next()</code> call.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Calling countdown_gen() returns a generator object immediately.</span>
+<span class="c-cm"># No code inside runs yet.</span>
+<span class="c-kw">def</span> <span class="c-fn">countdown_gen</span>(n: int):
+    <span class="c-kw">while</span> n >= <span class="c-num">0</span>:
+        <span class="c-kw">yield</span> n        <span class="c-cm"># pause here, send n to caller</span>
+        n -= <span class="c-num">1</span>         <span class="c-cm"># resumes here on next()</span>
+
+gen = <span class="c-fn">countdown_gen</span>(<span class="c-num">3</span>)
+<span class="c-fn">next</span>(gen)   <span class="c-cm"># → 3  (runs until first yield)</span>
+<span class="c-fn">next</span>(gen)   <span class="c-cm"># → 2</span>
+<span class="c-fn">next</span>(gen)   <span class="c-cm"># → 1</span>
+<span class="c-fn">next</span>(gen)   <span class="c-cm"># → 0</span>
+<span class="c-fn">next</span>(gen)   <span class="c-cm"># → StopIteration</span>
+
+<span class="c-cm"># Generator for reading a huge file line by line — never loads all into RAM</span>
+<span class="c-kw">def</span> <span class="c-fn">read_lines</span>(path: str):
+    <span class="c-kw">with</span> <span class="c-fn">open</span>(path) <span class="c-kw">as</span> f:
+        <span class="c-kw">for</span> line <span class="c-kw">in</span> f:
+            <span class="c-kw">yield</span> line.<span class="c-fn">rstrip</span>()
+
+<span class="c-cm"># Infinite generator — impossible with a list</span>
+<span class="c-kw">def</span> <span class="c-fn">naturals</span>(start: int = <span class="c-num">0</span>):
+    n = start
+    <span class="c-kw">while</span> <span class="c-bi">True</span>:
+        <span class="c-kw">yield</span> n
+        n += <span class="c-num">1</span>
+
+<span class="c-cm"># yield can also receive values (send protocol)</span>
+<span class="c-kw">def</span> <span class="c-fn">accumulator</span>():
+    total = <span class="c-num">0</span>
+    <span class="c-kw">while</span> <span class="c-bi">True</span>:
+        value = <span class="c-kw">yield</span> total    <span class="c-cm"># yield current, wait for send()</span>
+        <span class="c-kw">if</span> value <span class="c-kw">is</span> <span class="c-bi">None</span>: <span class="c-kw">break</span>
+        total += value
+
+acc = <span class="c-fn">accumulator</span>()
+<span class="c-fn">next</span>(acc)          <span class="c-cm"># → 0  (prime the generator)</span>
+acc.<span class="c-fn">send</span>(<span class="c-num">10</span>)       <span class="c-cm"># → 10</span>
+acc.<span class="c-fn">send</span>(<span class="c-num">5</span>)        <span class="c-cm"># → 15</span>
+</code></pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">generators vs lists — when to use which</div>
+      Use a generator when: (1) the sequence is infinite, (2) you don't need random access, (3) the dataset is too large to hold in memory, or (4) you only need to iterate once. Use a list when you need to iterate multiple times, index into it, or know its length upfront.
+    </div>
+  </section>
+
+  <section id="yield-from">
+    <h2><span class="num">09</span> yield from — delegation & chaining</h2>
+    <p>
+      <code>yield from iterable</code> delegates to a sub-iterator. It's equivalent to
+      <code>for item in iterable: yield item</code> but propagates <code>.send()</code>,
+      <code>.throw()</code>, and the return value — making it essential for composing generators.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Flatten arbitrarily nested iterables</span>
+<span class="c-kw">def</span> <span class="c-fn">flatten</span>(iterable):
+    <span class="c-kw">for</span> item <span class="c-kw">in</span> iterable:
+        <span class="c-kw">if</span> <span class="c-fn">isinstance</span>(item, (<span class="c-bi">list</span>, <span class="c-bi">tuple</span>)):
+            <span class="c-kw">yield from</span> <span class="c-fn">flatten</span>(item)   <span class="c-cm"># recursive delegation</span>
+        <span class="c-kw">else</span>:
+            <span class="c-kw">yield</span> item
+
+<span class="c-fn">list</span>(<span class="c-fn">flatten</span>([<span class="c-num">1</span>, [<span class="c-num">2</span>, [<span class="c-num">3</span>, <span class="c-num">4</span>]], [<span class="c-num">5</span>, [<span class="c-num">6</span>]]]))
+<span class="c-cm"># → [1, 2, 3, 4, 5, 6]</span>
+
+<span class="c-cm"># Chain multiple generators</span>
+<span class="c-kw">def</span> <span class="c-fn">chain_gens</span>(*iterables):
+    <span class="c-kw">for</span> it <span class="c-kw">in</span> iterables:
+        <span class="c-kw">yield from</span> it
+
+<span class="c-fn">list</span>(<span class="c-fn">chain_gens</span>([<span class="c-num">1</span>,<span class="c-num">2</span>], [<span class="c-str">"a"</span>,<span class="c-str">"b"</span>], (<span class="c-num">10</span>, <span class="c-num">20</span>)))
+<span class="c-cm"># → [1, 2, 'a', 'b', 10, 20]</span>
+
+<span class="c-cm"># yield from captures the sub-generator's return value</span>
+<span class="c-kw">def</span> <span class="c-fn">sub_gen</span>():
+    <span class="c-kw">yield</span> <span class="c-num">1</span>; <span class="c-kw">yield</span> <span class="c-num">2</span>
+    <span class="c-kw">return</span> <span class="c-str">"done"</span>         <span class="c-cm"># return value of a generator</span>
+
+<span class="c-kw">def</span> <span class="c-fn">delegator</span>():
+    result = <span class="c-kw">yield from</span> <span class="c-fn">sub_gen</span>()   <span class="c-cm"># result = "done" after sub exhausts</span>
+    <span class="c-kw">yield</span> <span class="c-num">3</span>
+
+<span class="c-fn">list</span>(<span class="c-fn">delegator</span>())   <span class="c-cm"># → [1, 2, 3]</span>
+</code></pre>
+    </div>
+  </section>
+
+  <section id="genexp">
+    <h2><span class="num">10</span> Generator expressions</h2>
+    <p>
+      A generator expression is a comprehension with <code>()</code> instead of <code>[]</code>.
+      It produces a generator — lazy, single-pass, O(1) memory regardless of input size.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># List comprehension — materializes all values in memory</span>
+squares_list = [x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">10</span>**<span class="c-num">6</span>)]  <span class="c-cm"># ~8 MB in RAM</span>
+
+<span class="c-cm"># Generator expression — computes on demand</span>
+squares_gen  = (x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">10</span>**<span class="c-num">6</span>))   <span class="c-cm"># ~120 bytes</span>
+
+<span class="c-cm"># Passed directly to sum, max, any, all — no extra list needed</span>
+total     = <span class="c-fn">sum</span>(x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">100</span>))
+has_even  = <span class="c-fn">any</span>(x % <span class="c-num">2</span> == <span class="c-num">0</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> [<span class="c-num">1</span>, <span class="c-num">3</span>, <span class="c-num">4</span>])   <span class="c-cm"># short-circuits!</span>
+all_pos   = <span class="c-fn">all</span>(x > <span class="c-num">0</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> [<span class="c-num">1</span>, <span class="c-num">2</span>, -<span class="c-num">1</span>])         <span class="c-cm"># short-circuits at -1</span>
+longest   = <span class="c-fn">max</span>(<span class="c-fn">len</span>(w) <span class="c-kw">for</span> w <span class="c-kw">in</span> [<span class="c-str">"hi"</span>, <span class="c-str">"hello"</span>, <span class="c-str">"hey"</span>])
+
+<span class="c-cm"># Inside a function call with a single argument — parens are shared</span>
+<span class="c-fn">sum</span>(x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">10</span>))    <span class="c-cm"># ← no double parens needed</span>
+
+<span class="c-cm"># Chained generator pipeline — fully lazy</span>
+lines   = <span class="c-fn">read_lines</span>(<span class="c-str">"data.txt"</span>)             <span class="c-cm"># generator</span>
+cleaned = (line.<span class="c-fn">strip</span>() <span class="c-kw">for</span> line <span class="c-kw">in</span> lines)   <span class="c-cm"># generator</span>
+non_empty = (line <span class="c-kw">for</span> line <span class="c-kw">in</span> cleaned <span class="c-kw">if</span> line) <span class="c-cm"># generator</span>
+<span class="c-cm"># Nothing runs until you consume non_empty</span>
+<span class="c-kw">for</span> line <span class="c-kw">in</span> non_empty:   <span class="c-cm"># only now do bytes flow from disk</span>
+    ...
+</code></pre>
+    </div>
+  </section>
+
+  <section id="itertools">
+    <h2><span class="num">11</span> itertools — the generator toolkit</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">import</span> itertools <span class="c-kw">as</span> it
+
+<span class="c-cm"># ── Infinite iterators</span>
+it.<span class="c-fn">count</span>(<span class="c-num">10</span>, <span class="c-num">2</span>)        <span class="c-cm"># 10, 12, 14, ...  (start, step)</span>
+it.<span class="c-fn">cycle</span>([<span class="c-str">"A"</span>,<span class="c-str">"B"</span>,<span class="c-str">"C"</span>]) <span class="c-cm"># A B C A B C ...  (loops forever)</span>
+it.<span class="c-fn">repeat</span>(<span class="c-num">42</span>, times=<span class="c-num">3</span>)  <span class="c-cm"># 42 42 42  (finite repeat)</span>
+
+<span class="c-cm"># ── Combinatorics</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">product</span>(<span class="c-str">"AB"</span>, <span class="c-fn">range</span>(<span class="c-num">2</span>)))
+<span class="c-cm"># → [('A',0),('A',1),('B',0),('B',1)]</span>
+
+<span class="c-fn">list</span>(it.<span class="c-fn">permutations</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>], r=<span class="c-num">2</span>))
+<span class="c-cm"># → [(1,2),(1,3),(2,1),(2,3),(3,1),(3,2)]</span>
+
+<span class="c-fn">list</span>(it.<span class="c-fn">combinations</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>], r=<span class="c-num">2</span>))
+<span class="c-cm"># → [(1,2),(1,3),(2,3)]</span>
+
+<span class="c-cm"># ── Grouping & slicing</span>
+data = [(<span class="c-str">"a"</span>, <span class="c-num">1</span>), (<span class="c-str">"a"</span>, <span class="c-num">2</span>), (<span class="c-str">"b"</span>, <span class="c-num">3</span>), (<span class="c-str">"b"</span>, <span class="c-num">4</span>)]
+<span class="c-kw">for</span> key, group <span class="c-kw">in</span> it.<span class="c-fn">groupby</span>(data, key=<span class="c-kw">lambda</span> x: x[<span class="c-num">0</span>]):
+    <span class="c-fn">print</span>(key, <span class="c-fn">list</span>(group))
+<span class="c-cm"># groupby requires pre-sorted input! Use sorted() first.</span>
+
+it.<span class="c-fn">islice</span>(<span class="c-fn">naturals</span>(), <span class="c-num">5</span>)           <span class="c-cm"># first 5 from infinite generator</span>
+it.<span class="c-fn">islice</span>(<span class="c-fn">naturals</span>(), <span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">2</span>)  <span class="c-cm"># elements 10-19, step 2</span>
+
+<span class="c-cm"># ── Flattening & chaining</span>
+it.<span class="c-fn">chain</span>([<span class="c-num">1</span>,<span class="c-num">2</span>], [<span class="c-num">3</span>,<span class="c-num">4</span>], [<span class="c-num">5</span>])     <span class="c-cm"># → 1 2 3 4 5</span>
+it.<span class="c-fn">chain.from_iterable</span>([[<span class="c-num">1</span>,<span class="c-num">2</span>],[<span class="c-num">3</span>]])  <span class="c-cm"># same but takes a single iterable-of-iterables</span>
+
+<span class="c-cm"># ── Accumulate (running total)</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">accumulate</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>,<span class="c-num">4</span>]))          <span class="c-cm"># → [1, 3, 6, 10]</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">accumulate</span>([<span class="c-num">2</span>,<span class="c-num">3</span>,<span class="c-num">4</span>], <span class="c-kw">lambda</span> a,b: a*b)) <span class="c-cm"># → [2, 6, 24]</span>
+
+<span class="c-cm"># ── takewhile / dropwhile</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">takewhile</span>(<span class="c-kw">lambda</span> x: x < <span class="c-num">5</span>, [<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">2</span>]))  <span class="c-cm"># → [1, 3]  (stops at 5)</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">dropwhile</span>(<span class="c-kw">lambda</span> x: x < <span class="c-num">5</span>, [<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">2</span>]))  <span class="c-cm"># → [5, 2]  (drops until false)</span>
+</code></pre>
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">groupby requires sorted input</div>
+      <code>itertools.groupby</code> only groups <em>consecutive</em> equal elements. If your data isn't sorted by the key, you'll get duplicate groups. Always <code>sorted(data, key=...)</code> before <code>groupby</code>.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--      UNPACKING & WALRUS         -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="unpack">
+    <h2><span class="num">12</span> Starred unpacking & assignment</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Starred unpacking — capture the "rest"</span>
+first, *rest  = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>]
+<span class="c-cm"># first=1, rest=[2,3,4,5]</span>
+
+first, *mid, last = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>]
+<span class="c-cm"># first=1, mid=[2,3,4], last=5</span>
+
+*_, last = <span class="c-str">"hello"</span>    <span class="c-cm"># last='o', discard the rest</span>
+
+<span class="c-cm"># Unpack in function calls</span>
+<span class="c-kw">def</span> <span class="c-fn">f</span>(a, b, c): <span class="c-kw">return</span> a + b + c
+args = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]
+<span class="c-fn">f</span>(*args)           <span class="c-cm"># → 6</span>
+kwargs = {<span class="c-str">"a"</span>: <span class="c-num">1</span>, <span class="c-str">"b"</span>: <span class="c-num">2</span>, <span class="c-str">"c"</span>: <span class="c-num">3</span>}
+<span class="c-fn">f</span>(**kwargs)        <span class="c-cm"># → 6</span>
+
+<span class="c-cm"># Merge dicts (Python 3.9+)</span>
+d1, d2 = {<span class="c-str">"a"</span>: <span class="c-num">1</span>}, {<span class="c-str">"b"</span>: <span class="c-num">2</span>}
+merged = {**d1, **d2}          <span class="c-cm"># {'a': 1, 'b': 2}</span>
+merged = d1 | d2               <span class="c-cm"># same, Python 3.9+</span>
+d1 |= d2                       <span class="c-cm"># in-place merge</span>
+
+<span class="c-cm"># *args and **kwargs in function signatures</span>
+<span class="c-kw">def</span> <span class="c-fn">variadic</span>(*args: int, sep: str = <span class="c-str">","</span>, **kwargs):
+    <span class="c-cm"># args is a tuple of positional extras</span>
+    <span class="c-cm"># kwargs is a dict of keyword extras</span>
+    <span class="c-kw">return</span> sep.<span class="c-fn">join</span>(<span class="c-fn">map</span>(<span class="c-bi">str</span>, args))
+</code></pre>
+    </div>
+  </section>
+
+  <section id="walrus">
+    <h2><span class="num">13</span> Walrus operator <code>:=</code></h2>
+    <p>
+      The walrus operator assigns and returns a value in a single expression.
+      Use it to avoid computing something twice or to make while-read loops cleaner.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Avoid double evaluation in while loops</span>
+<span class="c-kw">import</span> re
+data = [<span class="c-str">"foo 12"</span>, <span class="c-str">"bar"</span>, <span class="c-str">"baz 99"</span>]
+matches = [m.group() <span class="c-kw">for</span> s <span class="c-kw">in</span> data <span class="c-kw">if</span> (m := re.<span class="c-fn">search</span>(r<span class="c-str">'\d+'</span>, s))]
+<span class="c-cm"># → ['12', '99']  — re.search called once per string, reused</span>
+
+<span class="c-cm"># Read chunks until exhausted</span>
+<span class="c-kw">with</span> <span class="c-fn">open</span>(<span class="c-str">"big.txt"</span>, <span class="c-str">"rb"</span>) <span class="c-kw">as</span> f:
+    <span class="c-kw">while</span> chunk := f.<span class="c-fn">read</span>(<span class="c-num">8192</span>):
+        <span class="c-fn">process</span>(chunk)
+
+<span class="c-cm"># Avoid recomputing an expensive expression in a condition</span>
+<span class="c-kw">if</span> (n := <span class="c-fn">expensive_count</span>()) > <span class="c-num">10</span>:
+    <span class="c-fn">print</span>(<span class="c-str">f"Got {n} results"</span>)
+</code></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">when not to use :=</div>
+      Don't use walrus for simple assignments — it's for <em>assign and test in one expression</em>. Overuse hurts readability. Python style guide (PEP 572) says: if a normal assignment is possible, prefer it.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--         DECORATORS              -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="decorators">
+    <h2><span class="num">14</span> Function decorators</h2>
+    <p>
+      A decorator is a function that takes a function and returns a new function.
+      <code>@decorator</code> is syntactic sugar for <code>f = decorator(f)</code>.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">import</span> time, functools
+
+<span class="c-cm"># Basic decorator — wrap a function</span>
+<span class="c-kw">def</span> <span class="c-fn">timer</span>(func):
+    <span class="c-dec">@functools.wraps</span>(func)           <span class="c-cm"># preserve __name__, __doc__</span>
+    <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*args, **kwargs):
+        t0     = time.<span class="c-fn">perf_counter</span>()
+        result = <span class="c-fn">func</span>(*args, **kwargs)
+        <span class="c-fn">print</span>(<span class="c-str">f"{func.__name__}: {time.perf_counter()-t0:.4f}s"</span>)
+        <span class="c-kw">return</span> result
+    <span class="c-kw">return</span> wrapper
+
+<span class="c-dec">@timer</span>
+<span class="c-kw">def</span> <span class="c-fn">slow_sum</span>(n: int) -> int:
+    <span class="c-kw">return</span> <span class="c-fn">sum</span>(<span class="c-fn">range</span>(n))
+
+<span class="c-cm"># Decorator factory — a decorator that takes arguments</span>
+<span class="c-kw">def</span> <span class="c-fn">retry</span>(times: int = <span class="c-num">3</span>, exceptions: tuple = (<span class="c-bi">Exception</span>,)):
+    <span class="c-kw">def</span> <span class="c-fn">decorator</span>(func):
+        <span class="c-dec">@functools.wraps</span>(func)
+        <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*args, **kwargs):
+            <span class="c-kw">for</span> attempt <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">1</span>, times + <span class="c-num">1</span>):
+                <span class="c-kw">try</span>:
+                    <span class="c-kw">return</span> <span class="c-fn">func</span>(*args, **kwargs)
+                <span class="c-kw">except</span> exceptions <span class="c-kw">as</span> e:
+                    <span class="c-kw">if</span> attempt == times: <span class="c-kw">raise</span>
+                    <span class="c-fn">print</span>(<span class="c-str">f"Attempt {attempt} failed: {e}"</span>)
+        <span class="c-kw">return</span> wrapper
+    <span class="c-kw">return</span> decorator
+
+<span class="c-dec">@retry</span>(times=<span class="c-num">3</span>, exceptions=(<span class="c-bi">IOError</span>, <span class="c-bi">TimeoutError</span>))
+<span class="c-kw">def</span> <span class="c-fn">fetch</span>(url: str): ...
+
+<span class="c-cm"># Stacking decorators — applied bottom-up</span>
+<span class="c-dec">@timer</span>
+<span class="c-dec">@retry</span>(times=<span class="c-num">2</span>)
+<span class="c-kw">def</span> <span class="c-fn">do_something</span>(): ...
+<span class="c-cm"># equivalent to: timer(retry(2)(do_something))</span>
+</code></pre>
+    </div>
+  </section>
+
+  <section id="class-dec">
+    <h2><span class="num">15</span> Class-based decorators & <code>functools.wraps</code></h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># A class decorator implements __call__</span>
+<span class="c-kw">class</span> <span class="c-cls">CallCounter</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, func):
+        functools.<span class="c-fn">update_wrapper</span>(self, func)   <span class="c-cm"># same as @wraps</span>
+        self.func  = func
+        self.count = <span class="c-num">0</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__call__</span>(self, *args, **kwargs):
+        self.count += <span class="c-num">1</span>
+        <span class="c-kw">return</span> self.<span class="c-fn">func</span>(*args, **kwargs)
+
+<span class="c-dec">@CallCounter</span>
+<span class="c-kw">def</span> <span class="c-fn">greet</span>(name: str): <span class="c-kw">return</span> <span class="c-str">f"Hello, {name}"</span>
+
+<span class="c-fn">greet</span>(<span class="c-str">"Alice"</span>); <span class="c-fn">greet</span>(<span class="c-str">"Bob"</span>)
+greet.count    <span class="c-cm"># → 2</span>
+
+<span class="c-cm"># Why functools.wraps matters</span>
+<span class="c-kw">def</span> <span class="c-fn">bad_decorator</span>(func):
+    <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*args, **kwargs): <span class="c-kw">return</span> <span class="c-fn">func</span>(*args, **kwargs)
+    <span class="c-kw">return</span> wrapper
+
+<span class="c-kw">def</span> <span class="c-fn">good_decorator</span>(func):
+    <span class="c-dec">@functools.wraps</span>(func)     <span class="c-cm"># copies __name__, __doc__, __annotations__</span>
+    <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*args, **kwargs): <span class="c-kw">return</span> <span class="c-fn">func</span>(*args, **kwargs)
+    <span class="c-kw">return</span> wrapper
+
+<span class="c-dec">@bad_decorator</span>
+<span class="c-kw">def</span> <span class="c-fn">f</span>(): <span class="c-str">"""My docstring."""</span>
+f.__name__   <span class="c-cm"># → 'wrapper'  ← broken</span>
+
+<span class="c-dec">@good_decorator</span>
+<span class="c-kw">def</span> <span class="c-fn">g</span>(): <span class="c-str">"""My docstring."""</span>
+g.__name__   <span class="c-cm"># → 'g'  ✓</span>
+g.__doc__    <span class="c-cm"># → 'My docstring.'  ✓</span>
+</code></pre>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--       CONTEXT MANAGERS          -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="ctx">
+    <h2><span class="num">16</span> Context managers — <code>with</code></h2>
+    <p>
+      A context manager guarantees cleanup (close, unlock, rollback) whether or not an exception is raised.
+      The <code>with</code> statement calls <code>__enter__</code> on entry and <code>__exit__</code> on exit.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># Class-based context manager</span>
+<span class="c-kw">class</span> <span class="c-cls">Timer</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__enter__</span>(self):
+        self.start = time.<span class="c-fn">perf_counter</span>()
+        <span class="c-kw">return</span> self            <span class="c-cm"># bound to 'as' variable</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__exit__</span>(self, exc_type, exc_val, exc_tb):
+        self.elapsed = time.<span class="c-fn">perf_counter</span>() - self.start
+        <span class="c-cm"># return True to suppress exception; False/None to propagate</span>
+        <span class="c-kw">return</span> <span class="c-bi">False</span>
+
+<span class="c-kw">with</span> <span class="c-cls">Timer</span>() <span class="c-kw">as</span> t:
+    <span class="c-fn">slow_sum</span>(<span class="c-num">10</span>**<span class="c-num">7</span>)
+<span class="c-fn">print</span>(t.elapsed)
+
+<span class="c-cm"># Multiple context managers — both guaranteed to close</span>
+<span class="c-kw">with</span> <span class="c-fn">open</span>(<span class="c-str">"a.txt"</span>) <span class="c-kw">as</span> src, <span class="c-fn">open</span>(<span class="c-str">"b.txt"</span>, <span class="c-str">"w"</span>) <span class="c-kw">as</span> dst:
+    dst.<span class="c-fn">write</span>(src.<span class="c-fn">read</span>())
+
+<span class="c-cm"># __exit__ receives exception info — can suppress or re-raise</span>
+<span class="c-kw">class</span> <span class="c-cls">Suppress</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, *exc_types): self.exc_types = exc_types
+    <span class="c-kw">def</span> <span class="c-fn">__enter__</span>(self): <span class="c-kw">return</span> self
+    <span class="c-kw">def</span> <span class="c-fn">__exit__</span>(self, exc_type, *_):
+        <span class="c-kw">return</span> exc_type <span class="c-kw">is not None</span> <span class="c-kw">and</span> <span class="c-fn">issubclass</span>(exc_type, self.exc_types)
+
+<span class="c-kw">with</span> <span class="c-cls">Suppress</span>(<span class="c-bi">FileNotFoundError</span>):
+    <span class="c-fn">open</span>(<span class="c-str">"missing.txt"</span>)       <span class="c-cm"># silently ignored</span>
+</code></pre>
+    </div>
+  </section>
+
+  <section id="contextlib">
+    <h2><span class="num">17</span> contextlib — generators as context managers</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">from</span> contextlib <span class="c-kw">import</span> contextmanager, suppress, ExitStack
+
+<span class="c-cm"># @contextmanager turns a generator into a context manager</span>
+<span class="c-dec">@contextmanager</span>
+<span class="c-kw">def</span> <span class="c-fn">managed_resource</span>(name: str):
+    <span class="c-fn">print</span>(<span class="c-str">f"Acquiring {name}"</span>)
+    resource = <span class="c-fn">acquire</span>(name)      <span class="c-cm"># setup</span>
+    <span class="c-kw">try</span>:
+        <span class="c-kw">yield</span> resource            <span class="c-cm"># body of 'with' block runs here</span>
+    <span class="c-kw">finally</span>:
+        <span class="c-fn">release</span>(resource)         <span class="c-cm"># always runs, even on exception</span>
+
+<span class="c-kw">with</span> <span class="c-fn">managed_resource</span>(<span class="c-str">"db"</span>) <span class="c-kw">as</span> conn:
+    conn.<span class="c-fn">query</span>(<span class="c-str">"SELECT 1"</span>)
+
+<span class="c-cm"># suppress — clean way to ignore specific exceptions</span>
+<span class="c-kw">with</span> <span class="c-fn">suppress</span>(<span class="c-bi">FileNotFoundError</span>, <span class="c-bi">PermissionError</span>):
+    <span class="c-fn">open</span>(<span class="c-str">"maybe.txt"</span>).<span class="c-fn">close</span>()
+
+<span class="c-cm"># ExitStack — dynamic number of context managers</span>
+files = [<span class="c-str">"a.txt"</span>, <span class="c-str">"b.txt"</span>, <span class="c-str">"c.txt"</span>]
+<span class="c-kw">with</span> <span class="c-cls">ExitStack</span>() <span class="c-kw">as</span> stack:
+    handles = [stack.<span class="c-fn">enter_context</span>(<span class="c-fn">open</span>(f)) <span class="c-kw">for</span> f <span class="c-kw">in</span> files]
+    <span class="c-cm"># all files closed on exit, even if one failed to open</span>
+</code></pre>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--       CLASSES & DATA            -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="dunder">
+    <h2><span class="num">18</span> Dunder methods — making objects feel native</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">class</span> <span class="c-cls">Vector</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, x: float, y: float):
+        self.x, self.y = x, y
+
+    <span class="c-cm"># String representations</span>
+    <span class="c-kw">def</span> <span class="c-fn">__repr__</span>(self) -> str:            <span class="c-cm"># unambiguous, for devs</span>
+        <span class="c-kw">return</span> <span class="c-str">f"Vector({self.x}, {self.y})"</span>
+    <span class="c-kw">def</span> <span class="c-fn">__str__</span>(self) -> str:             <span class="c-cm"># readable, for users</span>
+        <span class="c-kw">return</span> <span class="c-str">f"({self.x}, {self.y})"</span>
+
+    <span class="c-cm"># Arithmetic operators</span>
+    <span class="c-kw">def</span> <span class="c-fn">__add__</span>(self, other: <span class="c-str">"Vector"</span>):  <span class="c-cm"># self + other</span>
+        <span class="c-kw">return</span> <span class="c-cls">Vector</span>(self.x + other.x, self.y + other.y)
+    <span class="c-kw">def</span> <span class="c-fn">__mul__</span>(self, scalar: float):    <span class="c-cm"># self * scalar</span>
+        <span class="c-kw">return</span> <span class="c-cls">Vector</span>(self.x * scalar, self.y * scalar)
+    <span class="c-kw">def</span> <span class="c-fn">__rmul__</span>(self, scalar: float):   <span class="c-cm"># scalar * self</span>
+        <span class="c-kw">return</span> self.<span class="c-fn">__mul__</span>(scalar)
+    <span class="c-kw">def</span> <span class="c-fn">__neg__</span>(self):                   <span class="c-cm"># -self</span>
+        <span class="c-kw">return</span> <span class="c-cls">Vector</span>(-self.x, -self.y)
+    <span class="c-kw">def</span> <span class="c-fn">__abs__</span>(self):                   <span class="c-cm"># abs(self)</span>
+        <span class="c-kw">return</span> (self.x**<span class="c-num">2</span> + self.y**<span class="c-num">2</span>) ** <span class="c-num">0.5</span>
+
+    <span class="c-cm"># Comparison (needs all six for full ordering)</span>
+    <span class="c-kw">def</span> <span class="c-fn">__eq__</span>(self, other): <span class="c-kw">return</span> self.x == other.x <span class="c-kw">and</span> self.y == other.y
+    <span class="c-kw">def</span> <span class="c-fn">__lt__</span>(self, other): <span class="c-kw">return</span> <span class="c-fn">abs</span>(self) < <span class="c-fn">abs</span>(other)
+
+    <span class="c-cm"># Container protocol</span>
+    <span class="c-kw">def</span> <span class="c-fn">__len__</span>(self): <span class="c-kw">return</span> <span class="c-num">2</span>
+    <span class="c-kw">def</span> <span class="c-fn">__getitem__</span>(self, i):
+        <span class="c-kw">return</span> (self.x, self.y)[i]         <span class="c-cm"># enables v[0], v[1]</span>
+    <span class="c-kw">def</span> <span class="c-fn">__iter__</span>(self):
+        <span class="c-kw">yield</span> self.x; <span class="c-kw">yield</span> self.y        <span class="c-cm"># for x, y = v</span>
+
+    <span class="c-cm"># Hashing (required if __eq__ is defined, for dict/set use)</span>
+    <span class="c-kw">def</span> <span class="c-fn">__hash__</span>(self): <span class="c-kw">return</span> <span class="c-fn">hash</span>((self.x, self.y))
+
+    <span class="c-cm"># Make instance callable</span>
+    <span class="c-kw">def</span> <span class="c-fn">__call__</span>(self, scalar: float): <span class="c-kw">return</span> self * scalar
+
+v = <span class="c-cls">Vector</span>(<span class="c-num">3</span>, <span class="c-num">4</span>)
+<span class="c-fn">abs</span>(v)          <span class="c-cm"># → 5.0</span>
+x, y = v        <span class="c-cm"># unpacking via __iter__</span>
+v(<span class="c-num">2</span>)            <span class="c-cm"># → Vector(6, 8)  via __call__</span>
+</code></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">__eq__ and __hash__ must be consistent</div>
+      If you define <code>__eq__</code>, Python sets <code>__hash__ = None</code> — the object becomes unhashable and can't be used as a dict key or set member. Define <code>__hash__</code> explicitly if you need both. Rule: objects that compare equal must have the same hash.
+    </div>
+  </section>
+
+  <section id="dataclasses">
+    <h2><span class="num">19</span> dataclasses, __slots__, namedtuple</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">from</span> dataclasses <span class="c-kw">import</span> dataclass, field, KW_ONLY
+<span class="c-kw">from</span> typing <span class="c-kw">import</span> ClassVar
+
+<span class="c-dec">@dataclass</span>
+<span class="c-kw">class</span> <span class="c-cls">Point</span>:
+    x: float
+    y: float = <span class="c-num">0.0</span>           <span class="c-cm"># default value</span>
+    _: <span class="c-cls">KW_ONLY</span>               <span class="c-cm"># everything after is keyword-only</span>
+    label: str = <span class="c-str">""</span>
+    tags: list = <span class="c-fn">field</span>(default_factory=<span class="c-bi">list</span>)  <span class="c-cm"># mutable default</span>
+    count: <span class="c-cls">ClassVar</span>[int] = <span class="c-num">0</span>                  <span class="c-cm"># not an instance field</span>
+
+<span class="c-dec">@dataclass</span>(frozen=<span class="c-bi">True</span>)     <span class="c-cm"># immutable → hashable</span>
+<span class="c-kw">class</span> <span class="c-cls">ImmutablePoint</span>:
+    x: float; y: float
+
+<span class="c-dec">@dataclass</span>(order=<span class="c-bi">True</span>)      <span class="c-cm"># generates __lt__, __le__, etc.</span>
+<span class="c-kw">class</span> <span class="c-cls">Ranked</span>:
+    score: float              <span class="c-cm"># comparison uses field order</span>
+    name: str
+
+<span class="c-cm"># __slots__ — fixed attribute layout, faster access, lower memory</span>
+<span class="c-kw">class</span> <span class="c-cls">SlottedPoint</span>:
+    __slots__ = (<span class="c-str">"x"</span>, <span class="c-str">"y"</span>)  <span class="c-cm"># no __dict__, no arbitrary attributes</span>
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, x, y): self.x, self.y = x, y
+
+<span class="c-cm"># @dataclass(slots=True)  Python 3.10+ — combine both</span>
+
+<span class="c-cm"># namedtuple — lightweight, immutable, tuple-compatible</span>
+<span class="c-kw">from</span> collections <span class="c-kw">import</span> namedtuple
+<span class="c-kw">from</span> typing      <span class="c-kw">import</span> NamedTuple
+
+<span class="c-cls">Color</span> = <span class="c-fn">namedtuple</span>(<span class="c-str">"Color"</span>, [<span class="c-str">"r"</span>, <span class="c-str">"g"</span>, <span class="c-str">"b"</span>])
+
+<span class="c-kw">class</span> <span class="c-cls">Point3D</span>(<span class="c-cls">NamedTuple</span>):     <span class="c-cm"># typed namedtuple — preferred</span>
+    x: float; y: float; z: float = <span class="c-num">0.0</span>
+
+p = <span class="c-cls">Point3D</span>(<span class="c-num">1</span>, <span class="c-num">2</span>)
+p.x, p[<span class="c-num">0</span>], <span class="c-fn">tuple</span>(p)           <span class="c-cm"># all work — it's a tuple subclass</span>
+</code></pre>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--         TYPING                  -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="typing">
+    <h2><span class="num">20</span> Type hints in depth</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">from</span> typing <span class="c-kw">import</span> (
+    Any, Union, Optional, Callable, TypeVar, Generic,
+    Literal, TypeAlias, overload, TYPE_CHECKING
+)
+<span class="c-kw">from</span> collections.abc <span class="c-kw">import</span> Sequence, Mapping, Iterator, Generator
+
+<span class="c-cm"># Modern union syntax (Python 3.10+)</span>
+<span class="c-kw">def</span> <span class="c-fn">f</span>(x: int | str | <span class="c-bi">None</span>) -> int | <span class="c-bi">None</span>: ...
+<span class="c-cm"># Old style: Optional[int] = Union[int, None]</span>
+
+<span class="c-cm"># Callable — (argument types) → return type</span>
+Transform: <span class="c-cls">TypeAlias</span> = <span class="c-cls">Callable</span>[[int, int], int]
+
+<span class="c-cm"># TypeVar — generic functions</span>
+T = <span class="c-cls">TypeVar</span>(<span class="c-str">"T"</span>)
+
+<span class="c-kw">def</span> <span class="c-fn">first</span>(lst: Sequence[T]) -> T:   <span class="c-cm"># T inferred at call site</span>
+    <span class="c-kw">return</span> lst[<span class="c-num">0</span>]
+
+<span class="c-cm"># Generic class</span>
+<span class="c-kw">class</span> <span class="c-cls">Stack</span>(<span class="c-cls">Generic</span>[T]):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self): self._data: <span class="c-bi">list</span>[T] = []
+    <span class="c-kw">def</span> <span class="c-fn">push</span>(self, item: T) -> <span class="c-bi">None</span>: self._data.<span class="c-fn">append</span>(item)
+    <span class="c-kw">def</span> <span class="c-fn">pop</span>(self)  -> T:             <span class="c-kw">return</span> self._data.<span class="c-fn">pop</span>()
+
+<span class="c-cm"># Literal — restrict to specific values</span>
+<span class="c-kw">def</span> <span class="c-fn">open_file</span>(path: str, mode: <span class="c-cls">Literal</span>[<span class="c-str">"r"</span>, <span class="c-str">"w"</span>, <span class="c-str">"rb"</span>]): ...
+
+<span class="c-cm"># Generator type hint</span>
+<span class="c-kw">def</span> <span class="c-fn">countdown</span>(n: int) -> <span class="c-cls">Generator</span>[int, <span class="c-bi">None</span>, <span class="c-bi">None</span>]:
+    <span class="c-cm"># Generator[YieldType, SendType, ReturnType]</span>
+    <span class="c-kw">while</span> n >= <span class="c-num">0</span>: <span class="c-kw">yield</span> n; n -= <span class="c-num">1</span>
+
+<span class="c-cm"># TYPE_CHECKING — avoid circular imports</span>
+<span class="c-kw">if</span> TYPE_CHECKING:
+    <span class="c-kw">from</span> mymodule <span class="c-kw">import</span> HeavyClass
+
+<span class="c-kw">def</span> <span class="c-fn">process</span>(obj: <span class="c-str">"HeavyClass"</span>) -> <span class="c-bi">None</span>:  <span class="c-cm"># string annotation avoids import at runtime</span>
+    ...
+</code></pre>
+    </div>
+  </section>
+
+  <section id="protocols" id="protocols">
+    <h2><span class="num">21</span> Protocols — structural subtyping</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-kw">from</span> typing <span class="c-kw">import</span> Protocol, runtime_checkable
+
+<span class="c-cm"># Any class with .draw() satisfies Drawable — no inheritance required</span>
+<span class="c-dec">@runtime_checkable</span>
+<span class="c-kw">class</span> <span class="c-cls">Drawable</span>(<span class="c-cls">Protocol</span>):
+    <span class="c-kw">def</span> <span class="c-fn">draw</span>(self) -> <span class="c-bi">None</span>: ...
+
+<span class="c-kw">class</span> <span class="c-cls">Circle</span>:
+    <span class="c-kw">def</span> <span class="c-fn">draw</span>(self): <span class="c-fn">print</span>(<span class="c-str">"⬤"</span>)
+
+<span class="c-kw">def</span> <span class="c-fn">render</span>(shape: <span class="c-cls">Drawable</span>) -> <span class="c-bi">None</span>:
+    shape.<span class="c-fn">draw</span>()
+
+<span class="c-fn">render</span>(<span class="c-cls">Circle</span>())         <span class="c-cm"># ✓ — Circle never imports Drawable</span>
+<span class="c-fn">isinstance</span>(<span class="c-cls">Circle</span>(), <span class="c-cls">Drawable</span>)  <span class="c-cm"># → True  (runtime_checkable)</span>
+
+<span class="c-cm"># Protocol with properties and class methods</span>
+<span class="c-kw">class</span> <span class="c-cls">Sized</span>(<span class="c-cls">Protocol</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__len__</span>(self) -> int: ...
+
+<span class="c-cm"># TypeVar bound to a Protocol</span>
+S = <span class="c-cls">TypeVar</span>(<span class="c-str">"S"</span>, bound=<span class="c-cls">Sized</span>)
+<span class="c-kw">def</span> <span class="c-fn">log_size</span>(obj: S) -> S:
+    <span class="c-fn">print</span>(<span class="c-fn">len</span>(obj)); <span class="c-kw">return</span> obj
+</code></pre>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ════════════════════════════════ -->
+  <!--          GOTCHAS                -->
+  <!-- ════════════════════════════════ -->
+
+  <section id="gotchas">
+    <h2><span class="num">22</span> Classic Python gotchas</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <pre><code>
+<span class="c-cm"># ── 1. Mutable default arguments ──────────────────────────</span>
+<span class="c-kw">def</span> <span class="c-fn">bad_append</span>(x, lst=[]):   <span class="c-cm"># lst created ONCE, shared across calls!</span>
+    lst.<span class="c-fn">append</span>(x); <span class="c-kw">return</span> lst
+
+<span class="c-fn">bad_append</span>(<span class="c-num">1</span>)   <span class="c-cm"># → [1]</span>
+<span class="c-fn">bad_append</span>(<span class="c-num">2</span>)   <span class="c-cm"># → [1, 2]  ← same list!!</span>
+
+<span class="c-kw">def</span> <span class="c-fn">good_append</span>(x, lst=<span class="c-bi">None</span>):   <span class="c-cm"># ✓ create fresh list each call</span>
+    <span class="c-kw">if</span> lst <span class="c-kw">is</span> <span class="c-bi">None</span>: lst = []
+    lst.<span class="c-fn">append</span>(x); <span class="c-kw">return</span> lst
+
+<span class="c-cm"># ── 2. Late binding in closures (covered in §05) ──────────</span>
+
+<span class="c-cm"># ── 3. is vs == ───────────────────────────────────────────</span>
+a = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]
+b = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]
+a == b    <span class="c-cm"># → True   (structural equality via __eq__)</span>
+a <span class="c-kw">is</span> b   <span class="c-cm"># → False  (identity — different objects in memory)</span>
+<span class="c-cm"># 'is' checks id(a) == id(b). Only use 'is' for None, True, False.</span>
+x = <span class="c-bi">None</span>
+x <span class="c-kw">is</span> <span class="c-bi">None</span>  <span class="c-cm"># ✓ correct None check (never x == None)</span>
+
+<span class="c-cm"># ── 4. Integer caching (CPython implementation detail) ────</span>
+a = <span class="c-num">256</span>; b = <span class="c-num">256</span>; a <span class="c-kw">is</span> b  <span class="c-cm"># → True  (cached)</span>
+a = <span class="c-num">257</span>; b = <span class="c-num">257</span>; a <span class="c-kw">is</span> b  <span class="c-cm"># → False (not cached)</span>
+<span class="c-cm"># CPython caches integers -5 to 256. Never rely on this.</span>
+
+<span class="c-cm"># ── 5. Iteration while modifying ──────────────────────────</span>
+d = {<span class="c-str">"a"</span>: <span class="c-num">1</span>, <span class="c-str">"b"</span>: <span class="c-num">2</span>, <span class="c-str">"c"</span>: <span class="c-num">3</span>}
+<span class="c-cm"># for k in d: del d[k]  ← RuntimeError: dict changed during iteration</span>
+<span class="c-kw">for</span> k <span class="c-kw">in</span> <span class="c-fn">list</span>(d):         <span class="c-cm"># ✓ iterate over a copy of keys</span>
+    <span class="c-kw">if</span> d[k] < <span class="c-num">2</span>: <span class="c-kw">del</span> d[k]
+
+<span class="c-cm"># ── 6. Chained comparison — often surprising ──────────────</span>
+<span class="c-num">1</span> < <span class="c-num">2</span> < <span class="c-num">3</span>    <span class="c-cm"># → True   (works as expected: 1<2 AND 2<3)</span>
+<span class="c-num">1</span> < <span class="c-num">2</span> > <span class="c-num">0</span>    <span class="c-cm"># → True   (1<2 AND 2>0)</span>
+<span class="c-num">1</span> == <span class="c-num">1</span> == <span class="c-num">1</span>  <span class="c-cm"># → True</span>
+
+<span class="c-cm"># ── 7. String interning ───────────────────────────────────</span>
+a = <span class="c-str">"hello"</span>; b = <span class="c-str">"hello"</span>
+a <span class="c-kw">is</span> b    <span class="c-cm"># → True  (CPython interns short strings — don't rely on it)</span>
+
+<span class="c-cm"># ── 8. Exception scope leak (Python 3) ───────────────────</span>
+<span class="c-kw">try</span>:
+    <span class="c-kw">raise</span> <span class="c-bi">ValueError</span>(<span class="c-str">"oops"</span>)
+<span class="c-kw">except</span> <span class="c-bi">ValueError</span> <span class="c-kw">as</span> e:
+    err = e                  <span class="c-cm"># save before the block ends</span>
+<span class="c-cm"># 'e' is deleted after except block — Python 3 behaviour</span>
+<span class="c-cm"># err still works; 'e' is gone</span>
+</code></pre>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- Checklist -->
+  <section id="checklist">
+    <h2><span class="num">23</span> Quick-fire checklist</h2>
+    <ul class="checklist">
+      <li>List comprehension vs loop: comprehensions for building values, loops for side effects</li>
+      <li><code>{}</code> is an empty <em>dict</em> — use <code>set()</code> for an empty set</li>
+      <li>Mutable default argument: always use <code>None</code> and initialize inside the function</li>
+      <li>Closure late binding: use <code>lambda i=i: i</code> to capture value at definition time</li>
+      <li>Iterator vs iterable: iterators are single-pass; iterables can produce fresh iterators</li>
+      <li>Generator function: body doesn't run until the first <code>next()</code> call</li>
+      <li><code>yield from</code> delegates send/throw/return — not just <code>for x in it: yield x</code></li>
+      <li>Generator expression vs list: <code>()</code> is lazy O(1) memory, <code>[]</code> materializes everything</li>
+      <li><code>any()</code> and <code>all()</code> short-circuit over generators — stop early</li>
+      <li><code>itertools.groupby</code> requires sorted input — it only groups consecutive equal elements</li>
+      <li><code>@functools.wraps(func)</code> on every wrapper — preserves <code>__name__</code>, <code>__doc__</code>, <code>__annotations__</code></li>
+      <li>Context manager <code>__exit__</code> returns <code>True</code> to suppress exception, <code>False</code>/None to re-raise</li>
+      <li>Defining <code>__eq__</code> sets <code>__hash__ = None</code> — define <code>__hash__</code> explicitly if needed</li>
+      <li><code>is</code> checks identity; <code>==</code> checks equality. Use <code>is None</code>, <code>is True</code>, <code>is False</code> — never <code>== None</code></li>
+      <li>Never mutate a dict/list while iterating it — iterate over <code>list(d)</code> or a copy</li>
+      <li>Exception variable <code>e</code> is deleted after the <code>except</code> block in Python 3 — save it if needed</li>
+    </ul>
+
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.9;">
+        The hallmark of fluent Python: <strong>working with the language, not against it</strong>.
+        Comprehensions replace append-loops. Generators replace loading everything in memory.
+        Context managers replace try/finally. Decorators replace repetitive wrapping.
+        Protocols replace rigid inheritance hierarchies. Learn the pattern once — apply it everywhere.
+      </p>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<script>
+function cp(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText || pre.textContent).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>

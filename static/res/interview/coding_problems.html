@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Coding Problems — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #0a0a0a;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.nav-logo { font-family: 'Fraunces', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
+.nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 1.4rem 0 0.4rem; font-weight: 500; opacity: 0.55; }
+nav a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; padding: 3px 0; transition: color 0.15s; font-weight: 300; }
+nav a:hover { color: var(--accent); }
+.diff {
+  display: inline-block; font-size: 9px; font-family: 'DM Mono', monospace;
+  padding: 1px 5px; border-radius: 2px; letter-spacing: 0.06em; vertical-align: middle; margin-left: 4px;
+}
+.diff.e { background: rgba(122,200,122,0.12); border: 1px solid rgba(122,200,122,0.25); color: var(--green); }
+.diff.m { background: rgba(200,185,122,0.12); border: 1px solid rgba(200,185,122,0.25); color: var(--accent); }
+.diff.h { background: rgba(200,122,122,0.12); border: 1px solid rgba(200,122,122,0.25); color: var(--red); }
+
+.nav-bottom { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 2px 0; font-family: 'DM Mono', monospace; }
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+/* ── Hero ── */
+.hero { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 500; margin-bottom: 1rem; font-family: 'DM Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2.1rem, 4vw, 2.9rem); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 1.2rem; }
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill { font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+
+/* ── Problem sections ── */
+.problem-section { margin-bottom: 4rem; scroll-margin-top: 2rem; }
+
+.section-header { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border2); flex-wrap: wrap; }
+.section-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.section-num { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); font-weight: 400; letter-spacing: 0.06em; }
+.section-tag { font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 8px; border-radius: 2px; border: 1px solid; letter-spacing: 0.06em; }
+.tag-algo   { color: var(--accent2); border-color: rgba(122,191,200,0.3); background: rgba(122,191,200,0.07); }
+.tag-string { color: var(--accent3); border-color: rgba(200,122,178,0.3); background: rgba(200,122,178,0.07); }
+.tag-list   { color: var(--green);   border-color: rgba(122,200,122,0.3); background: rgba(122,200,122,0.07); }
+.tag-numpy  { color: var(--orange);  border-color: rgba(200,149,106,0.3); background: rgba(200,149,106,0.07); }
+.tag-graph  { color: var(--accent);  border-color: rgba(200,185,122,0.3); background: rgba(200,185,122,0.07); }
+
+/* ── Problem card ── */
+.problem { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 1.5rem; overflow: hidden; }
+.problem-head { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border); gap: 1rem; }
+.problem-title { font-family: 'DM Mono', monospace; font-size: 13.5px; font-weight: 500; color: var(--text); }
+.problem-meta { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.badge { font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 7px; border-radius: 2px; border: 1px solid; }
+.badge.easy   { color: var(--green); border-color: rgba(122,200,122,0.3); background: rgba(122,200,122,0.08); }
+.badge.medium { color: var(--accent); border-color: rgba(200,185,122,0.3); background: rgba(200,185,122,0.08); }
+.badge.hard   { color: var(--red); border-color: rgba(200,122,122,0.3); background: rgba(200,122,122,0.08); }
+
+.problem-body { padding: 1rem 1.2rem; }
+.problem-desc { font-size: 13.5px; color: var(--muted); line-height: 1.65; margin-bottom: 0.8rem; }
+.problem-examples { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 0.7rem 1rem; margin-bottom: 1rem; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); line-height: 1.8; }
+.problem-examples .ex-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); opacity: 0.6; margin-bottom: 0.3rem; }
+.problem-examples .ex-in  { color: var(--accent2); }
+.problem-examples .ex-out { color: var(--green); }
+
+/* ── Code block ── */
+.code-wrap { position: relative; }
+.code-header { display: flex; align-items: center; justify-content: space-between; background: #080808; padding: 0.5rem 1rem; border-top: 1px solid var(--border2); }
+.code-lang { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.copy-btn {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  background: none; border: 1px solid var(--border2); border-radius: 3px; padding: 3px 8px;
+  cursor: pointer; transition: all 0.15s; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--tag-border); }
+.copy-btn.copied { color: var(--green); border-color: rgba(122,200,122,0.3); }
+
+pre.code {
+  background: var(--code-bg);
+  padding: 1.1rem 1.2rem;
+  overflow-x: auto;
+  margin: 0;
+  border: none;
+}
+pre.code code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #c9c0b0;
+  display: block;
+}
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-cls { color: #e0c070; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #454340; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+.c-op  { color: #c87ab2; }
+
+/* ── Insight / hint boxes ── */
+.insight {
+  border-left: 2px solid var(--accent2);
+  background: rgba(122,191,200,0.05);
+  padding: 0.75rem 1rem;
+  margin: 0.8rem 0 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.65;
+}
+.insight.green  { border-left-color: var(--green);  background: rgba(122,200,122,0.05); }
+.insight.orange { border-left-color: var(--orange); background: rgba(200,149,106,0.05); }
+.insight.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.insight.red    { border-left-color: var(--red);    background: rgba(200,122,122,0.05); }
+.insight-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.55; font-family: 'DM Mono', monospace; margin-bottom: 0.25rem; }
+
+/* ── Complexity row ── */
+.complexity {
+  display: flex; gap: 1.5rem; padding: 0.5rem 0; flex-wrap: wrap;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+  border-top: 1px solid var(--border); margin-top: 0.8rem; padding-top: 0.7rem;
+}
+.complexity-item span:first-child { color: var(--muted); margin-right: 4px; }
+.complexity-item span:last-child  { color: var(--accent); }
+
+p.note { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0.5rem 0; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.2rem 4rem; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">Coding Problems</div>
+
+  <span class="nav-section">Search & Sort</span>
+  <a href="#binsearch">Binary search <span class="diff e">easy</span></a>
+  <a href="#binsearch-var">Binary search variants <span class="diff m">med</span></a>
+
+  <span class="nav-section">Recursion & DP</span>
+  <a href="#fib">Fibonacci — 4 ways <span class="diff e">easy</span></a>
+  <a href="#climbing">Climbing stairs <span class="diff e">easy</span></a>
+  <a href="#lcs-dp">Longest common subseq. <span class="diff m">med</span></a>
+
+  <span class="nav-section">Graphs</span>
+  <a href="#bfs">BFS — shortest path <span class="diff e">easy</span></a>
+  <a href="#dfs">DFS — connected components <span class="diff m">med</span></a>
+  <a href="#topo">Topological sort <span class="diff m">med</span></a>
+
+  <span class="nav-section">Lists & Arrays</span>
+  <a href="#twosum">Two sum <span class="diff e">easy</span></a>
+  <a href="#sliding">Sliding window max <span class="diff m">med</span></a>
+  <a href="#mergeint">Merge intervals <span class="diff m">med</span></a>
+  <a href="#kadane">Kadane's algorithm <span class="diff m">med</span></a>
+
+  <span class="nav-section">Strings</span>
+  <a href="#anagram">Anagram check <span class="diff e">easy</span></a>
+  <a href="#longsub">Longest substr. no repeat <span class="diff m">med</span></a>
+  <a href="#loncom">Longest common prefix <span class="diff e">easy</span></a>
+  <a href="#palindrome">Longest palindrome substr. <span class="diff m">med</span></a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;opacity:.6;">problems</div>
+    <div class="nav-stat"><span>Total</span><span>15</span></div>
+    <div class="nav-stat"><span>Easy</span><span>7</span></div>
+    <div class="nav-stat"><span>Medium</span><span>7</span></div>
+    <div class="nav-stat"><span>Hard</span><span>1</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Interview Primer · Python Coding Problems</div>
+    <h1>Know the pattern,<br><em>not just the answer</em></h1>
+    <p class="hero-desc">
+      20 problems covering search, recursion, graphs, arrays, strings, and NumPy/PyTorch indexing.
+      Each solution is clean, interview-ready Python — with the complexity analysis and
+      the key insight that makes it click.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Binary search</span>
+      <span class="pill">BFS / DFS</span>
+      <span class="pill">Memoization</span>
+      <span class="pill">Sliding window</span>
+      <span class="pill">Two pointers</span>
+      <span class="pill">NumPy</span>
+      <span class="pill">PyTorch</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ -->
+  <!--      SEARCH & SORT            -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="binsearch">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Binary Search</span>
+      <span class="section-tag tag-algo">Search</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Classic binary search — find target index</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Given a sorted array and a target, return its index or -1. The loop invariant: target is always within [lo, hi] if it exists.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">nums=[1,3,5,7,9], target=7</span> → <span class="ex-out">3</span><br>
+          <span class="ex-in">nums=[1,3,5,7,9], target=4</span> → <span class="ex-out">-1</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">binary_search</span>(nums: list[int], target: int) -> int:
+    lo, hi = <span class="c-num">0</span>, <span class="c-fn">len</span>(nums) - <span class="c-num">1</span>
+    <span class="c-kw">while</span> lo <= hi:
+        mid = lo + (hi - lo) // <span class="c-num">2</span>  <span class="c-cm"># avoids overflow vs (lo+hi)//2</span>
+        <span class="c-kw">if</span>   nums[mid] == target: <span class="c-kw">return</span> mid
+        <span class="c-kw">elif</span> nums[mid] <  target: lo = mid + <span class="c-num">1</span>
+        <span class="c-kw">else</span>:                     hi = mid - <span class="c-num">1</span>
+    <span class="c-kw">return</span> -<span class="c-num">1</span>
+
+<span class="c-cm"># Test</span>
+<span class="c-kw">assert</span> <span class="c-fn">binary_search</span>([<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">7</span>,<span class="c-num">9</span>], <span class="c-num">7</span>) == <span class="c-num">3</span>
+<span class="c-kw">assert</span> <span class="c-fn">binary_search</span>([<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">7</span>,<span class="c-num">9</span>], <span class="c-num">4</span>) == -<span class="c-num">1</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(log n)</span></div><div class="complexity-item"><span>Space</span><span>O(1)</span></div></div>
+        <div class="insight"><div class="insight-label">key insight</div>Use <code>lo + (hi - lo) // 2</code> to prevent integer overflow. Always ask: when does the loop terminate? lo &gt; hi — the invariant is broken, target not in array.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Binary search variants -->
+  <div class="problem-section" id="binsearch-var">
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Find leftmost / rightmost insertion point</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Two classic variants: find the first position where target could be inserted (lower bound), and the last (upper bound). These underlie bisect_left and bisect_right.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">nums=[1,3,3,3,5], target=3</span> → <span class="ex-out">left_bound=1, right_bound=3</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">left_bound</span>(nums: list[int], target: int) -> int:
+    <span class="c-cm">"""First index where nums[i] >= target (bisect_left)."""</span>
+    lo, hi = <span class="c-num">0</span>, <span class="c-fn">len</span>(nums)
+    <span class="c-kw">while</span> lo < hi:            <span class="c-cm"># note: strict <, hi starts at len</span>
+        mid = (lo + hi) // <span class="c-num">2</span>
+        <span class="c-kw">if</span> nums[mid] < target: lo = mid + <span class="c-num">1</span>
+        <span class="c-kw">else</span>:                  hi = mid
+    <span class="c-kw">return</span> lo               <span class="c-cm"># lo == hi at exit</span>
+
+<span class="c-kw">def</span> <span class="c-fn">right_bound</span>(nums: list[int], target: int) -> int:
+    <span class="c-cm">"""First index where nums[i] > target (bisect_right)."""</span>
+    lo, hi = <span class="c-num">0</span>, <span class="c-fn">len</span>(nums)
+    <span class="c-kw">while</span> lo < hi:
+        mid = (lo + hi) // <span class="c-num">2</span>
+        <span class="c-kw">if</span> nums[mid] <= target: lo = mid + <span class="c-num">1</span>
+        <span class="c-kw">else</span>:                   hi = mid
+    <span class="c-kw">return</span> lo - <span class="c-num">1</span>          <span class="c-cm"># last index equal to target</span>
+
+<span class="c-cm"># Or use the standard library:</span>
+<span class="c-kw">import</span> bisect
+bisect.<span class="c-fn">bisect_left</span>([<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">3</span>,<span class="c-num">3</span>,<span class="c-num">5</span>], <span class="c-num">3</span>)   <span class="c-cm"># → 1</span>
+bisect.<span class="c-fn">bisect_right</span>([<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">3</span>,<span class="c-num">3</span>,<span class="c-num">5</span>], <span class="c-num">3</span>)  <span class="c-cm"># → 4</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(log n)</span></div><div class="complexity-item"><span>Space</span><span>O(1)</span></div></div>
+        <div class="insight"><div class="insight-label">key insight</div>Change <code>hi = len(nums)</code> (open right end) and use strict <code>&lt;</code>. The loop exits when lo == hi — that position is the answer. In interviews: say "I'll use bisect_left / bisect_right" then implement if asked.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════ -->
+  <!--      RECURSION & DP           -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="fib">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Fibonacci — 4 implementations</span>
+      <span class="section-tag tag-algo">Recursion / DP</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Fibonacci: naïve → memo dict → iterative → O(1) space</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Every progression teaches something. Know all four — interviewers often ask "can you optimize further?"</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-cm"># 1. Naïve recursion — O(2ⁿ) time, O(n) stack</span>
+<span class="c-kw">def</span> <span class="c-fn">fib_naive</span>(n: int) -> int:
+    <span class="c-kw">if</span> n <= <span class="c-num">1</span>: <span class="c-kw">return</span> n
+    <span class="c-kw">return</span> <span class="c-fn">fib_naive</span>(n - <span class="c-num">1</span>) + <span class="c-fn">fib_naive</span>(n - <span class="c-num">2</span>)
+
+
+<span class="c-cm"># 2. Memoization with explicit dict — O(n) time, O(n) space</span>
+<span class="c-kw">def</span> <span class="c-fn">fib_memo</span>(n: int, memo: dict = {}) -> int:
+    <span class="c-kw">if</span> n <= <span class="c-num">1</span>: <span class="c-kw">return</span> n
+    <span class="c-kw">if</span> n <span class="c-kw">in</span> memo: <span class="c-kw">return</span> memo[n]
+    memo[n] = <span class="c-fn">fib_memo</span>(n - <span class="c-num">1</span>, memo) + <span class="c-fn">fib_memo</span>(n - <span class="c-num">2</span>, memo)
+    <span class="c-kw">return</span> memo[n]
+<span class="c-cm"># Note: pass memo={} as arg, NOT a mutable default to avoid state leakage</span>
+<span class="c-cm"># Cleaner version:</span>
+<span class="c-kw">def</span> <span class="c-fn">fib_memo_clean</span>(n: int, memo: dict | <span class="c-bi">None</span> = <span class="c-bi">None</span>) -> int:
+    <span class="c-kw">if</span> memo <span class="c-kw">is</span> <span class="c-bi">None</span>: memo = {}
+    <span class="c-kw">if</span> n <= <span class="c-num">1</span>: <span class="c-kw">return</span> n
+    <span class="c-kw">if</span> n <span class="c-kw">in</span> memo: <span class="c-kw">return</span> memo[n]
+    memo[n] = <span class="c-fn">fib_memo_clean</span>(n - <span class="c-num">1</span>, memo) + <span class="c-fn">fib_memo_clean</span>(n - <span class="c-num">2</span>, memo)
+    <span class="c-kw">return</span> memo[n]
+
+
+<span class="c-cm"># 3. Bottom-up tabulation — O(n) time, O(n) space</span>
+<span class="c-kw">def</span> <span class="c-fn">fib_dp</span>(n: int) -> int:
+    <span class="c-kw">if</span> n <= <span class="c-num">1</span>: <span class="c-kw">return</span> n
+    dp = [<span class="c-num">0</span>] * (n + <span class="c-num">1</span>)
+    dp[<span class="c-num">1</span>] = <span class="c-num">1</span>
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">2</span>, n + <span class="c-num">1</span>):
+        dp[i] = dp[i-<span class="c-num">1</span>] + dp[i-<span class="c-num">2</span>]
+    <span class="c-kw">return</span> dp[n]
+
+
+<span class="c-cm"># 4. Rolling variables — O(n) time, O(1) space (optimal)</span>
+<span class="c-kw">def</span> <span class="c-fn">fib</span>(n: int) -> int:
+    a, b = <span class="c-num">0</span>, <span class="c-num">1</span>
+    <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(n):
+        a, b = b, a + b
+    <span class="c-kw">return</span> a
+
+<span class="c-kw">assert</span> <span class="c-fn">fib</span>(<span class="c-num">10</span>) == <span class="c-num">55</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Naïve</span><span>O(2ⁿ)</span></div><div class="complexity-item"><span>Memo / DP</span><span>O(n)</span></div><div class="complexity-item"><span>Rolling</span><span>O(1) space</span></div></div>
+        <div class="insight green"><div class="insight-label">mutable default trap</div>Never use <code>def f(memo={})</code> — the dict persists across calls. Use <code>memo=None</code> and initialize inside. This is a classic Python gotcha that interviewers love to probe.</div>
+      </div>
+    </div>
+
+    <!-- Climbing stairs -->
+    <div class="problem" id="climbing">
+      <div class="problem-head">
+        <span class="problem-title">Climbing stairs — ways to reach top</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">You can climb 1 or 2 steps at a time. How many distinct ways to climb n stairs? This is Fibonacci in disguise.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">n=4</span> → <span class="ex-out">5</span> <span style="color:var(--muted);font-size:12px;">(1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2)</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">climb_stairs</span>(n: int) -> int:
+    <span class="c-kw">if</span> n <= <span class="c-num">2</span>: <span class="c-kw">return</span> n
+    a, b = <span class="c-num">1</span>, <span class="c-num">2</span>            <span class="c-cm"># ways(1)=1, ways(2)=2</span>
+    <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>, n + <span class="c-num">1</span>):
+        a, b = b, a + b    <span class="c-cm"># ways(i) = ways(i-1) + ways(i-2)</span>
+    <span class="c-kw">return</span> b
+
+<span class="c-kw">assert</span> <span class="c-fn">climb_stairs</span>(<span class="c-num">4</span>) == <span class="c-num">5</span>
+
+<span class="c-cm"># Generalization: k-step climbing</span>
+<span class="c-kw">def</span> <span class="c-fn">climb_k</span>(n: int, k: int = <span class="c-num">2</span>) -> int:
+    dp = [<span class="c-num">0</span>] * (n + <span class="c-num">1</span>)
+    dp[<span class="c-num">0</span>] = <span class="c-num">1</span>
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">1</span>, n + <span class="c-num">1</span>):
+        <span class="c-kw">for</span> step <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">1</span>, <span class="c-fn">min</span>(k, i) + <span class="c-num">1</span>):
+            dp[i] += dp[i - step]
+    <span class="c-kw">return</span> dp[n]</code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n)</span></div><div class="complexity-item"><span>Space</span><span>O(1)</span></div></div>
+      </div>
+    </div>
+
+    <!-- LCS -->
+    <div class="problem" id="lcs-dp">
+      <div class="problem-head">
+        <span class="problem-title">Longest Common Subsequence</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Find the length of the longest subsequence common to two strings. Characters must appear in order but not necessarily contiguous.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">s="ABCBDAB", t="BDCABA"</span> → <span class="ex-out">4</span> <span style="color:var(--muted);font-size:12px;">("BCBA")</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">lcs</span>(s: str, t: str) -> int:
+    m, n = <span class="c-fn">len</span>(s), <span class="c-fn">len</span>(t)
+    dp = [[<span class="c-num">0</span>] * (n + <span class="c-num">1</span>) <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(m + <span class="c-num">1</span>)]
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">1</span>, m + <span class="c-num">1</span>):
+        <span class="c-kw">for</span> j <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">1</span>, n + <span class="c-num">1</span>):
+            <span class="c-kw">if</span> s[i-<span class="c-num">1</span>] == t[j-<span class="c-num">1</span>]:
+                dp[i][j] = dp[i-<span class="c-num">1</span>][j-<span class="c-num">1</span>] + <span class="c-num">1</span>
+            <span class="c-kw">else</span>:
+                dp[i][j] = <span class="c-fn">max</span>(dp[i-<span class="c-num">1</span>][j], dp[i][j-<span class="c-num">1</span>])
+    <span class="c-kw">return</span> dp[m][n]
+
+<span class="c-kw">assert</span> <span class="c-fn">lcs</span>(<span class="c-str">"ABCBDAB"</span>, <span class="c-str">"BDCABA"</span>) == <span class="c-num">4</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(mn)</span></div><div class="complexity-item"><span>Space</span><span>O(mn)</span></div></div>
+        <div class="insight"><div class="insight-label">pattern</div>2D DP on two strings. Same structure as edit distance — swap the merge rule. Space can be optimized to O(n) by keeping only two rows.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════ -->
+  <!--           GRAPHS              -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="bfs">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">BFS — Shortest Path</span>
+      <span class="section-tag tag-graph">Graphs</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">BFS on a grid — shortest path from S to E</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">BFS guarantees shortest path in an unweighted graph. Use a deque — pop from left (O(1)) vs list.pop(0) which is O(n).</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> deque
+
+<span class="c-kw">def</span> <span class="c-fn">bfs_shortest</span>(graph: dict[str, list[str]], start: str, end: str) -> int:
+    <span class="c-cm">"""Returns shortest path length in unweighted graph, or -1."""</span>
+    <span class="c-kw">if</span> start == end: <span class="c-kw">return</span> <span class="c-num">0</span>
+    visited = {start}
+    queue   = <span class="c-fn">deque</span>([(start, <span class="c-num">0</span>)])   <span class="c-cm"># (node, distance)</span>
+
+    <span class="c-kw">while</span> queue:
+        node, dist = queue.<span class="c-fn">popleft</span>()
+        <span class="c-kw">for</span> neighbour <span class="c-kw">in</span> graph.<span class="c-fn">get</span>(node, []):
+            <span class="c-kw">if</span> neighbour == end: <span class="c-kw">return</span> dist + <span class="c-num">1</span>
+            <span class="c-kw">if</span> neighbour <span class="c-kw">not in</span> visited:
+                visited.<span class="c-fn">add</span>(neighbour)
+                queue.<span class="c-fn">append</span>((neighbour, dist + <span class="c-num">1</span>))
+    <span class="c-kw">return</span> -<span class="c-num">1</span>
+
+<span class="c-cm"># BFS on a 2D grid (4-directional)</span>
+<span class="c-kw">def</span> <span class="c-fn">bfs_grid</span>(grid: list[list[int]], sr: int, sc: int, er: int, ec: int) -> int:
+    <span class="c-cm">"""0=open, 1=wall. Returns steps or -1."""</span>
+    R, C = <span class="c-fn">len</span>(grid), <span class="c-fn">len</span>(grid[<span class="c-num">0</span>])
+    visited = {(sr, sc)}
+    queue   = <span class="c-fn">deque</span>([(sr, sc, <span class="c-num">0</span>)])
+    <span class="c-kw">while</span> queue:
+        r, c, d = queue.<span class="c-fn">popleft</span>()
+        <span class="c-kw">if</span> (r, c) == (er, ec): <span class="c-kw">return</span> d
+        <span class="c-kw">for</span> dr, dc <span class="c-kw">in</span> [(-<span class="c-num">1</span>,<span class="c-num">0</span>),(<span class="c-num">1</span>,<span class="c-num">0</span>),(<span class="c-num">0</span>,-<span class="c-num">1</span>),(<span class="c-num">0</span>,<span class="c-num">1</span>)]:
+            nr, nc = r + dr, c + dc
+            <span class="c-kw">if</span> <span class="c-num">0</span> <= nr < R <span class="c-kw">and</span> <span class="c-num">0</span> <= nc < C <span class="c-kw">and</span> grid[nr][nc] == <span class="c-num">0</span> <span class="c-kw">and</span> (nr,nc) <span class="c-kw">not in</span> visited:
+                visited.<span class="c-fn">add</span>((nr, nc))
+                queue.<span class="c-fn">append</span>((nr, nc, d + <span class="c-num">1</span>))
+    <span class="c-kw">return</span> -<span class="c-num">1</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(V + E)</span></div><div class="complexity-item"><span>Space</span><span>O(V)</span></div></div>
+        <div class="insight"><div class="insight-label">BFS rule</div>Mark nodes visited when you <strong>enqueue</strong> them, not when you dequeue. Otherwise duplicates flood the queue. Use <code>deque</code>, not <code>list</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DFS -->
+  <div class="problem-section" id="dfs">
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">DFS — connected components & cycle detection</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">DFS explores as deep as possible before backtracking. Count connected components with iterative DFS (avoids recursion limit); detect cycles with color marking.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-cm"># Iterative DFS — count connected components</span>
+<span class="c-kw">def</span> <span class="c-fn">count_components</span>(n: int, edges: list[tuple]) -> int:
+    graph: dict[int, list[int]] = {i: [] <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(n)}
+    <span class="c-kw">for</span> u, v <span class="c-kw">in</span> edges:
+        graph[u].<span class="c-fn">append</span>(v); graph[v].<span class="c-fn">append</span>(u)
+
+    visited   = <span class="c-fn">set</span>()
+    components = <span class="c-num">0</span>
+
+    <span class="c-kw">for</span> node <span class="c-kw">in</span> <span class="c-fn">range</span>(n):
+        <span class="c-kw">if</span> node <span class="c-kw">in</span> visited: <span class="c-kw">continue</span>
+        components += <span class="c-num">1</span>
+        stack = [node]
+        <span class="c-kw">while</span> stack:
+            curr = stack.<span class="c-fn">pop</span>()
+            <span class="c-kw">if</span> curr <span class="c-kw">in</span> visited: <span class="c-kw">continue</span>
+            visited.<span class="c-fn">add</span>(curr)
+            stack.<span class="c-fn">extend</span>(graph[curr])
+    <span class="c-kw">return</span> components
+
+<span class="c-cm"># Recursive DFS with cycle detection (directed graph)</span>
+<span class="c-cm"># Colors: 0=unvisited, 1=in-stack (grey), 2=done (black)</span>
+<span class="c-kw">def</span> <span class="c-fn">has_cycle</span>(graph: dict[int, list[int]]) -> bool:
+    color = {node: <span class="c-num">0</span> <span class="c-kw">for</span> node <span class="c-kw">in</span> graph}
+
+    <span class="c-kw">def</span> <span class="c-fn">dfs</span>(u: int) -> bool:
+        color[u] = <span class="c-num">1</span>                    <span class="c-cm"># mark in-stack</span>
+        <span class="c-kw">for</span> v <span class="c-kw">in</span> graph[u]:
+            <span class="c-kw">if</span>   color[v] == <span class="c-num">1</span>: <span class="c-kw">return</span> <span class="c-bi">True</span>   <span class="c-cm"># back edge → cycle</span>
+            <span class="c-kw">elif</span> color[v] == <span class="c-num">0</span> <span class="c-kw">and</span> <span class="c-fn">dfs</span>(v): <span class="c-kw">return</span> <span class="c-bi">True</span>
+        color[u] = <span class="c-num">2</span>                    <span class="c-cm"># fully explored</span>
+        <span class="c-kw">return</span> <span class="c-bi">False</span>
+
+    <span class="c-kw">return</span> <span class="c-fn">any</span>(<span class="c-fn">dfs</span>(u) <span class="c-kw">for</span> u <span class="c-kw">in</span> graph <span class="c-kw">if</span> color[u] == <span class="c-num">0</span>)</code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(V + E)</span></div><div class="complexity-item"><span>Space</span><span>O(V)</span></div></div>
+        <div class="insight orange"><div class="insight-label">iterative vs recursive</div>Prefer iterative DFS in interviews (avoids Python's 1000 recursion limit). For cycle detection, three-color marking (0/1/2) is cleaner than a boolean visited set — a grey node means "currently on the DFS stack".</div>
+      </div>
+    </div>
+
+    <!-- Topological sort -->
+    <div class="problem" id="topo">
+      <div class="problem-head">
+        <span class="problem-title">Topological sort (Kahn's BFS)</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Order nodes in a DAG so every edge u→v has u before v. If a cycle exists, not all nodes can be processed — detect it.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> deque
+
+<span class="c-kw">def</span> <span class="c-fn">topo_sort</span>(n: int, edges: list[tuple]) -> list[int]:
+    <span class="c-cm">"""Kahn's algorithm. Returns [] if cycle detected."""</span>
+    in_deg = [<span class="c-num">0</span>] * n
+    adj    = [[] <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(n)]
+    <span class="c-kw">for</span> u, v <span class="c-kw">in</span> edges:
+        adj[u].<span class="c-fn">append</span>(v)
+        in_deg[v] += <span class="c-num">1</span>
+
+    queue = <span class="c-fn">deque</span>(i <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(n) <span class="c-kw">if</span> in_deg[i] == <span class="c-num">0</span>)
+    order = []
+    <span class="c-kw">while</span> queue:
+        u = queue.<span class="c-fn">popleft</span>()
+        order.<span class="c-fn">append</span>(u)
+        <span class="c-kw">for</span> v <span class="c-kw">in</span> adj[u]:
+            in_deg[v] -= <span class="c-num">1</span>
+            <span class="c-kw">if</span> in_deg[v] == <span class="c-num">0</span>:
+                queue.<span class="c-fn">append</span>(v)
+
+    <span class="c-kw">return</span> order <span class="c-kw">if</span> <span class="c-fn">len</span>(order) == n <span class="c-kw">else</span> []  <span class="c-cm"># [] = cycle</span>
+
+<span class="c-cm"># Example: course schedule (classic LC 210)</span>
+<span class="c-kw">assert</span> <span class="c-fn">topo_sort</span>(<span class="c-num">4</span>, [(<span class="c-num">0</span>,<span class="c-num">1</span>),(<span class="c-num">1</span>,<span class="c-num">2</span>),(<span class="c-num">2</span>,<span class="c-num">3</span>)]) == [<span class="c-num">0</span>,<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>]</code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(V + E)</span></div><div class="complexity-item"><span>Space</span><span>O(V)</span></div></div>
+        <div class="insight"><div class="insight-label">key insight</div>Kahn's: repeatedly remove nodes with in-degree 0. If any nodes remain at the end, a cycle exists. DFS-based topo (reverse post-order) also works but Kahn's naturally detects cycles and is easier to explain.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════ -->
+  <!--      LISTS & ARRAYS           -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="twosum">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Lists & Arrays</span>
+      <span class="section-tag tag-list">Arrays</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Two Sum — hash map O(n)</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Find indices of two numbers that add to target. The hash map stores (value → index) for O(1) complement lookup.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">nums=[2,7,11,15], target=9</span> → <span class="ex-out">[0, 1]</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">two_sum</span>(nums: list[int], target: int) -> list[int]:
+    seen = {}   <span class="c-cm"># value → index</span>
+    <span class="c-kw">for</span> i, n <span class="c-kw">in</span> <span class="c-fn">enumerate</span>(nums):
+        complement = target - n
+        <span class="c-kw">if</span> complement <span class="c-kw">in</span> seen:
+            <span class="c-kw">return</span> [seen[complement], i]
+        seen[n] = i
+    <span class="c-kw">return</span> []
+
+<span class="c-kw">assert</span> <span class="c-fn">two_sum</span>([<span class="c-num">2</span>,<span class="c-num">7</span>,<span class="c-num">11</span>,<span class="c-num">15</span>], <span class="c-num">9</span>) == [<span class="c-num">0</span>, <span class="c-num">1</span>]</code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n)</span></div><div class="complexity-item"><span>Space</span><span>O(n)</span></div></div>
+      </div>
+    </div>
+
+    <!-- Sliding window -->
+    <div class="problem" id="sliding">
+      <div class="problem-head">
+        <span class="problem-title">Sliding window maximum</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Return the max of each window of size k. A monotonic deque keeps candidates in O(1) per step.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">nums=[1,3,-1,-3,5,3,6,7], k=3</span> → <span class="ex-out">[3,3,5,5,6,7]</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> deque
+
+<span class="c-kw">def</span> <span class="c-fn">sliding_max</span>(nums: list[int], k: int) -> list[int]:
+    dq     = <span class="c-fn">deque</span>()   <span class="c-cm"># stores indices; front = max of window</span>
+    result = []
+
+    <span class="c-kw">for</span> i, val <span class="c-kw">in</span> <span class="c-fn">enumerate</span>(nums):
+        <span class="c-cm"># Remove indices outside window</span>
+        <span class="c-kw">while</span> dq <span class="c-kw">and</span> dq[<span class="c-num">0</span>] < i - k + <span class="c-num">1</span>:
+            dq.<span class="c-fn">popleft</span>()
+        <span class="c-cm"># Remove smaller elements (they can never be max)</span>
+        <span class="c-kw">while</span> dq <span class="c-kw">and</span> nums[dq[-<span class="c-num">1</span>]] < val:
+            dq.<span class="c-fn">pop</span>()
+        dq.<span class="c-fn">append</span>(i)
+        <span class="c-cm"># Window is full</span>
+        <span class="c-kw">if</span> i >= k - <span class="c-num">1</span>:
+            result.<span class="c-fn">append</span>(nums[dq[<span class="c-num">0</span>]])
+    <span class="c-kw">return</span> result
+
+<span class="c-kw">assert</span> <span class="c-fn">sliding_max</span>([<span class="c-num">1</span>,<span class="c-num">3</span>,-<span class="c-num">1</span>,-<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">3</span>,<span class="c-num">6</span>,<span class="c-num">7</span>], <span class="c-num">3</span>) == [<span class="c-num">3</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">5</span>,<span class="c-num">6</span>,<span class="c-num">7</span>]</code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n)</span></div><div class="complexity-item"><span>Space</span><span>O(k)</span></div></div>
+        <div class="insight purple"><div class="insight-label">monotonic deque pattern</div>The deque stores indices in decreasing value order. New element evicts smaller elements from the back. Expired elements evicted from the front. Front is always the max of the current window.</div>
+      </div>
+    </div>
+
+    <!-- Merge intervals -->
+    <div class="problem" id="mergeint">
+      <div class="problem-head">
+        <span class="problem-title">Merge overlapping intervals</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Given a list of intervals, merge all overlapping ones.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">[[1,3],[2,6],[8,10],[15,18]]</span> → <span class="ex-out">[[1,6],[8,10],[15,18]]</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">merge_intervals</span>(intervals: list[list[int]]) -> list[list[int]]:
+    intervals.<span class="c-fn">sort</span>(key=<span class="c-kw">lambda</span> x: x[<span class="c-num">0</span>])   <span class="c-cm"># sort by start</span>
+    merged = [intervals[<span class="c-num">0</span>]]
+    <span class="c-kw">for</span> start, end <span class="c-kw">in</span> intervals[<span class="c-num">1</span>:]:
+        <span class="c-kw">if</span> start <= merged[-<span class="c-num">1</span>][<span class="c-num">1</span>]:          <span class="c-cm"># overlapping</span>
+            merged[-<span class="c-num">1</span>][<span class="c-num">1</span>] = <span class="c-fn">max</span>(merged[-<span class="c-num">1</span>][<span class="c-num">1</span>], end)
+        <span class="c-kw">else</span>:
+            merged.<span class="c-fn">append</span>([start, end])
+    <span class="c-kw">return</span> merged
+
+<span class="c-kw">assert</span> <span class="c-fn">merge_intervals</span>([[<span class="c-num">1</span>,<span class="c-num">3</span>],[<span class="c-num">2</span>,<span class="c-num">6</span>],[<span class="c-num">8</span>,<span class="c-num">10</span>],[<span class="c-num">15</span>,<span class="c-num">18</span>]]) == [[<span class="c-num">1</span>,<span class="c-num">6</span>],[<span class="c-num">8</span>,<span class="c-num">10</span>],[<span class="c-num">15</span>,<span class="c-num">18</span>]]</code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n log n)</span></div><div class="complexity-item"><span>Space</span><span>O(n)</span></div></div>
+      </div>
+    </div>
+
+    <!-- Kadane -->
+    <div class="problem" id="kadane">
+      <div class="problem-head">
+        <span class="problem-title">Maximum subarray sum (Kadane's)</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Find the contiguous subarray with the largest sum. Kadane's key insight: extend or restart.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">[-2,1,-3,4,-1,2,1,-5,4]</span> → <span class="ex-out">6</span> <span style="color:var(--muted);font-size:12px;">(subarray [4,-1,2,1])</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">max_subarray</span>(nums: list[int]) -> int:
+    cur = best = nums[<span class="c-num">0</span>]
+    <span class="c-kw">for</span> n <span class="c-kw">in</span> nums[<span class="c-num">1</span>:]:
+        cur  = <span class="c-fn">max</span>(n, cur + n)   <span class="c-cm"># restart if current sum goes negative</span>
+        best = <span class="c-fn">max</span>(best, cur)
+    <span class="c-kw">return</span> best
+
+<span class="c-cm"># Variant: also return the subarray indices</span>
+<span class="c-kw">def</span> <span class="c-fn">max_subarray_idx</span>(nums: list[int]) -> tuple[int, int, int]:
+    cur, best = nums[<span class="c-num">0</span>], nums[<span class="c-num">0</span>]
+    lo = hi = best_lo = best_hi = <span class="c-num">0</span>
+    <span class="c-kw">for</span> i, n <span class="c-kw">in</span> <span class="c-fn">enumerate</span>(nums[<span class="c-num">1</span>:], <span class="c-num">1</span>):
+        <span class="c-kw">if</span> cur + n < n: lo = i; cur = n
+        <span class="c-kw">else</span>:           cur += n
+        hi = i
+        <span class="c-kw">if</span> cur > best: best, best_lo, best_hi = cur, lo, hi
+    <span class="c-kw">return</span> best, best_lo, best_hi
+
+<span class="c-kw">assert</span> <span class="c-fn">max_subarray</span>([-<span class="c-num">2</span>,<span class="c-num">1</span>,-<span class="c-num">3</span>,<span class="c-num">4</span>,-<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">1</span>,-<span class="c-num">5</span>,<span class="c-num">4</span>]) == <span class="c-num">6</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n)</span></div><div class="complexity-item"><span>Space</span><span>O(1)</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════ -->
+  <!--           STRINGS             -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="anagram">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Strings & Substrings</span>
+      <span class="section-tag tag-string">Strings</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Anagram check & grouped anagrams</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Two strings are anagrams if they contain the same characters with the same frequencies. Group all anagrams from a list.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> Counter, defaultdict
+
+<span class="c-cm"># Check if two strings are anagrams — O(n)</span>
+<span class="c-kw">def</span> <span class="c-fn">is_anagram</span>(s: str, t: str) -> bool:
+    <span class="c-kw">return</span> <span class="c-fn">Counter</span>(s) == <span class="c-fn">Counter</span>(t)   <span class="c-cm"># or sorted(s)==sorted(t) but O(n log n)</span>
+
+<span class="c-cm"># Group anagrams — O(n·k) where k = avg word length</span>
+<span class="c-kw">def</span> <span class="c-fn">group_anagrams</span>(words: list[str]) -> list[list[str]]:
+    groups: dict[tuple, list[str]] = <span class="c-fn">defaultdict</span>(<span class="c-bi">list</span>)
+    <span class="c-kw">for</span> w <span class="c-kw">in</span> words:
+        key = <span class="c-fn">tuple</span>(<span class="c-fn">sorted</span>(w))          <span class="c-cm"># canonical form</span>
+        groups[key].<span class="c-fn">append</span>(w)
+    <span class="c-kw">return</span> <span class="c-fn">list</span>(groups.<span class="c-fn">values</span>())
+
+words = [<span class="c-str">"eat"</span>,<span class="c-str">"tea"</span>,<span class="c-str">"tan"</span>,<span class="c-str">"ate"</span>,<span class="c-str">"nat"</span>,<span class="c-str">"bat"</span>]
+<span class="c-cm"># → [['eat','tea','ate'], ['tan','nat'], ['bat']]</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n·k log k)</span></div><div class="complexity-item"><span>Space</span><span>O(n·k)</span></div></div>
+      </div>
+    </div>
+
+    <!-- Longest substring without repeat -->
+    <div class="problem" id="longsub">
+      <div class="problem-head">
+        <span class="problem-title">Longest substring without repeating characters</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Sliding window: expand right, contract left whenever a duplicate enters the window.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">"abcabcbb"</span> → <span class="ex-out">3</span> <span style="color:var(--muted);font-size:12px;">("abc")</span>&nbsp;&nbsp;&nbsp;
+          <span class="ex-in">"pwwkew"</span> → <span class="ex-out">3</span> <span style="color:var(--muted);font-size:12px;">("wke")</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">length_of_longest_substr</span>(s: str) -> int:
+    last_seen = {}     <span class="c-cm"># char → last index seen</span>
+    lo = best = <span class="c-num">0</span>
+    <span class="c-kw">for</span> hi, ch <span class="c-kw">in</span> <span class="c-fn">enumerate</span>(s):
+        <span class="c-kw">if</span> ch <span class="c-kw">in</span> last_seen:
+            lo = <span class="c-fn">max</span>(lo, last_seen[ch] + <span class="c-num">1</span>)  <span class="c-cm"># jump lo past duplicate</span>
+        last_seen[ch] = hi
+        best = <span class="c-fn">max</span>(best, hi - lo + <span class="c-num">1</span>)
+    <span class="c-kw">return</span> best
+
+<span class="c-kw">assert</span> <span class="c-fn">length_of_longest_substr</span>(<span class="c-str">"abcabcbb"</span>) == <span class="c-num">3</span>
+<span class="c-kw">assert</span> <span class="c-fn">length_of_longest_substr</span>(<span class="c-str">"pwwkew"</span>)  == <span class="c-num">3</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n)</span></div><div class="complexity-item"><span>Space</span><span>O(min(n, |alphabet|))</span></div></div>
+        <div class="insight"><div class="insight-label">why max(lo, ...)?</div>Crucially, lo never moves left. Use <code>max(lo, last_seen[ch]+1)</code> — not just <code>last_seen[ch]+1</code> — because the duplicate might be before the current window.</div>
+      </div>
+    </div>
+
+    <!-- Longest common prefix -->
+    <div class="problem" id="loncom">
+      <div class="problem-head">
+        <span class="problem-title">Longest common prefix</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Find the longest string that is a prefix of all strings in the array. Strategy: use the first string as the candidate prefix and shrink it one character at a time until every other string starts with it.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">["flower","flow","flight"]</span> → <span class="ex-out">"fl"</span><br>
+          <span class="ex-in">["dog","racecar","car"]</span> → <span class="ex-out">""</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">longest_common_prefix</span>(strs: list[str]) -> str:
+    <span class="c-kw">if not</span> strs: <span class="c-kw">return</span> <span class="c-str">""</span>
+    prefix = strs[<span class="c-num">0</span>]
+    <span class="c-kw">for</span> s <span class="c-kw">in</span> strs[<span class="c-num">1</span>:]:
+        <span class="c-kw">while not</span> s.<span class="c-fn">startswith</span>(prefix):
+            prefix = prefix[:-<span class="c-num">1</span>]      <span class="c-cm"># trim last character</span>
+            <span class="c-kw">if not</span> prefix: <span class="c-kw">return</span> <span class="c-str">""</span>
+    <span class="c-kw">return</span> prefix
+
+<span class="c-cm"># Pythonic one-liner using zip</span>
+<span class="c-kw">def</span> <span class="c-fn">lcp_zip</span>(strs: list[str]) -> str:
+    prefix = []
+    <span class="c-kw">for</span> chars <span class="c-kw">in</span> <span class="c-fn">zip</span>(*strs):
+        <span class="c-kw">if</span> <span class="c-fn">len</span>(<span class="c-fn">set</span>(chars)) > <span class="c-num">1</span>: <span class="c-kw">break</span>
+        prefix.<span class="c-fn">append</span>(chars[<span class="c-num">0</span>])
+    <span class="c-kw">return</span> <span class="c-str">""</span>.<span class="c-fn">join</span>(prefix)
+
+<span class="c-kw">assert</span> <span class="c-fn">longest_common_prefix</span>([<span class="c-str">"flower"</span>,<span class="c-str">"flow"</span>,<span class="c-str">"flight"</span>]) == <span class="c-str">"fl"</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(S) — total chars</span></div><div class="complexity-item"><span>Space</span><span>O(1)</span></div></div>
+      </div>
+    </div>
+
+    <!-- Longest palindromic substring -->
+    <div class="problem" id="palindrome">
+      <div class="problem-head">
+        <span class="problem-title">Longest palindromic substring (expand around centre)</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Expand outward from every possible centre (n odd-centres + n-1 even-centres). O(n²) and constant space — better than DP for interviews.</p>
+        <div class="problem-examples">
+          <div class="ex-label">example</div>
+          <span class="ex-in">"babad"</span> → <span class="ex-out">"bab"</span>&nbsp;&nbsp;&nbsp;<span class="ex-in">"cbbd"</span> → <span class="ex-out">"bb"</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">def</span> <span class="c-fn">longest_palindrome</span>(s: str) -> str:
+    <span class="c-kw">def</span> <span class="c-fn">expand</span>(l: int, r: int) -> str:
+        <span class="c-kw">while</span> l >= <span class="c-num">0</span> <span class="c-kw">and</span> r < <span class="c-fn">len</span>(s) <span class="c-kw">and</span> s[l] == s[r]:
+            l -= <span class="c-num">1</span>; r += <span class="c-num">1</span>
+        <span class="c-kw">return</span> s[l+<span class="c-num">1</span>:r]
+
+    best = <span class="c-str">""</span>
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-fn">len</span>(s)):
+        odd  = <span class="c-fn">expand</span>(i, i)          <span class="c-cm"># odd-length centre</span>
+        even = <span class="c-fn">expand</span>(i, i + <span class="c-num">1</span>)      <span class="c-cm"># even-length centre</span>
+        best = <span class="c-fn">max</span>(odd, even, best, key=<span class="c-fn">len</span>)
+    <span class="c-kw">return</span> best
+
+<span class="c-kw">assert</span> <span class="c-fn">longest_palindrome</span>(<span class="c-str">"babad"</span>) <span class="c-kw">in</span> (<span class="c-str">"bab"</span>, <span class="c-str">"aba"</span>)
+<span class="c-kw">assert</span> <span class="c-fn">longest_palindrome</span>(<span class="c-str">"cbbd"</span>)  == <span class="c-str">"bb"</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Time</span><span>O(n²)</span></div><div class="complexity-item"><span>Space</span><span>O(1)</span></div></div>
+        <div class="insight red"><div class="insight-label">Manacher's exists but skip it</div>Manacher's algorithm is O(n) but rarely asked. Expand-around-centre is O(n²), trivial to implement, and interviewers almost always accept it. Mention Manacher's exists if you want bonus points.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre.code');
+  // Extract plain text (strip HTML tags)
+  const text = pre.innerText || pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+</script>
+</body>
+</html>

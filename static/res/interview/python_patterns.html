@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Patterns — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #0a0a0a;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 15px;
+  line-height: 1.75; font-weight: 300; min-height: 100vh;
+}
+.shell {
+  display: grid; grid-template-columns: 230px 1fr;
+  min-height: 100vh; max-width: 1260px; margin: 0 auto;
+}
+
+nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border2); padding: 2.5rem 1.5rem;
+  display: flex; flex-direction: column;
+}
+.nav-logo { font-family: 'Fraunces', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
+.nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 1.4rem 0 0.4rem; font-weight: 500; opacity: 0.55; }
+nav a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; padding: 3px 0; transition: color 0.15s; font-weight: 300; }
+nav a:hover { color: var(--accent); }
+.nav-bottom { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 2px 0; font-family: 'DM Mono', monospace; }
+.nav-stat span:last-child { color: var(--accent2); }
+
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+.hero { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 500; margin-bottom: 1rem; font-family: 'DM Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2.1rem, 4vw, 2.9rem); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 1.2rem; }
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill { font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+
+.topic { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+.topic-header { margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border2); }
+.topic-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+h2 { font-family: 'Fraunces', serif; font-size: 1.45rem; font-weight: 700; color: var(--text); }
+.topic-desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin: 0.7rem 0 1.1rem; }
+
+.code-wrap { position: relative; margin-bottom: 1rem; border-radius: 6px; overflow: hidden; border: 1px solid var(--border2); }
+.code-header { display: flex; align-items: center; justify-content: space-between; background: #080808; padding: 0.45rem 1rem; border-bottom: 1px solid var(--border2); }
+.code-lang { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.copy-btn { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: 3px; padding: 3px 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.06em; text-transform: uppercase; }
+.copy-btn:hover { color: var(--accent); border-color: var(--tag-border); }
+.copy-btn.copied { color: var(--green); border-color: rgba(122,200,122,0.3); }
+pre.code { background: var(--code-bg); padding: 1.1rem 1.2rem; overflow-x: auto; margin: 0; }
+pre.code code { font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.75; color: #c9c0b0; display: block; }
+
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-cls { color: #e0c070; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #454340; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+.c-op  { color: #c87ab2; }
+
+.callout {
+  border-left: 2px solid var(--accent2); background: rgba(122,191,200,0.05);
+  padding: 0.75rem 1rem; margin: 0.5rem 0 1rem; border-radius: 0 4px 4px 0;
+  font-size: 13px; color: var(--text); line-height: 1.65;
+}
+.callout.green  { border-left-color: var(--green);  background: rgba(122,200,122,0.05); }
+.callout.orange { border-left-color: var(--orange); background: rgba(200,149,106,0.05); }
+.callout.red    { border-left-color: var(--red);    background: rgba(200,122,122,0.05); }
+.callout.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.callout-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.55; font-family: 'DM Mono', monospace; margin-bottom: 0.25rem; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.2rem 4rem; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="nav-logo">Python Patterns</div>
+
+  <span class="nav-section">Closures &amp; Decorators</span>
+  <a href="#closures">Closures &amp; nonlocal</a>
+  <a href="#decorators">Decorators</a>
+  <a href="#dec-args">Decorators with arguments</a>
+
+  <span class="nav-section">functools</span>
+  <a href="#partial">partial &amp; lru_cache</a>
+  <a href="#reduce">reduce &amp; higher-order</a>
+
+  <span class="nav-section">itertools</span>
+  <a href="#itertools-combine">Combining iterables</a>
+  <a href="#itertools-filter">Filtering &amp; slicing</a>
+
+  <span class="nav-section">Collections</span>
+  <a href="#defaultdict">defaultdict</a>
+  <a href="#counter">Counter</a>
+  <a href="#deque">deque</a>
+  <a href="#namedtuple">namedtuple &amp; dataclass</a>
+
+  <span class="nav-section">Context Managers</span>
+  <a href="#contextmanager">__enter__ / __exit__</a>
+  <a href="#contextlib">contextlib</a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;opacity:.6;">sections</div>
+    <div class="nav-stat"><span>Closures/Decorators</span><span>3</span></div>
+    <div class="nav-stat"><span>functools/itertools</span><span>4</span></div>
+    <div class="nav-stat"><span>Collections</span><span>4</span></div>
+    <div class="nav-stat"><span>Context Managers</span><span>2</span></div>
+  </div>
+</nav>
+
+<main>
+
+<div class="hero">
+  <div class="hero-label">Interview Primer · Python Patterns</div>
+  <h1>The patterns<br><em>senior engineers reach for</em></h1>
+  <p class="hero-desc">Closures, decorators, the standard library's power tools — functools, itertools, collections — and context managers. These are the abstractions that make Python codebases elegant rather than just functional.</p>
+  <div class="pill-row">
+    <span class="pill">closures</span>
+    <span class="pill">decorators</span>
+    <span class="pill">functools</span>
+    <span class="pill">itertools</span>
+    <span class="pill">collections</span>
+    <span class="pill">context managers</span>
+  </div>
+</div>
+
+<!-- ══════════════════════ CLOSURES & DECORATORS ══════════════════════ -->
+
+<div class="topic" id="closures">
+  <div class="topic-header">
+    <div class="topic-label">Closures &amp; Decorators · 01</div>
+    <h2>Closures &amp; nonlocal</h2>
+  </div>
+  <p class="topic-desc">A closure is a function that captures variables from its enclosing scope. The captured variables live as long as the closure does — not just until the enclosing function returns. Python looks up free variables at <em>call time</em>, not <em>definition time</em>, which is the source of the most common closure bug.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-cm"># basic closure — counter that remembers its own state</span>
+<span class="c-kw">def</span> <span class="c-fn">make_counter</span>(start=<span class="c-num">0</span>):
+    count = start
+    <span class="c-kw">def</span> <span class="c-fn">increment</span>(by=<span class="c-num">1</span>):
+        <span class="c-kw">nonlocal</span> count        <span class="c-cm"># write to enclosing scope, not global</span>
+        count += by
+        <span class="c-kw">return</span> count
+    <span class="c-kw">return</span> increment
+
+c = <span class="c-fn">make_counter</span>()
+c()    <span class="c-cm"># 1</span>
+c()    <span class="c-cm"># 2</span>
+c(<span class="c-num">5</span>)  <span class="c-cm"># 7</span>
+
+d = <span class="c-fn">make_counter</span>(<span class="c-num">100</span>)   <span class="c-cm"># independent closure, independent state</span>
+d()                        <span class="c-cm"># 101</span>
+
+<span class="c-cm"># ── The classic late-binding bug</span>
+funcs = [<span class="c-kw">lambda</span>: i <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)]
+<span class="c-fn">print</span>([f() <span class="c-kw">for</span> f <span class="c-kw">in</span> funcs])   <span class="c-cm"># [2, 2, 2] — all see the final i=2</span>
+
+<span class="c-cm"># fix: capture the current value as a default argument</span>
+funcs = [<span class="c-kw">lambda</span> i=i: i <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)]
+<span class="c-fn">print</span>([f() <span class="c-kw">for</span> f <span class="c-kw">in</span> funcs])   <span class="c-cm"># [0, 1, 2] — each captures its own i</span>
+
+<span class="c-cm"># ── inspect what a closure captured</span>
+<span class="c-kw">def</span> <span class="c-fn">make_adder</span>(n):
+    <span class="c-kw">return</span> <span class="c-kw">lambda</span> x: x + n
+
+add5 = <span class="c-fn">make_adder</span>(<span class="c-num">5</span>)
+add5.<span class="c-fn">__closure__</span>[<span class="c-num">0</span>].cell_contents   <span class="c-cm"># 5</span></code></pre>
+  </div>
+  <div class="callout red">
+    <div class="callout-label">late binding</div>
+    Python looks up free variables when the closure is <em>called</em>. In a loop, by the time any lambda runs, the loop variable holds its final value. Default arguments are evaluated at <em>definition time</em> — that's why <code>lambda i=i: i</code> fixes it. This is one of the most common interview gotcha questions.
+  </div>
+</div>
+
+<div class="topic" id="decorators">
+  <div class="topic-header">
+    <div class="topic-label">Closures &amp; Decorators · 02</div>
+    <h2>Decorators</h2>
+  </div>
+  <p class="topic-desc">A decorator is a callable that takes a function and returns a replacement function. The <code>@syntax</code> is just <code>fn = decorator(fn)</code>. Always use <code>functools.wraps</code> — without it, the wrapper steals the original function's <code>__name__</code>, <code>__doc__</code>, and signature, breaking introspection and debugging.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">import</span> functools, time
+
+<span class="c-kw">def</span> <span class="c-fn">timer</span>(fn):
+    <span class="c-dec">@functools.wraps</span>(fn)            <span class="c-cm"># preserves fn.__name__, __doc__, __annotations__</span>
+    <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*args, **kwargs):
+        t0 = time.<span class="c-fn">perf_counter</span>()
+        result = <span class="c-fn">fn</span>(*args, **kwargs)
+        <span class="c-fn">print</span>(<span class="c-fn">f</span><span class="c-str">"{fn.__name__} took {time.perf_counter()-t0:.4f}s"</span>)
+        <span class="c-kw">return</span> result
+    <span class="c-kw">return</span> wrapper
+
+<span class="c-dec">@timer</span>
+<span class="c-kw">def</span> <span class="c-fn">slow_add</span>(a, b):
+    time.<span class="c-fn">sleep</span>(<span class="c-num">0.1</span>)
+    <span class="c-kw">return</span> a + b
+
+<span class="c-cm"># equivalent to: slow_add = timer(slow_add)</span>
+<span class="c-fn">slow_add</span>(<span class="c-num">1</span>, <span class="c-num">2</span>)   <span class="c-cm"># "slow_add took 0.1001s"</span>
+
+<span class="c-cm"># ── stacking decorators: applied bottom-up, run top-down</span>
+<span class="c-dec">@timer</span>
+<span class="c-dec">@functools.lru_cache</span>(maxsize=<span class="c-num">128</span>)
+<span class="c-kw">def</span> <span class="c-fn">fib</span>(n):
+    <span class="c-kw">return</span> n <span class="c-kw">if</span> n < <span class="c-num">2</span> <span class="c-kw">else</span> <span class="c-fn">fib</span>(n-<span class="c-num">1</span>) + <span class="c-fn">fib</span>(n-<span class="c-num">2</span>)
+<span class="c-cm"># equivalent: fib = timer(lru_cache(128)(fib))</span>
+
+<span class="c-cm"># ── class-based decorator: useful when the decorator has state</span>
+<span class="c-kw">class</span> <span class="c-cls">CallCount</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-bi">self</span>, fn):
+        functools.<span class="c-fn">update_wrapper</span>(<span class="c-bi">self</span>, fn)
+        <span class="c-bi">self</span>.fn = fn
+        <span class="c-bi">self</span>.calls = <span class="c-num">0</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__call__</span>(<span class="c-bi">self</span>, *args, **kwargs):
+        <span class="c-bi">self</span>.calls += <span class="c-num">1</span>
+        <span class="c-kw">return</span> <span class="c-bi">self</span>.<span class="c-fn">fn</span>(*args, **kwargs)
+
+<span class="c-dec">@CallCount</span>
+<span class="c-kw">def</span> <span class="c-fn">greet</span>(name): <span class="c-kw">return</span> <span class="c-fn">f</span><span class="c-str">"hi {name}"</span>
+
+<span class="c-fn">greet</span>(<span class="c-str">"alice"</span>)
+<span class="c-fn">print</span>(greet.calls)   <span class="c-cm"># 1</span></code></pre>
+  </div>
+  <div class="callout green">
+    <div class="callout-label">functools.wraps is not optional</div>
+    Without <code>@functools.wraps(fn)</code>, <code>wrapper.__name__</code> is <code>"wrapper"</code>, breaking logging, test output, and <code>help()</code>. It also copies <code>__wrapped__</code>, which lets tools like <code>inspect.signature</code> unwrap the chain to find the original signature.
+  </div>
+</div>
+
+<div class="topic" id="dec-args">
+  <div class="topic-header">
+    <div class="topic-label">Closures &amp; Decorators · 03</div>
+    <h2>Decorators with arguments</h2>
+  </div>
+  <p class="topic-desc">A decorator that takes arguments needs an extra layer: a factory that accepts the arguments and returns the actual decorator. It's three levels deep — factory → decorator → wrapper — which is why it trips people up.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">import</span> functools, time
+
+<span class="c-cm"># factory that returns a decorator</span>
+<span class="c-kw">def</span> <span class="c-fn">retry</span>(times=<span class="c-num">3</span>, delay=<span class="c-num">1.0</span>, exceptions=(<span class="c-cls">Exception</span>,)):
+    <span class="c-kw">def</span> <span class="c-fn">decorator</span>(fn):
+        <span class="c-dec">@functools.wraps</span>(fn)
+        <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*args, **kwargs):
+            <span class="c-kw">for</span> attempt <span class="c-kw">in</span> <span class="c-fn">range</span>(times):
+                <span class="c-kw">try</span>:
+                    <span class="c-kw">return</span> <span class="c-fn">fn</span>(*args, **kwargs)
+                <span class="c-kw">except</span> exceptions <span class="c-kw">as</span> e:
+                    <span class="c-kw">if</span> attempt == times - <span class="c-num">1</span>:
+                        <span class="c-kw">raise</span>
+                    time.<span class="c-fn">sleep</span>(delay)
+        <span class="c-kw">return</span> wrapper
+    <span class="c-kw">return</span> decorator
+
+<span class="c-dec">@retry</span>(times=<span class="c-num">5</span>, delay=<span class="c-num">0.5</span>, exceptions=(<span class="c-cls">ConnectionError</span>,))
+<span class="c-kw">def</span> <span class="c-fn">fetch</span>(url): ...
+
+<span class="c-cm"># equivalent: fetch = retry(times=5, ...)(fetch)</span>
+
+<span class="c-cm"># ── trick: make the factory work with or without parens</span>
+<span class="c-kw">def</span> <span class="c-fn">log</span>(fn=<span class="c-bi">None</span>, *, prefix=<span class="c-str">"CALL"</span>):
+    <span class="c-kw">if</span> fn <span class="c-kw">is</span> <span class="c-bi">None</span>:                       <span class="c-cm"># called with arguments: @log(prefix="x")</span>
+        <span class="c-kw">return</span> functools.<span class="c-fn">partial</span>(log, prefix=prefix)
+    <span class="c-dec">@functools.wraps</span>(fn)
+    <span class="c-kw">def</span> <span class="c-fn">wrapper</span>(*a, **kw):
+        <span class="c-fn">print</span>(<span class="c-fn">f</span><span class="c-str">"[{prefix}] {fn.__name__}"</span>)
+        <span class="c-kw">return</span> <span class="c-fn">fn</span>(*a, **kw)
+    <span class="c-kw">return</span> wrapper
+
+<span class="c-dec">@log</span>                   <span class="c-cm"># no parens — fn is passed directly</span>
+<span class="c-kw">def</span> <span class="c-fn">a</span>(): ...
+
+<span class="c-dec">@log</span>(prefix=<span class="c-str">"DEBUG"</span>)   <span class="c-cm"># with parens — factory returns the decorator</span>
+<span class="c-kw">def</span> <span class="c-fn">b</span>(): ...</code></pre>
+  </div>
+  <div class="callout orange">
+    <div class="callout-label">three levels</div>
+    Remember: <code>@decorator_factory(args)</code> calls the factory first (returns a decorator), then applies that decorator to the function (returns a wrapper). Writing it out without <code>@</code> syntax — <code>fn = factory(args)(fn)</code> — makes the three levels obvious.
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════ FUNCTOOLS ══════════════════════ -->
+
+<div class="topic" id="partial">
+  <div class="topic-header">
+    <div class="topic-label">functools · 01</div>
+    <h2>partial &amp; lru_cache</h2>
+  </div>
+  <p class="topic-desc"><code>functools.partial</code> pre-fills arguments, turning an n-argument function into an m-argument one. <code>lru_cache</code> memoizes calls based on the arguments — effectively trading memory for compute, with an O(1) cache hit.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> functools <span class="c-kw">import</span> partial, lru_cache, cache
+
+<span class="c-cm"># ── partial: freeze some arguments</span>
+<span class="c-kw">def</span> <span class="c-fn">power</span>(base, exp):
+    <span class="c-kw">return</span> base ** exp
+
+square = <span class="c-fn">partial</span>(power, exp=<span class="c-num">2</span>)
+cube   = <span class="c-fn">partial</span>(power, exp=<span class="c-num">3</span>)
+square(<span class="c-num">5</span>)   <span class="c-cm"># 25</span>
+cube(<span class="c-num">3</span>)     <span class="c-cm"># 27</span>
+
+<span class="c-cm"># partial is useful for map/filter callbacks</span>
+<span class="c-kw">from</span> functools <span class="c-kw">import</span> partial
+<span class="c-kw">import</span> operator
+double = <span class="c-fn">partial</span>(operator.mul, <span class="c-num">2</span>)
+<span class="c-fn">list</span>(<span class="c-fn">map</span>(double, [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]))   <span class="c-cm"># [2, 4, 6]</span>
+
+<span class="c-cm"># ── lru_cache: memoize expensive pure functions</span>
+<span class="c-dec">@lru_cache</span>(maxsize=<span class="c-num">128</span>)
+<span class="c-kw">def</span> <span class="c-fn">fib</span>(n):
+    <span class="c-kw">return</span> n <span class="c-kw">if</span> n < <span class="c-num">2</span> <span class="c-kw">else</span> <span class="c-fn">fib</span>(n-<span class="c-num">1</span>) + <span class="c-fn">fib</span>(n-<span class="c-num">2</span>)
+
+<span class="c-cm"># cache (3.9+) = lru_cache with no size limit</span>
+<span class="c-dec">@cache</span>
+<span class="c-kw">def</span> <span class="c-fn">factorial</span>(n):
+    <span class="c-kw">return</span> <span class="c-num">1</span> <span class="c-kw">if</span> n == <span class="c-num">0</span> <span class="c-kw">else</span> n * <span class="c-fn">factorial</span>(n-<span class="c-num">1</span>)
+
+<span class="c-cm"># inspect cache behaviour</span>
+<span class="c-fn">fib</span>(<span class="c-num">30</span>)
+<span class="c-fn">print</span>(fib.<span class="c-fn">cache_info</span>())   <span class="c-cm"># CacheInfo(hits=28, misses=31, maxsize=128, currsize=31)</span>
+fib.<span class="c-fn">cache_clear</span>()         <span class="c-cm"># evict all entries</span>
+
+<span class="c-cm"># ⚠ lru_cache requires hashable arguments — no lists or dicts</span>
+<span class="c-dec">@lru_cache</span>
+<span class="c-kw">def</span> <span class="c-fn">process</span>(data: <span class="c-fn">tuple</span>):   <span class="c-cm"># tuple is hashable, list is not</span>
+    <span class="c-kw">return</span> <span class="c-fn">sum</span>(data)</code></pre>
+  </div>
+  <div class="callout">
+    <div class="callout-label">lru_cache is thread-safe</div>
+    The cache uses a lock internally, so it's safe to share across threads. But functions with side effects or that depend on mutable global state should not be cached — the cache cannot know when to invalidate.
+  </div>
+</div>
+
+<div class="topic" id="reduce">
+  <div class="topic-header">
+    <div class="topic-label">functools · 02</div>
+    <h2>reduce &amp; higher-order functions</h2>
+  </div>
+  <p class="topic-desc"><code>reduce</code> folds a sequence into a single value by repeatedly applying a binary function. Python has <code>map</code> and <code>filter</code> as builtins — prefer comprehensions for readability, but know <code>reduce</code> for interview questions and for composing transformations.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> functools <span class="c-kw">import</span> reduce
+<span class="c-kw">import</span> operator
+
+<span class="c-cm"># reduce: fold left over a sequence</span>
+<span class="c-fn">reduce</span>(operator.add, [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>])          <span class="c-cm"># 10  ((1+2)+3)+4</span>
+<span class="c-fn">reduce</span>(operator.mul, [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>], <span class="c-num">1</span>)      <span class="c-cm"># 24  with initial value</span>
+<span class="c-fn">reduce</span>(<span class="c-kw">lambda</span> a, b: {**a, **b}, [{<span class="c-str">"x"</span>:<span class="c-num">1</span>}, {<span class="c-str">"y"</span>:<span class="c-num">2</span>}])  <span class="c-cm"># merge dicts</span>
+
+<span class="c-cm"># ── map: transform every element — returns an iterator</span>
+<span class="c-fn">list</span>(<span class="c-fn">map</span>(<span class="c-fn">str</span>, [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]))                    <span class="c-cm"># ["1","2","3"]</span>
+<span class="c-fn">list</span>(<span class="c-fn">map</span>(operator.add, [<span class="c-num">1</span>,<span class="c-num">2</span>], [<span class="c-num">10</span>,<span class="c-num">20</span>]))   <span class="c-cm"># [11, 22] — map with two iterables</span>
+
+<span class="c-cm"># ── filter: keep elements where predicate is True</span>
+<span class="c-fn">list</span>(<span class="c-fn">filter</span>(<span class="c-bi">None</span>, [<span class="c-num">0</span>, <span class="c-str">""</span>, <span class="c-num">1</span>, <span class="c-bi">False</span>, <span class="c-str">"ok"</span>]))  <span class="c-cm"># [1, "ok"] — falsy removed</span>
+<span class="c-fn">list</span>(<span class="c-fn">filter</span>(<span class="c-fn">str.isdigit</span>, <span class="c-str">"a1b2c3"</span>))         <span class="c-cm"># ["1","2","3"]</span>
+
+<span class="c-cm"># ── compose functions (right-to-left application)</span>
+<span class="c-kw">def</span> <span class="c-fn">compose</span>(*fns):
+    <span class="c-kw">return</span> <span class="c-fn">reduce</span>(<span class="c-kw">lambda</span> f, g: <span class="c-kw">lambda</span> x: <span class="c-fn">f</span>(<span class="c-fn">g</span>(x)), fns)
+
+<span class="c-kw">import</span> math
+pipeline = <span class="c-fn">compose</span>(math.sqrt, abs, <span class="c-kw">lambda</span> x: x - <span class="c-num">10</span>)
+<span class="c-fn">pipeline</span>(<span class="c-num">6</span>)   <span class="c-cm"># sqrt(abs(6-10)) = sqrt(4) = 2.0</span>
+
+<span class="c-cm"># ── sorted with key — any callable works</span>
+people = [(<span class="c-str">"alice"</span>, <span class="c-num">30</span>), (<span class="c-str">"bob"</span>, <span class="c-num">25</span>), (<span class="c-str">"carol"</span>, <span class="c-num">35</span>)]
+<span class="c-fn">sorted</span>(people, key=operator.<span class="c-fn">itemgetter</span>(<span class="c-num">1</span>))          <span class="c-cm"># by age</span>
+<span class="c-fn">sorted</span>(people, key=operator.<span class="c-fn">itemgetter</span>(<span class="c-num">1</span>), reverse=<span class="c-bi">True</span>)  <span class="c-cm"># desc</span></code></pre>
+  </div>
+  <div class="callout green">
+    <div class="callout-label">map and filter are lazy</div>
+    Both <code>map()</code> and <code>filter()</code> return iterators, not lists. They don't evaluate anything until consumed. Prefer comprehensions for simple cases — they're more readable. Use <code>map</code>/<code>filter</code> when composing with other lazy tools like <code>itertools</code>.
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════ ITERTOOLS ══════════════════════ -->
+
+<div class="topic" id="itertools-combine">
+  <div class="topic-header">
+    <div class="topic-label">itertools · 01</div>
+    <h2>Combining iterables</h2>
+  </div>
+  <p class="topic-desc"><code>itertools</code> provides building blocks for lazy iteration. All of them return iterators — nothing is computed until consumed. The combining tools replace nested loops and manual index arithmetic.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">import</span> itertools <span class="c-kw">as</span> it
+
+<span class="c-cm"># chain: concatenate iterables without building a new list</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">chain</span>([<span class="c-num">1</span>,<span class="c-num">2</span>], [<span class="c-num">3</span>,<span class="c-num">4</span>], [<span class="c-num">5</span>]))     <span class="c-cm"># [1,2,3,4,5]</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">chain.from_iterable</span>([[<span class="c-num">1</span>,<span class="c-num">2</span>],[<span class="c-num">3</span>,<span class="c-num">4</span>]]))  <span class="c-cm"># flatten one level</span>
+
+<span class="c-cm"># zip_longest: pad shorter iterables with fillvalue</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">zip_longest</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>], [<span class="c-str">"a"</span>,<span class="c-str">"b"</span>], fillvalue=<span class="c-bi">None</span>))
+<span class="c-cm"># [(1,"a"), (2,"b"), (3,None)]</span>
+
+<span class="c-cm"># product: Cartesian product (nested loops as one expression)</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">product</span>([<span class="c-num">1</span>,<span class="c-num">2</span>], [<span class="c-str">"a"</span>,<span class="c-str">"b"</span>]))
+<span class="c-cm"># [(1,"a"),(1,"b"),(2,"a"),(2,"b")]</span>
+
+it.<span class="c-fn">product</span>(<span class="c-fn">range</span>(<span class="c-num">2</span>), repeat=<span class="c-num">3</span>)   <span class="c-cm"># all 3-bit binary strings</span>
+
+<span class="c-cm"># combinations and permutations</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">combinations</span>(<span class="c-str">"ABC"</span>, <span class="c-num">2</span>))          <span class="c-cm"># [("A","B"),("A","C"),("B","C")]</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">permutations</span>(<span class="c-str">"ABC"</span>, <span class="c-num">2</span>))         <span class="c-cm"># [("A","B"),("A","C"),...] — 6 items</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">combinations_with_replacement</span>(<span class="c-str">"AB"</span>, <span class="c-num">2</span>))  <span class="c-cm"># [("A","A"),("A","B"),("B","B")]</span>
+
+<span class="c-cm"># accumulate: running totals (or any binary op)</span>
+<span class="c-kw">import</span> operator
+<span class="c-fn">list</span>(it.<span class="c-fn">accumulate</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>,<span class="c-num">4</span>]))                        <span class="c-cm"># [1,3,6,10] — prefix sums</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">accumulate</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>,<span class="c-num">4</span>], operator.mul))        <span class="c-cm"># [1,2,6,24] — running product</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">accumulate</span>([<span class="c-num">3</span>,<span class="c-num">1</span>,<span class="c-num">4</span>,<span class="c-num">1</span>,<span class="c-num">5</span>], <span class="c-fn">max</span>))             <span class="c-cm"># [3,3,4,4,5] — running max</span></code></pre>
+  </div>
+  <div class="callout purple">
+    <div class="callout-label">groupby gotcha</div>
+    <code>itertools.groupby</code> only groups <em>consecutive</em> equal elements, like <code>uniq</code> in Unix. You almost always need to <code>sorted(..., key=keyfn)</code> first, then <code>groupby(..., key=keyfn)</code>. Also: don't advance the outer iterator while holding a group reference — the group iterator shares state with the outer one.
+  </div>
+</div>
+
+<div class="topic" id="itertools-filter">
+  <div class="topic-header">
+    <div class="topic-label">itertools · 02</div>
+    <h2>Filtering, slicing &amp; grouping</h2>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">import</span> itertools <span class="c-kw">as</span> it
+
+<span class="c-cm"># islice: lazy slice — works on any iterator (not just sequences)</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">islice</span>(<span class="c-fn">range</span>(<span class="c-num">100</span>), <span class="c-num">5</span>))         <span class="c-cm"># [0,1,2,3,4]</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">islice</span>(<span class="c-fn">range</span>(<span class="c-num">100</span>), <span class="c-num">2</span>, <span class="c-num">8</span>, <span class="c-num">2</span>))   <span class="c-cm"># [2,4,6] — start, stop, step</span>
+
+<span class="c-cm"># takewhile / dropwhile</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">takewhile</span>(<span class="c-kw">lambda</span> x: x < <span class="c-num">5</span>, [<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">2</span>]))  <span class="c-cm"># [1,3] — stops at first fail</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">dropwhile</span>(<span class="c-kw">lambda</span> x: x < <span class="c-num">5</span>, [<span class="c-num">1</span>,<span class="c-num">3</span>,<span class="c-num">5</span>,<span class="c-num">2</span>]))  <span class="c-cm"># [5,2] — skips until first fail</span>
+
+<span class="c-cm"># groupby: group consecutive equal elements</span>
+data = [(<span class="c-str">"a"</span>, <span class="c-num">1</span>), (<span class="c-str">"a"</span>, <span class="c-num">2</span>), (<span class="c-str">"b"</span>, <span class="c-num">3</span>), (<span class="c-str">"b"</span>, <span class="c-num">4</span>), (<span class="c-str">"a"</span>, <span class="c-num">5</span>)]
+data.<span class="c-fn">sort</span>(key=<span class="c-kw">lambda</span> x: x[<span class="c-num">0</span>])           <span class="c-cm"># must sort first!</span>
+<span class="c-kw">for</span> key, group <span class="c-kw">in</span> it.<span class="c-fn">groupby</span>(data, key=<span class="c-kw">lambda</span> x: x[<span class="c-num">0</span>]):
+    <span class="c-fn">print</span>(key, <span class="c-fn">list</span>(group))
+<span class="c-cm"># a [(a,1),(a,2),(a,5)]   b [(b,3),(b,4)]</span>
+
+<span class="c-cm"># pairwise (3.10+): sliding window of size 2</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">pairwise</span>([<span class="c-num">1</span>,<span class="c-num">2</span>,<span class="c-num">3</span>,<span class="c-num">4</span>]))   <span class="c-cm"># [(1,2),(2,3),(3,4)]</span>
+
+<span class="c-cm"># cycle and repeat — infinite iterators</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">islice</span>(it.<span class="c-fn">cycle</span>(<span class="c-str">"AB"</span>), <span class="c-num">6</span>))   <span class="c-cm"># ["A","B","A","B","A","B"]</span>
+<span class="c-fn">list</span>(it.<span class="c-fn">repeat</span>(<span class="c-num">0</span>, <span class="c-num">4</span>))                 <span class="c-cm"># [0,0,0,0]</span>
+
+<span class="c-cm"># starmap: map with argument unpacking</span>
+<span class="c-kw">import</span> operator
+<span class="c-fn">list</span>(it.<span class="c-fn">starmap</span>(operator.mul, [(<span class="c-num">2</span>,<span class="c-num">3</span>), (<span class="c-num">4</span>,<span class="c-num">5</span>)]))  <span class="c-cm"># [6, 20]</span></code></pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════ COLLECTIONS ══════════════════════ -->
+
+<div class="topic" id="defaultdict">
+  <div class="topic-header">
+    <div class="topic-label">Collections · 01</div>
+    <h2>defaultdict</h2>
+  </div>
+  <p class="topic-desc"><code>defaultdict</code> calls a factory function to produce a default value on the first access to a missing key. It eliminates the <code>if key not in d: d[key] = []</code> boilerplate pattern that appears in grouping, graph building, and histogram code.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> defaultdict
+
+<span class="c-cm"># group words by first letter</span>
+words = [<span class="c-str">"apple"</span>, <span class="c-str">"avocado"</span>, <span class="c-str">"banana"</span>, <span class="c-str">"blueberry"</span>, <span class="c-str">"cherry"</span>]
+groups = <span class="c-cls">defaultdict</span>(<span class="c-fn">list</span>)
+<span class="c-kw">for</span> w <span class="c-kw">in</span> words:
+    groups[w[<span class="c-num">0</span>]].<span class="c-fn">append</span>(w)   <span class="c-cm"># no KeyError, no if-check</span>
+<span class="c-cm"># {"a": ["apple","avocado"], "b": ["banana","blueberry"], "c": ["cherry"]}</span>
+
+<span class="c-cm"># build an adjacency list for a graph</span>
+edges = [(<span class="c-str">"A"</span>,<span class="c-str">"B"</span>), (<span class="c-str">"A"</span>,<span class="c-str">"C"</span>), (<span class="c-str">"B"</span>,<span class="c-str">"C"</span>)]
+graph = <span class="c-cls">defaultdict</span>(<span class="c-fn">set</span>)
+<span class="c-kw">for</span> u, v <span class="c-kw">in</span> edges:
+    graph[u].<span class="c-fn">add</span>(v)
+    graph[v].<span class="c-fn">add</span>(u)
+
+<span class="c-cm"># count with default int (starts at 0)</span>
+freq = <span class="c-cls">defaultdict</span>(<span class="c-fn">int</span>)
+<span class="c-kw">for</span> ch <span class="c-kw">in</span> <span class="c-str">"mississippi"</span>:
+    freq[ch] += <span class="c-num">1</span>
+
+<span class="c-cm"># nested defaultdict</span>
+nested = <span class="c-cls">defaultdict</span>(<span class="c-kw">lambda</span>: <span class="c-cls">defaultdict</span>(<span class="c-fn">int</span>))
+nested[<span class="c-str">"row1"</span>][<span class="c-str">"col1"</span>] += <span class="c-num">1</span>   <span class="c-cm"># no KeyError at either level</span>
+
+<span class="c-cm"># ⚠ accessing a missing key creates it — affects len() and iteration</span>
+d = <span class="c-cls">defaultdict</span>(<span class="c-fn">list</span>)
+_ = d[<span class="c-str">"ghost"</span>]   <span class="c-cm"># now "ghost" exists with value []</span>
+<span class="c-cm"># use d.get("ghost") if you don't want to create the key</span></code></pre>
+  </div>
+</div>
+
+<div class="topic" id="counter">
+  <div class="topic-header">
+    <div class="topic-label">Collections · 02</div>
+    <h2>Counter</h2>
+  </div>
+  <p class="topic-desc"><code>Counter</code> is a dict subclass for counting hashable objects. It supports arithmetic between counters and <code>most_common()</code> — the two things that make it more useful than a plain <code>defaultdict(int)</code>.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> Counter
+
+<span class="c-cm"># count from any iterable</span>
+c = <span class="c-cls">Counter</span>(<span class="c-str">"mississippi"</span>)
+<span class="c-cm"># Counter({"i":4, "s":4, "p":2, "m":1})</span>
+
+c = <span class="c-cls">Counter</span>([<span class="c-str">"cat"</span>, <span class="c-str">"dog"</span>, <span class="c-str">"cat"</span>, <span class="c-str">"bird"</span>, <span class="c-str">"cat"</span>])
+c.<span class="c-fn">most_common</span>(<span class="c-num">2</span>)   <span class="c-cm"># [("cat",3), ("dog",1)]</span>
+c[<span class="c-str">"fish"</span>]          <span class="c-cm"># 0 — missing keys return 0, not KeyError</span>
+
+<span class="c-cm"># arithmetic: add, subtract, union, intersection</span>
+a = <span class="c-cls">Counter</span>(cats=<span class="c-num">3</span>, dogs=<span class="c-num">1</span>)
+b = <span class="c-cls">Counter</span>(cats=<span class="c-num">1</span>, fish=<span class="c-num">2</span>)
+a + b           <span class="c-cm"># Counter(cats=4, fish=2, dogs=1)</span>
+a - b           <span class="c-cm"># Counter(cats=2, dogs=1)   — drops zeros/negatives</span>
+a & b           <span class="c-cm"># Counter(cats=1)           — min of each</span>
+a | b           <span class="c-cm"># Counter(cats=3, fish=2, dogs=1) — max of each</span>
+
+<span class="c-cm"># practical: anagram check in O(n)</span>
+<span class="c-fn">sorted</span>(<span class="c-str">"listen"</span>) == <span class="c-fn">sorted</span>(<span class="c-str">"silent"</span>)               <span class="c-cm"># True — O(n log n)</span>
+<span class="c-cls">Counter</span>(<span class="c-str">"listen"</span>) == <span class="c-cls">Counter</span>(<span class="c-str">"silent"</span>)             <span class="c-cm"># True — O(n)</span>
+
+<span class="c-cm"># update and subtract in-place</span>
+c.<span class="c-fn">update</span>([<span class="c-str">"cat"</span>, <span class="c-str">"cat"</span>])     <span class="c-cm"># add counts</span>
+c.<span class="c-fn">subtract</span>([<span class="c-str">"cat"</span>])          <span class="c-cm"># subtract (can go negative)</span>
+
+<span class="c-cm"># total() = sum of all counts (Python 3.10+)</span>
+<span class="c-fn">sum</span>(c.<span class="c-fn">values</span>())   <span class="c-cm"># works in all versions</span></code></pre>
+  </div>
+</div>
+
+<div class="topic" id="deque">
+  <div class="topic-header">
+    <div class="topic-label">Collections · 03</div>
+    <h2>deque</h2>
+  </div>
+  <p class="topic-desc">A <code>deque</code> (double-ended queue) supports O(1) appends and pops from both ends. A Python <code>list</code> is O(n) for <code>insert(0, x)</code> and <code>pop(0)</code> because it shifts all elements. Use <code>deque</code> for BFS queues, sliding windows, and bounded history buffers.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> deque
+
+<span class="c-cm"># O(1) on both ends</span>
+dq = <span class="c-fn">deque</span>([<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>])
+dq.<span class="c-fn">appendleft</span>(<span class="c-num">0</span>)    <span class="c-cm"># [0,1,2,3]</span>
+dq.<span class="c-fn">append</span>(<span class="c-num">4</span>)        <span class="c-cm"># [0,1,2,3,4]</span>
+dq.<span class="c-fn">popleft</span>()        <span class="c-cm"># 0  →  [1,2,3,4]</span>
+dq.<span class="c-fn">pop</span>()            <span class="c-cm"># 4  →  [1,2,3]</span>
+
+<span class="c-cm"># BFS — use deque, not list, for the queue</span>
+<span class="c-kw">def</span> <span class="c-fn">bfs</span>(graph, start):
+    visited = {start}
+    queue   = <span class="c-fn">deque</span>([start])
+    <span class="c-kw">while</span> queue:
+        node = queue.<span class="c-fn">popleft</span>()          <span class="c-cm"># O(1)</span>
+        <span class="c-kw">for</span> neighbour <span class="c-kw">in</span> graph[node]:
+            <span class="c-kw">if</span> neighbour <span class="c-kw">not in</span> visited:
+                visited.<span class="c-fn">add</span>(neighbour)
+                queue.<span class="c-fn">append</span>(neighbour)
+
+<span class="c-cm"># maxlen: bounded buffer — old items auto-evicted from the left</span>
+last_5 = <span class="c-fn">deque</span>(maxlen=<span class="c-num">5</span>)
+<span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">8</span>):
+    last_5.<span class="c-fn">append</span>(x)
+<span class="c-cm"># deque([3,4,5,6,7], maxlen=5) — rolling window</span>
+
+<span class="c-cm"># rotate: shift all elements n steps</span>
+dq = <span class="c-fn">deque</span>([<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>])
+dq.<span class="c-fn">rotate</span>(<span class="c-num">2</span>)    <span class="c-cm"># [4,5,1,2,3]  — rotate right</span>
+dq.<span class="c-fn">rotate</span>(-<span class="c-num">2</span>)   <span class="c-cm"># [1,2,3,4,5]  — rotate left</span></code></pre>
+  </div>
+  <div class="callout orange">
+    <div class="callout-label">random access is O(n)</div>
+    <code>deque[i]</code> is O(n) — the deque is a doubly-linked list of fixed-size blocks, not a contiguous array. If you need O(1) indexing <em>and</em> O(1) front operations, you need a different data structure (or just accept the list's O(n) front operations if they're rare).
+  </div>
+</div>
+
+<div class="topic" id="namedtuple">
+  <div class="topic-header">
+    <div class="topic-label">Collections · 04</div>
+    <h2>namedtuple &amp; dataclass</h2>
+  </div>
+  <p class="topic-desc"><code>namedtuple</code> gives tuple positions meaningful names. <code>dataclass</code> (Python 3.7+) goes further: mutable by default, supports methods, defaults, and <code>__post_init__</code>. Know when to use each.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> collections <span class="c-kw">import</span> namedtuple
+<span class="c-kw">from</span> dataclasses <span class="c-kw">import</span> dataclass, field
+
+<span class="c-cm"># namedtuple: immutable, memory-efficient (tuple underneath)</span>
+<span class="c-cls">Point</span> = <span class="c-fn">namedtuple</span>(<span class="c-str">"Point"</span>, [<span class="c-str">"x"</span>, <span class="c-str">"y"</span>])
+p = <span class="c-cls">Point</span>(<span class="c-num">1</span>, <span class="c-num">2</span>)
+p.x, p.y        <span class="c-cm"># 1, 2</span>
+p[<span class="c-num">0</span>], p[<span class="c-num">1</span>]      <span class="c-cm"># 1, 2 — still a tuple</span>
+p._replace(x=<span class="c-num">5</span>) <span class="c-cm"># Point(x=5, y=2) — returns a new instance</span>
+p._asdict()     <span class="c-cm"># {"x": 1, "y": 2}</span>
+
+<span class="c-cm"># typed namedtuple (Python 3.6+)</span>
+<span class="c-kw">from</span> typing <span class="c-kw">import</span> NamedTuple
+<span class="c-kw">class</span> <span class="c-cls">Point3D</span>(NamedTuple):
+    x: <span class="c-fn">float</span>
+    y: <span class="c-fn">float</span>
+    z: <span class="c-fn">float</span> = <span class="c-num">0.0</span>   <span class="c-cm"># default value</span>
+
+<span class="c-cm"># dataclass: mutable, supports methods, __post_init__, slots</span>
+<span class="c-dec">@dataclass</span>
+<span class="c-kw">class</span> <span class="c-cls">Config</span>:
+    host:    <span class="c-fn">str</span>
+    port:    <span class="c-fn">int</span>   = <span class="c-num">8080</span>
+    tags:    <span class="c-fn">list</span>  = field(default_factory=<span class="c-fn">list</span>)  <span class="c-cm"># mutable default</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">url</span>(<span class="c-bi">self</span>):
+        <span class="c-kw">return</span> <span class="c-fn">f</span><span class="c-str">"http://{self.host}:{self.port}"</span>
+
+<span class="c-cm"># frozen=True makes it hashable (like namedtuple)</span>
+<span class="c-dec">@dataclass</span>(frozen=<span class="c-bi">True</span>)
+<span class="c-kw">class</span> <span class="c-cls">ImmutablePoint</span>:
+    x: <span class="c-fn">float</span>
+    y: <span class="c-fn">float</span>
+
+<span class="c-cm"># When to use which:
+# namedtuple — read-only records, need tuple unpacking, pack into sets/dict keys
+# dataclass  — anything with methods, mutable fields, or complex defaults</span></code></pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════ CONTEXT MANAGERS ══════════════════════ -->
+
+<div class="topic" id="contextmanager">
+  <div class="topic-header">
+    <div class="topic-label">Context Managers · 01</div>
+    <h2>__enter__ / __exit__</h2>
+  </div>
+  <p class="topic-desc">The <code>with</code> statement calls <code>__enter__</code> on entry and <code>__exit__</code> on exit — even if an exception is raised. This guarantees cleanup (file close, lock release, DB transaction) without relying on the caller to remember.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">import</span> threading
+
+<span class="c-cm"># class-based context manager</span>
+<span class="c-kw">class</span> <span class="c-cls">ManagedFile</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-bi">self</span>, path, mode=<span class="c-str">"r"</span>):
+        <span class="c-bi">self</span>.path = path
+        <span class="c-bi">self</span>.mode = mode
+
+    <span class="c-kw">def</span> <span class="c-fn">__enter__</span>(<span class="c-bi">self</span>):
+        <span class="c-bi">self</span>.file = <span class="c-fn">open</span>(<span class="c-bi">self</span>.path, <span class="c-bi">self</span>.mode)
+        <span class="c-kw">return</span> <span class="c-bi">self</span>.file           <span class="c-cm"># bound to "as" target</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__exit__</span>(<span class="c-bi">self</span>, exc_type, exc_val, exc_tb):
+        <span class="c-bi">self</span>.file.<span class="c-fn">close</span>()
+        <span class="c-kw">return</span> <span class="c-bi">False</span>             <span class="c-cm"># False = don't suppress exceptions</span>
+
+<span class="c-kw">with</span> <span class="c-cls">ManagedFile</span>(<span class="c-str">"data.txt"</span>) <span class="c-kw">as</span> f:
+    data = f.<span class="c-fn">read</span>()
+<span class="c-cm"># file is always closed here, even if read() raises</span>
+
+<span class="c-cm"># ── suppress an exception by returning True from __exit__</span>
+<span class="c-kw">class</span> <span class="c-cls">Suppress</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-bi">self</span>, *exceptions):
+        <span class="c-bi">self</span>.exceptions = exceptions
+    <span class="c-kw">def</span> <span class="c-fn">__enter__</span>(<span class="c-bi">self</span>): <span class="c-kw">return</span> <span class="c-bi">self</span>
+    <span class="c-kw">def</span> <span class="c-fn">__exit__</span>(<span class="c-bi">self</span>, exc_type, exc_val, exc_tb):
+        <span class="c-kw">return</span> exc_type <span class="c-kw">is not</span> <span class="c-bi">None</span> <span class="c-kw">and</span> <span class="c-fn">issubclass</span>(exc_type, <span class="c-bi">self</span>.exceptions)
+
+<span class="c-kw">with</span> <span class="c-cls">Suppress</span>(<span class="c-cls">FileNotFoundError</span>):
+    <span class="c-fn">open</span>(<span class="c-str">"missing.txt"</span>)   <span class="c-cm"># exception silently swallowed</span>
+
+<span class="c-cm"># ── multiple context managers on one line</span>
+<span class="c-kw">with</span> <span class="c-fn">open</span>(<span class="c-str">"src.txt"</span>) <span class="c-kw">as</span> src, <span class="c-fn">open</span>(<span class="c-str">"dst.txt"</span>, <span class="c-str">"w"</span>) <span class="c-kw">as</span> dst:
+    dst.<span class="c-fn">write</span>(src.<span class="c-fn">read</span>())</code></pre>
+  </div>
+  <div class="callout">
+    <div class="callout-label">__exit__ signature</div>
+    <code>__exit__(self, exc_type, exc_val, exc_tb)</code> receives exception info if one was raised — all three are <code>None</code> on clean exit. Return a truthy value to suppress the exception. Returning <code>False</code> or <code>None</code> lets it propagate. Never swallow exceptions you didn't anticipate.
+  </div>
+</div>
+
+<div class="topic" id="contextlib">
+  <div class="topic-header">
+    <div class="topic-label">Context Managers · 02</div>
+    <h2>contextlib</h2>
+  </div>
+  <p class="topic-desc"><code>contextlib.contextmanager</code> turns a generator function into a context manager — no class needed. The code before <code>yield</code> is <code>__enter__</code>, the code after is <code>__exit__</code>. The module also has ready-made utilities like <code>suppress</code> and <code>ExitStack</code>.</p>
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><code><span class="c-kw">from</span> contextlib <span class="c-kw">import</span> contextmanager, suppress, ExitStack
+<span class="c-kw">import</span> time
+
+<span class="c-cm"># generator-based context manager</span>
+<span class="c-dec">@contextmanager</span>
+<span class="c-kw">def</span> <span class="c-fn">timer</span>(label=<span class="c-str">""</span>):
+    t0 = time.<span class="c-fn">perf_counter</span>()
+    <span class="c-kw">try</span>:
+        <span class="c-kw">yield</span>                        <span class="c-cm"># body of the with block runs here</span>
+    <span class="c-kw">finally</span>:
+        <span class="c-fn">print</span>(<span class="c-fn">f</span><span class="c-str">"{label} {time.perf_counter()-t0:.4f}s"</span>)
+
+<span class="c-kw">with</span> <span class="c-fn">timer</span>(<span class="c-str">"sort"</span>):
+    <span class="c-fn">sorted</span>(<span class="c-fn">range</span>(<span class="c-num">10</span>**<span class="c-num">6</span>))
+
+<span class="c-cm"># yield a value to bind with "as"</span>
+<span class="c-dec">@contextmanager</span>
+<span class="c-kw">def</span> <span class="c-fn">temp_dir</span>():
+    <span class="c-kw">import</span> tempfile, shutil
+    d = tempfile.<span class="c-fn">mkdtemp</span>()
+    <span class="c-kw">try</span>:
+        <span class="c-kw">yield</span> d
+    <span class="c-kw">finally</span>:
+        shutil.<span class="c-fn">rmtree</span>(d)
+
+<span class="c-kw">with</span> <span class="c-fn">temp_dir</span>() <span class="c-kw">as</span> path:
+    <span class="c-fn">print</span>(<span class="c-fn">f</span><span class="c-str">"working in {path}"</span>)
+<span class="c-cm"># directory deleted even if exception raised inside</span>
+
+<span class="c-cm"># contextlib.suppress — cleaner than try/except/pass</span>
+<span class="c-kw">with</span> <span class="c-fn">suppress</span>(<span class="c-cls">FileNotFoundError</span>, <span class="c-cls">PermissionError</span>):
+    <span class="c-fn">open</span>(<span class="c-str">"/protected/file"</span>)
+
+<span class="c-cm"># ExitStack: manage a dynamic number of context managers</span>
+files = [<span class="c-str">"a.txt"</span>, <span class="c-str">"b.txt"</span>, <span class="c-str">"c.txt"</span>]
+<span class="c-kw">with</span> <span class="c-cls">ExitStack</span>() <span class="c-kw">as</span> stack:
+    handles = [stack.<span class="c-fn">enter_context</span>(<span class="c-fn">open</span>(f)) <span class="c-kw">for</span> f <span class="c-kw">in</span> files]
+    <span class="c-cm"># all files closed on exit, even if one open() fails mid-list</span></code></pre>
+  </div>
+  <div class="callout green">
+    <div class="callout-label">always use try/finally in @contextmanager</div>
+    If the body of the <code>with</code> block raises, control jumps to the code after <code>yield</code> inside the generator — but only if you wrap the <code>yield</code> in <code>try/finally</code>. Without it, an exception in the body skips your cleanup code entirely.
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre.code');
+  const text = pre.innerText || pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>

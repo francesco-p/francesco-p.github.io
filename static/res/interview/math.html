@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math for ML — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0d0d;
+  --bg2:       #141414;
+  --bg3:       #1a1a1a;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --text:      #e8e4dc;
+  --muted:     #7a7570;
+  --accent:    #c8b97a;
+  --accent2:   #7abfc8;
+  --accent3:   #c87ab2;
+  --green:     #7ac87a;
+  --red:       #c87a7a;
+  --orange:    #c8956a;
+  --code-bg:   #111;
+  --tag-bg:    rgba(200,185,122,0.1);
+  --tag-border:rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.nav-section {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 1.4rem 0 0.4rem;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+nav a {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+  font-weight: 300;
+}
+nav a:hover { color: var(--accent); }
+
+.nav-bottom {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.nav-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 2px 0;
+  font-family: 'DM Mono', monospace;
+}
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main {
+  padding: 3rem 3.5rem 6rem;
+  max-width: 820px;
+}
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 1rem;
+  font-family: 'DM Mono', monospace;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 1.2rem;
+}
+
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+
+.hero-desc {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 540px;
+  line-height: 1.8;
+}
+
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+
+.pill {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Sections ── */
+section { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+h2 .num {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+
+h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin: 1.8rem 0 0.6rem;
+  font-weight: 500;
+}
+
+p { margin-bottom: 0.9rem; }
+strong { font-weight: 500; color: var(--text); }
+
+/* ── Math display boxes ── */
+.math {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  padding: 1rem 1.3rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 2;
+}
+
+.math .label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: 'DM Mono', monospace;
+}
+
+.math .dim  { color: var(--accent2); }
+.math .note { color: var(--muted); font-style: italic; font-size: 12px; }
+.math .hi   { color: var(--text); font-weight: 500; }
+.math .katex { font-size: 1em; }
+
+/* ── Code ── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1.25rem 1.4rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.code-label {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9c0b0;
+}
+
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #4a4740; font-style: italic; }
+.c-bi  { color: #c8956a; }
+
+p code, li code, td code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2px solid var(--accent);
+  background: rgba(200,185,122,0.05);
+  padding: 1rem 1.25rem;
+  margin: 1.2rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.75;
+}
+.callout.blue   { border-left-color: var(--accent2); background: rgba(122,191,200,0.05); }
+.callout.red    { border-left-color: var(--red);     background: rgba(200,122,122,0.05); }
+.callout.green  { border-left-color: var(--green);   background: rgba(122,200,122,0.05); }
+.callout.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.callout.orange { border-left-color: var(--orange);  background: rgba(200,149,106,0.05); }
+
+.callout-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  opacity: 0.55;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+}
+
+.card-title {
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* ── Table ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 1rem 0;
+}
+
+th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border2);
+  padding: 0.5rem 0.75rem;
+  font-weight: 400;
+  font-family: 'DM Mono', monospace;
+}
+
+td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--muted);
+}
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+/* ── Trace ── */
+.trace {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 2;
+}
+.trace .hi  { color: var(--accent);  font-weight: 500; }
+.trace .ok  { color: var(--green);  }
+.trace .inf { color: var(--accent2); }
+.trace .bad { color: var(--red);    }
+
+/* ── Visual matrix ── */
+.matrix-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+  margin: 1rem 0;
+  padding: 1rem 1.2rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.matrix-wrap .eq { color: var(--text); margin: 0 0.3rem; }
+
+.matrix-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.matrix-block .shape-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.matrix-block .mat-body {
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 6px 12px;
+  color: var(--accent);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.matrix-block.u   .mat-body { color: var(--accent2); border-color: rgba(122,191,200,0.3); }
+.matrix-block.s   .mat-body { color: var(--accent);  border-color: rgba(200,185,122,0.3); }
+.matrix-block.vt  .mat-body { color: var(--accent3); border-color: rgba(200,122,178,0.3); }
+.matrix-block.e   .mat-body { color: var(--green);   border-color: rgba(122,200,122,0.3); }
+.matrix-block.cov .mat-body { color: var(--orange);  border-color: rgba(200,149,106,0.3); }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.8rem 0; }
+.checklist li {
+  padding: 0.4rem 0 0.4rem 1.4rem;
+  position: relative;
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: '○';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+  font-size: 11px;
+  top: 0.55rem;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+/* ── Trio ── */
+.trio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.4rem 4rem; }
+  .card-grid, .trio { grid-template-columns: 1fr; }
+  .matrix-wrap { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">Math for ML · Primer</div>
+
+  <span class="nav-section">Linear Algebra</span>
+  <a href="#vectors">Vectors & norms</a>
+  <a href="#matrices">Matrix operations</a>
+  <a href="#eigen">Eigendecomposition</a>
+  <a href="#svd">SVD</a>
+  <a href="#pca">PCA</a>
+  <a href="#projections">Projections</a>
+
+  <span class="nav-section">Probability</span>
+  <a href="#prob-basics">Probability basics</a>
+  <a href="#distributions">Key distributions</a>
+  <a href="#bayes">Bayes' theorem</a>
+  <a href="#mle">MLE & MAP</a>
+  <a href="#expectation">Expectation & variance</a>
+
+  <span class="nav-section">Calculus & Optim.</span>
+  <a href="#derivatives">Derivatives & gradients</a>
+  <a href="#chain">Chain rule & Jacobians</a>
+  <a href="#convexity">Convexity</a>
+  <a href="#lagrange">Lagrange multipliers</a>
+
+  <span class="nav-section">Information Theory</span>
+  <a href="#entropy">Entropy & KL divergence</a>
+  <a href="#infogain">Mutual information</a>
+
+  <span class="nav-section">Interview</span>
+  <a href="#intuitions">Key intuitions</a>
+  <a href="#checklist">Checklist</a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;opacity:.6;">complexity ref</div>
+    <div class="nav-stat"><span>Matrix mult</span><span>O(n³)</span></div>
+    <div class="nav-stat"><span>SVD (full)</span><span>O(mn²)</span></div>
+    <div class="nav-stat"><span>Eigendecomp</span><span>O(n³)</span></div>
+    <div class="nav-stat"><span>PCA (via SVD)</span><span>O(nd²)</span></div>
+    <div class="nav-stat"><span>Cholesky</span><span>O(n³/3)</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Interview Primer · Math for ML</div>
+    <h1>The geometry<br>behind <em>every model</em></h1>
+    <p class="hero-desc">
+      ML sits on four mathematical pillars: linear algebra (shapes and transformations),
+      probability (uncertainty), calculus (optimization), and information theory (compression).
+      Understanding the geometry — not just the formulas — is what separates fluent practitioners
+      from formula-appliers.
+    </p>
+    <div class="pill-row">
+      <span class="pill">SVD</span>
+      <span class="pill">PCA</span>
+      <span class="pill">Eigenvectors</span>
+      <span class="pill">MLE / MAP</span>
+      <span class="pill">KL divergence</span>
+      <span class="pill">Convexity</span>
+      <span class="pill">Bayes</span>
+      <span class="pill">Jacobians</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--           LINEAR ALGEBRA              -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 1. Vectors & norms ── -->
+  <section id="vectors">
+    <h2><span class="num">01</span> Vectors & norms</h2>
+    <p>A vector in ML is almost always a data point or a set of parameters. Norms measure their magnitude — each norm encodes a different geometry.</p>
+
+    <div class="math">
+      <span class="label">common norms</span>
+      \(\|x\|_1 = \sum_i |x_i|\) <span class="note">← L1 · Manhattan · induces sparsity</span><br>
+      \(\|x\|_2 = \sqrt{\sum_i x_i^2}\) <span class="note">← L2 · Euclidean · default distance</span><br>
+      \(\|x\|_\infty = \max_i |x_i|\) <span class="note">← L∞ · max norm · used in robust optim</span><br>
+      \(\|x\|_p = \bigl(\sum_i |x_i|^p\bigr)^{1/p}\) <span class="note">← general Lp norm</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Dot product</div>
+        <p>xᵀy = Σxᵢyᵢ = ‖x‖₂‖y‖₂ cos θ. Measures alignment. If orthogonal: xᵀy = 0. Foundation of every linear layer.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Cosine similarity</div>
+        <p>cos(x,y) = xᵀy / (‖x‖‖y‖). Measures direction, not magnitude. Standard metric for embeddings, retrieval.</p>
+      </div>
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+x = np.<span class="c-fn">array</span>([<span class="c-num">3.0</span>, <span class="c-num">4.0</span>])
+
+np.linalg.<span class="c-fn">norm</span>(x)           <span class="c-cm"># L2 = 5.0</span>
+np.linalg.<span class="c-fn">norm</span>(x, <span class="c-num">1</span>)        <span class="c-cm"># L1 = 7.0</span>
+np.linalg.<span class="c-fn">norm</span>(x, np.<span class="c-bi">inf</span>)   <span class="c-cm"># L∞ = 4.0</span>
+
+<span class="c-cm"># Cosine similarity</span>
+<span class="c-kw">def</span> <span class="c-fn">cosine</span>(a, b):
+    <span class="c-kw">return</span> np.<span class="c-fn">dot</span>(a, b) / (np.linalg.<span class="c-fn">norm</span>(a) * np.linalg.<span class="c-fn">norm</span>(b))
+
+<span class="c-cm"># Unit vector (L2-normalize) — embeddings are often pre-normalized</span>
+x_hat = x / np.linalg.<span class="c-fn">norm</span>(x)  <span class="c-cm"># ‖x_hat‖₂ = 1.0</span>
+</code></pre>
+  </section>
+
+  <!-- ── 2. Matrix operations ── -->
+  <section id="matrices">
+    <h2><span class="num">02</span> Matrix operations & properties</h2>
+
+    <table>
+      <thead><tr><th>Property</th><th>Definition</th><th>ML relevance</th></tr></thead>
+      <tbody>
+        <tr><td>Rank</td><td>dim of column space (# independent cols)</td><td>Full-rank weight matrix = no info loss; rank-deficient → degenerate solutions</td></tr>
+        <tr><td>Trace</td><td>tr(A) = Σ Aᵢᵢ = Σ λᵢ</td><td>Sum of eigenvalues; appears in nuclear norm, Frobenius norm squared</td></tr>
+        <tr><td>Determinant</td><td>det(A) = Π λᵢ</td><td>det=0 → singular (not invertible). Measures volume scaling of transformation.</td></tr>
+        <tr><td>Frobenius norm</td><td>‖A‖F = √(Σᵢⱼ Aᵢⱼ²) = √tr(AᵀA)</td><td>L2 norm for matrices. Used in regularization, matrix approximation error.</td></tr>
+        <tr><td>Positive definite</td><td>xᵀAx > 0 ∀x≠0</td><td>All eigenvalues > 0. Covariance matrices and Hessians at minima are PSD.</td></tr>
+        <tr><td>Orthogonal</td><td>QᵀQ = I → Q⁻¹ = Qᵀ</td><td>Rotation/reflection. Preserves norms and angles. Columns are orthonormal.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout blue">
+      <div class="callout-label">matrix multiply — geometric view</div>
+      A matrix multiplication <strong>Ax</strong> is a linear transformation: rotate, scale, project, reflect.
+      A neural layer <strong>Wx + b</strong> is a general affine transformation (linear + translation).
+      The rank of W determines how much information the transformation preserves.
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+A = np.random.<span class="c-fn">randn</span>(<span class="c-num">4</span>, <span class="c-num">3</span>)
+
+np.linalg.<span class="c-fn">matrix_rank</span>(A)      <span class="c-cm"># rank (≤ min(m,n))</span>
+np.<span class="c-fn">trace</span>(A.T @ A)             <span class="c-cm"># = Frobenius norm squared</span>
+np.linalg.<span class="c-fn">norm</span>(A, <span class="c-str">'fro'</span>)     <span class="c-cm"># Frobenius norm</span>
+np.linalg.<span class="c-fn">det</span>(A[:<span class="c-num">3</span>,:<span class="c-num">3</span>])      <span class="c-cm"># determinant (square only)</span>
+
+<span class="c-cm"># Solve Ax = b without explicit inverse (numerically stable)</span>
+x = np.linalg.<span class="c-fn">solve</span>(A[:<span class="c-num">3</span>,:<span class="c-num">3</span>], b)   <span class="c-cm"># prefer over A_inv @ b</span>
+
+<span class="c-cm"># Pseudo-inverse — works even for non-square / rank-deficient</span>
+A_pinv = np.linalg.<span class="c-fn">pinv</span>(A)    <span class="c-cm"># minimum-norm least-squares solution</span>
+</code></pre>
+  </section>
+
+  <!-- ── 3. Eigendecomposition ── -->
+  <section id="eigen">
+    <h2><span class="num">03</span> Eigendecomposition</h2>
+    <p>An eigenvector of A is a direction that the transformation only scales, not rotates. The eigenvalue is that scale factor.</p>
+
+    <div class="math">
+      <span class="label">eigenvalue equation</span>
+      \(Av = \lambda v \;\Rightarrow\; (A - \lambda I)v = 0 \;\Rightarrow\; \det(A - \lambda I) = 0\)<br>
+      <br>
+      <span class="label">eigendecomposition (square diagonalizable matrix)</span>
+      \(A = Q\Lambda Q^{-1}\)<br>
+      <span class="dim">Q: columns are eigenvectors · Λ: diagonal matrix of eigenvalues</span><br>
+      <br>
+      <span class="label">for symmetric matrices (A = Aᵀ) — spectral theorem</span>
+      \(A = Q\Lambda Q^T\) <span class="note">← Q is orthogonal; eigenvalues are real</span><br>
+      <span class="dim">Covariance matrices, Hessians, kernel matrices are all symmetric → always diagonalizable</span>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">geometric interpretation</div>
+      Eigenvectors are the <strong>natural axes</strong> of the transformation.
+      In those directions the matrix just stretches (λ > 1), shrinks (0 < λ < 1), reflects (λ < 0), or collapses (λ = 0).
+      PCA finds the eigenvectors of the covariance matrix — the directions of maximum variance.
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+A = np.<span class="c-fn">array</span>([[<span class="c-num">3</span>, <span class="c-num">1</span>],
+              [<span class="c-num">1</span>, <span class="c-num">3</span>]])    <span class="c-cm"># symmetric → real eigenvalues</span>
+
+eigenvalues, eigenvectors = np.linalg.<span class="c-fn">eigh</span>(A)
+<span class="c-cm"># eigh: for symmetric/Hermitian — more stable than eig</span>
+<span class="c-cm"># eigenvalues sorted ascending: [2.0, 4.0]</span>
+<span class="c-cm"># eigenvectors: columns are unit eigenvectors</span>
+
+<span class="c-cm"># Reconstruct A from eigen-decomposition</span>
+A_reconstructed = eigenvectors @ np.<span class="c-fn">diag</span>(eigenvalues) @ eigenvectors.T
+
+<span class="c-cm"># Power iteration — finds dominant eigenvector cheaply</span>
+<span class="c-kw">def</span> <span class="c-fn">power_iter</span>(A, steps=<span class="c-num">100</span>):
+    v = np.random.<span class="c-fn">randn</span>(A.shape[<span class="c-num">0</span>])
+    <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(steps):
+        v = A @ v; v /= np.linalg.<span class="c-fn">norm</span>(v)
+    <span class="c-kw">return</span> v                   <span class="c-cm"># approximates leading eigenvector</span>
+</code></pre>
+
+    <div class="trace">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem;color:var(--muted);">key facts to know cold</span>
+      <span class="ok">✓</span> tr(A) = Σλᵢ  &nbsp;&nbsp; det(A) = Πλᵢ<br>
+      <span class="ok">✓</span> Symmetric A → real eigenvalues, orthogonal eigenvectors<br>
+      <span class="ok">✓</span> PSD matrix → all λᵢ ≥ 0<br>
+      <span class="ok">✓</span> Rank = # non-zero eigenvalues<br>
+      <span class="inf">→</span> Largest |λ| controls how fast Aⁿx grows/shrinks (spectral radius)
+    </div>
+  </section>
+
+  <!-- ── 4. SVD ── -->
+  <section id="svd">
+    <h2><span class="num">04</span> Singular Value Decomposition (SVD)</h2>
+    <p>
+      SVD generalizes eigendecomposition to <em>any</em> matrix — rectangular included.
+      It is the fundamental matrix factorization: every matrix is a sequence of rotate → scale → rotate.
+    </p>
+
+    <div class="math">
+      <span class="label">SVD factorization</span>
+      \(A = U\Sigma V^T\)<br>
+      <span class="dim">A: m×n · U: m×m orthogonal · Σ: m×n diagonal (\(\sigma_1\geq\sigma_2\geq\cdots\geq 0\)) · V: n×n orthogonal</span>
+    </div>
+
+    <!-- Visual decomposition -->
+    <div class="matrix-wrap">
+      <div class="matrix-block">
+        <div class="mat-body">A<br><span style="font-size:11px;color:var(--muted);">m×n</span></div>
+        <div class="shape-label">input</div>
+      </div>
+      <span class="eq">=</span>
+      <div class="matrix-block u">
+        <div class="mat-body">U<br><span style="font-size:11px;color:var(--accent2);opacity:.7;">m×m</span></div>
+        <div class="shape-label" style="color:var(--accent2);">left sing. vecs</div>
+      </div>
+      <span class="eq">·</span>
+      <div class="matrix-block s">
+        <div class="mat-body">Σ<br><span style="font-size:11px;color:var(--accent);opacity:.7;">m×n</span></div>
+        <div class="shape-label">singular values</div>
+      </div>
+      <span class="eq">·</span>
+      <div class="matrix-block vt">
+        <div class="mat-body">Vᵀ<br><span style="font-size:11px;color:var(--accent3);opacity:.7;">n×n</span></div>
+        <div class="shape-label" style="color:var(--accent3);">right sing. vecs</div>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">geometric interpretation</div>
+      <strong>Vᵀ</strong> rotates input space to align with singular directions.<br>
+      <strong>Σ</strong> scales each direction by the singular values (σᵢ = √λᵢ of AᵀA).<br>
+      <strong>U</strong> rotates to output space.<br>
+      The singular values σᵢ measure how much each dimension contributes — rank-k approximation keeps only the top-k.
+    </div>
+
+    <h3>Truncated SVD — best rank-k approximation</h3>
+    <div class="math">
+      <span class="label">Eckart–Young theorem</span>
+      \(A_k = U_k\Sigma_k V_k^T = \underset{\operatorname{rank}(B)=k}{\operatorname{argmin}}\,\|A - B\|_F\)<br>
+      <span class="note">No other rank-k matrix is closer to A in Frobenius or spectral norm.</span>
+    </div>
+
+    <pre><span class="code-label">numpy — SVD & low-rank approx</span><code>
+A = np.random.<span class="c-fn">randn</span>(<span class="c-num">100</span>, <span class="c-num">50</span>)
+
+<span class="c-cm"># Full SVD</span>
+U, s, Vt = np.linalg.<span class="c-fn">svd</span>(A, full_matrices=<span class="c-bi">False</span>)
+<span class="c-cm"># U: (100,50)  s: (50,)  Vt: (50,50)  — "economy" SVD</span>
+
+<span class="c-cm"># Rank-k approximation</span>
+k = <span class="c-num">10</span>
+A_k = (U[:, :k] * s[:k]) @ Vt[:k, :]
+<span class="c-cm"># Reconstruction error</span>
+error = np.linalg.<span class="c-fn">norm</span>(A - A_k, <span class="c-str">'fro'</span>)
+<span class="c-cm"># Explained variance ratio</span>
+var_explained = (s[:k]**<span class="c-num">2</span>).<span class="c-fn">sum</span>() / (s**<span class="c-num">2</span>).<span class="c-fn">sum</span>()
+
+<span class="c-cm"># Pseudo-inverse via SVD (most stable method)</span>
+A_pinv = Vt.T @ np.<span class="c-fn">diag</span>(<span class="c-num">1</span>/s) @ U.T
+
+<span class="c-cm"># Condition number — ratio of largest to smallest singular value</span>
+cond = s.<span class="c-fn">max</span>() / s.<span class="c-fn">min</span>()   <span class="c-cm"># large → ill-conditioned (numerically unstable)</span>
+</code></pre>
+
+    <div class="callout green">
+      <div class="callout-label">SVD in ML — where you see it</div>
+      <strong>PCA</strong> (dimensionality reduction) · <strong>LSA/LSI</strong> (text embeddings) ·
+      <strong>Collaborative filtering</strong> (matrix factorization for recommenders) ·
+      <strong>Pseudo-inverse</strong> (least squares) · <strong>Weight matrix analysis</strong> (singular value spectrum of neural net layers) ·
+      <strong>LoRA</strong> (low-rank adaptation of LLMs decomposes weight updates as UV)
+    </div>
+  </section>
+
+  <!-- ── 5. PCA ── -->
+  <section id="pca">
+    <h2><span class="num">05</span> Principal Component Analysis (PCA)</h2>
+    <p>
+      PCA finds the orthogonal directions of maximum variance in data.
+      It is both a dimensionality reduction and a change of basis — projecting data into the
+      subspace that preserves the most information (variance).
+    </p>
+
+    <div class="math">
+      <span class="label">PCA derivation</span>
+      1. Center: \(\tilde{X} = X - \mu\) <span class="note">subtract per-feature mean</span><br>
+      2. Covariance: \(C = \tfrac{1}{n}\tilde{X}^T\tilde{X}\) <span class="dim">shape (d×d)</span><br>
+      3. Eigendecompose: \(C = Q\Lambda Q^T\) <span class="note">or equivalently, SVD of X̃</span><br>
+      4. Project: \(Z = \tilde{X}\,Q_{[:,\,:k]}\) <span class="dim">shape (n×k) — k principal components</span><br>
+      <br>
+      <span class="label">explained variance</span>
+      \(\text{var}(i) = \lambda_i \big/ \textstyle\sum_j \lambda_j\)
+    </div>
+
+    <!-- Visual covariance decomposition -->
+    <div class="matrix-wrap">
+      <div class="matrix-block cov">
+        <div class="mat-body">C<br><span style="font-size:11px;color:var(--orange);opacity:.7;">d×d cov</span></div>
+        <div class="shape-label" style="color:var(--orange);">covariance</div>
+      </div>
+      <span class="eq">=</span>
+      <div class="matrix-block e">
+        <div class="mat-body">Q<br><span style="font-size:11px;color:var(--green);opacity:.7;">d×d</span></div>
+        <div class="shape-label" style="color:var(--green);">eigenvectors</div>
+      </div>
+      <span class="eq">·</span>
+      <div class="matrix-block s">
+        <div class="mat-body">Λ<br><span style="font-size:11px;color:var(--accent);opacity:.7;">d×d diag</span></div>
+        <div class="shape-label">eigenvalues</div>
+      </div>
+      <span class="eq">·</span>
+      <div class="matrix-block e">
+        <div class="mat-body">Qᵀ<br><span style="font-size:11px;color:var(--green);opacity:.7;">d×d</span></div>
+        <div class="shape-label" style="color:var(--green);">eigenvectors</div>
+      </div>
+    </div>
+
+    <pre><span class="code-label">numpy — PCA from scratch</span><code>
+<span class="c-kw">def</span> <span class="c-fn">pca</span>(X, k):
+    <span class="c-cm"># 1. Center</span>
+    mu  = X.<span class="c-fn">mean</span>(axis=<span class="c-num">0</span>)
+    X_c = X - mu
+
+    <span class="c-cm"># 2. SVD of centered data (equivalent to eigen of covariance)</span>
+    U, s, Vt = np.linalg.<span class="c-fn">svd</span>(X_c, full_matrices=<span class="c-bi">False</span>)
+    components = Vt[:k]              <span class="c-cm"># k principal directions (d each)</span>
+
+    <span class="c-cm"># 3. Project</span>
+    Z = X_c @ components.T          <span class="c-cm"># (n×d) @ (d×k) → (n×k)</span>
+
+    <span class="c-cm"># 4. Explained variance</span>
+    var_ratio = (s**<span class="c-num">2</span>) / (s**<span class="c-num">2</span>).<span class="c-fn">sum</span>()
+
+    <span class="c-kw">return</span> Z, components, var_ratio
+
+<span class="c-cm"># Reconstruct (for autoencoder comparison)</span>
+<span class="c-kw">def</span> <span class="c-fn">pca_reconstruct</span>(Z, components, mu):
+    <span class="c-kw">return</span> Z @ components + mu      <span class="c-cm"># decode back to original space</span>
+</code></pre>
+
+    <div class="callout">
+      <div class="callout-label">PCA vs SVD on raw data vs covariance</div>
+      Running SVD on centered data <strong>X̃</strong> gives identical principal components as
+      eigendecomposing the covariance <strong>X̃ᵀX̃/n</strong> — but SVD is more numerically stable.
+      Never form the covariance matrix explicitly for high-d data (d ≫ n); use randomized SVD instead.
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">PCA limitations</div>
+      Linear only — misses non-linear structure (use t-SNE, UMAP for visualization).
+      Sensitive to scale — always standardize first.
+      Directions of max variance ≠ directions most useful for a downstream task
+      (supervised dimensionality reduction like LDA may be better).
+    </div>
+  </section>
+
+  <!-- ── 6. Projections ── -->
+  <section id="projections">
+    <h2><span class="num">06</span> Projections & least squares</h2>
+    <p>Projection is the operation underlying linear regression, PCA, and attention mechanisms. The projection of b onto the column space of A is the closest point in that subspace.</p>
+
+    <div class="math">
+      <span class="label">orthogonal projection onto col(A)</span>
+      \(P = A(A^TA)^{-1}A^T\) <span class="note">symmetric, idempotent: \(P^2 = P\)</span><br>
+      \(\text{proj} = Pb\)<br>
+      <br>
+      <span class="label">least squares solution (Ax ≈ b)</span>
+      \(x^* = (A^TA)^{-1}A^Tb = A^+b\) <span class="note">normal equations · A⁺ is pseudo-inverse</span><br>
+      <span class="note">geometric reading: project b onto col(A), find coordinates in that basis</span>
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-cm"># Least-squares regression (numerically stable)</span>
+x_star, residuals, rank, sv = np.linalg.<span class="c-fn">lstsq</span>(A, b, rcond=<span class="c-bi">None</span>)
+
+<span class="c-cm"># Projection matrix onto col(A)</span>
+P = A @ np.linalg.<span class="c-fn">inv</span>(A.T @ A) @ A.T  <span class="c-cm"># fine for small A</span>
+P = A @ np.linalg.<span class="c-fn">pinv</span>(A)             <span class="c-cm"># numerically preferred</span>
+
+<span class="c-cm"># Verify idempotent: P @ P == P</span>
+np.allclose(P @ P, P)   <span class="c-cm"># True</span>
+</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--           PROBABILITY                 -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 7. Probability basics ── -->
+  <section id="prob-basics">
+    <h2><span class="num">07</span> Probability basics</h2>
+
+    <div class="math">
+      <span class="label">fundamental rules</span>
+      \(P(A \cup B) = P(A) + P(B) - P(A \cap B)\) <span class="note">← inclusion-exclusion</span><br>
+      \(P(A \cap B) = P(A)\cdot P(B|A)\) <span class="note">← product rule / chain rule of prob</span><br>
+      \(P(A,B) = P(A|B)P(B) = P(B|A)P(A)\) <span class="note">← joint = conditional × marginal</span><br>
+      \(P(A) = \sum_B P(A,B)\) <span class="note">← marginalization (sum/integrate out B)</span><br>
+      Independence: \(P(A,B) = P(A)P(B)\)
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Discrete r.v.</div>
+        <p>PMF: P(X=x) ≥ 0, ΣP(X=x)=1. E[X] = Σx·P(x). Examples: Bernoulli, Categorical, Poisson.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Continuous r.v.</div>
+        <p>PDF: p(x) ≥ 0, ∫p(x)dx=1. E[X] = ∫x·p(x)dx. Examples: Gaussian, Uniform, Beta, Gamma.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 8. Key distributions ── -->
+  <section id="distributions">
+    <h2><span class="num">08</span> Key distributions in ML</h2>
+
+    <table>
+      <thead><tr><th>Distribution</th><th>Params</th><th>Use in ML</th></tr></thead>
+      <tbody>
+        <tr><td>Bernoulli(p)</td><td>p ∈ [0,1]</td><td>Binary output; BCE loss assumes Bernoulli likelihood</td></tr>
+        <tr><td>Categorical(π)</td><td>π: simplex</td><td>Multi-class; softmax outputs a Categorical</td></tr>
+        <tr><td>Gaussian(μ,σ²)</td><td>μ∈ℝ, σ²>0</td><td>MSE loss assumes Gaussian likelihood; weight priors; VAE latent</td></tr>
+        <tr><td>Multivariate Normal</td><td>μ∈ℝᵈ, Σ PSD</td><td>Full covariance structure; PCA, GMM, GPs</td></tr>
+        <tr><td>Uniform(a,b)</td><td>a &lt; b</td><td>Weight init (Glorot), random sampling</td></tr>
+        <tr><td>Beta(α,β)</td><td>α,β > 0</td><td>Prior for probabilities; Bayesian classification</td></tr>
+        <tr><td>Dirichlet(α)</td><td>α > 0</td><td>Prior over Categorical; topic models (LDA)</td></tr>
+        <tr><td>Laplace(μ,b)</td><td>μ,b</td><td>L1 regularization ↔ Laplace prior on weights</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout orange">
+      <div class="callout-label">Gaussian — memorize these properties</div>
+      Sum of Gaussians is Gaussian. Linear transformation of Gaussian is Gaussian.
+      Marginals and conditionals of a joint Gaussian are Gaussian.
+      Max-entropy distribution for fixed mean and variance.
+      These properties make Gaussians analytically tractable — crucial for Kalman filters, GPs, VAEs.
+    </div>
+  </section>
+
+  <!-- ── 9. Bayes ── -->
+  <section id="bayes">
+    <h2><span class="num">09</span> Bayes' theorem</h2>
+
+    <div class="math">
+      <span class="label">Bayes' theorem</span>
+      \(\displaystyle P(\theta\mid X) = \frac{P(X\mid\theta)\cdot P(\theta)}{P(X)}\)<br>
+      <br>
+      posterior \(\propto\) likelihood \(\times\) prior<br>
+      <br>
+      \(P(\theta\mid X)\) <span class="note">← posterior: belief after seeing data</span><br>
+      \(P(X\mid\theta)\) <span class="note">← likelihood: how probable is data given parameters</span><br>
+      \(P(\theta)\) <span class="note">← prior: belief before seeing data</span><br>
+      \(P(X)\) <span class="note">← evidence (normalizing constant, often intractable)</span>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">intuition</div>
+      Bayes' theorem is just conditioning: update your prior belief by how well the hypothesis
+      explains the data. The evidence P(X) = ∫P(X|θ)P(θ)dθ is the hard part —
+      most modern ML avoids computing it exactly (variational inference, MCMC, normalizing flows).
+    </div>
+  </section>
+
+  <!-- ── 10. MLE & MAP ── -->
+  <section id="mle">
+    <h2><span class="num">10</span> MLE & MAP estimation</h2>
+
+    <div class="math">
+      <span class="label">maximum likelihood estimation (MLE)</span>
+      \(\theta_{\text{MLE}} = \underset{\theta}{\operatorname{argmax}}\;P(X\mid\theta) = \underset{\theta}{\operatorname{argmax}}\sum_i \log p(x_i\mid\theta)\)<br>
+      <span class="note">← maximize log-likelihood (log for numerical stability, same optimum)</span><br>
+      <span class="note">MSE loss ↔ Gaussian likelihood · BCE loss ↔ Bernoulli likelihood</span><br>
+      <br>
+      <span class="label">maximum a posteriori (MAP)</span>
+      \(\theta_{\text{MAP}} = \underset{\theta}{\operatorname{argmax}}\;\log P(X\mid\theta) + \log P(\theta)\)<br>
+      <span class="note">← MLE + log prior · prior acts as regularizer</span><br>
+      <span class="note">Gaussian prior → L2 regularization · Laplace prior → L1 regularization</span>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">why cross-entropy = negative log-likelihood</div>
+      For a Categorical distribution parameterized by softmax outputs ŷ,<br>
+      −log P(y|ŷ) = −Σ yᵢ log ŷᵢ = cross-entropy.<br>
+      Minimizing cross-entropy loss <em>is</em> maximum likelihood estimation for classification.
+    </div>
+
+    <pre><span class="code-label">numpy — Gaussian MLE</span><code>
+<span class="c-cm"># MLE for Gaussian: closed-form</span>
+mu_mle  = X.<span class="c-fn">mean</span>(axis=<span class="c-num">0</span>)
+var_mle = X.<span class="c-fn">var</span>(axis=<span class="c-num">0</span>)           <span class="c-cm"># biased (1/n)</span>
+var_unbiased = X.<span class="c-fn">var</span>(axis=<span class="c-num">0</span>, ddof=<span class="c-num">1</span>) <span class="c-cm"># unbiased (1/(n-1))</span>
+
+<span class="c-cm"># MAP with Gaussian prior = ridge regression</span>
+<span class="c-cm"># (XᵀX + λI)w = Xᵀy  ← λ comes from the prior variance</span>
+lambda_ = <span class="c-num">0.01</span>
+w_map = np.linalg.<span class="c-fn">solve</span>(
+    X.T @ X + lambda_ * np.<span class="c-fn">eye</span>(X.shape[<span class="c-num">1</span>]),
+    X.T @ y
+)
+</code></pre>
+  </section>
+
+  <!-- ── 11. Expectation & Variance ── -->
+  <section id="expectation">
+    <h2><span class="num">11</span> Expectation, variance & covariance</h2>
+
+    <div class="math">
+      <span class="label">key identities</span>
+      \(\mathbb{E}[aX+b] = a\,\mathbb{E}[X]+b\) <span class="note">← linearity of expectation (always holds)</span><br>
+      \(\operatorname{Var}[X] = \mathbb{E}[X^2] - (\mathbb{E}[X])^2\) <span class="note">← computational formula</span><br>
+      \(\operatorname{Var}[aX+b] = a^2\operatorname{Var}[X]\)<br>
+      \(\operatorname{Cov}[X,Y] = \mathbb{E}[XY] - \mathbb{E}[X]\,\mathbb{E}[Y]\)<br>
+      \(\operatorname{Cov}[X,X] = \operatorname{Var}[X]\)<br>
+      <br>
+      <span class="label">covariance matrix (d-dimensional random vector)</span>
+      \(\Sigma = \mathbb{E}[(X-\mu)(X-\mu)^T]\) <span class="dim">shape d×d · always PSD</span><br>
+      Sample: \(C = \tilde{X}^T\tilde{X}\,/(n-1)\) <span class="note">unbiased estimator</span>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">law of total expectation (tower property)</div>
+      E[X] = E[E[X|Y]] — useful when direct computation is hard but conditioning simplifies it.
+      Similarly: Var[X] = E[Var[X|Y]] + Var[E[X|Y]] (law of total variance).
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--     CALCULUS & OPTIMIZATION           -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 12. Derivatives & gradients ── -->
+  <section id="derivatives">
+    <h2><span class="num">12</span> Derivatives & gradients</h2>
+
+    <div class="math">
+      <span class="label">gradient — vector of partial derivatives</span>
+      \(\nabla f(x) = \bigl[\tfrac{\partial f}{\partial x_1},\,\tfrac{\partial f}{\partial x_2},\,\ldots,\,\tfrac{\partial f}{\partial x_n}\bigr]^T\) <span class="note">same shape as x</span><br>
+      Points in the direction of steepest ascent<br>
+      <br>
+      <span class="label">key matrix calculus identities</span>
+      \(\nabla_x(a^Tx) = a\)<br>
+      \(\nabla_x(x^TAx) = (A+A^T)x = 2Ax\) <span class="note">(if A symmetric)</span><br>
+      \(\nabla_w\|Xw-y\|^2 = 2X^T(Xw-y)\) <span class="note">← MSE gradient</span><br>
+      \(\partial(AB)/\partial x\): use chain rule; shapes must be consistent
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">numerical gradient check — always do this</div>
+      Verify analytical gradients with finite differences during debugging:
+      (f(x+ε) − f(x−ε)) / (2ε) ≈ df/dx. Use ε≈1e-5.
+      Relative error &lt; 1e-5 is good. If it's large, your backprop has a bug.
+    </div>
+
+    <pre><span class="code-label">numpy — gradient check</span><code>
+<span class="c-kw">def</span> <span class="c-fn">grad_check</span>(f, x, analytic_grad, eps=<span class="c-num">1e-5</span>):
+    numerical = np.<span class="c-fn">zeros_like</span>(x)
+    <span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(x.size):
+        x_plus         = x.<span class="c-fn">copy</span>(); x_plus.<span class="c-fn">flat</span>[i]  += eps
+        x_minus        = x.<span class="c-fn">copy</span>(); x_minus.<span class="c-fn">flat</span>[i] -= eps
+        numerical.<span class="c-fn">flat</span>[i] = (<span class="c-fn">f</span>(x_plus) - <span class="c-fn">f</span>(x_minus)) / (<span class="c-num">2</span> * eps)
+    rel_error = np.linalg.<span class="c-fn">norm</span>(numerical - analytic_grad) / (
+                np.linalg.<span class="c-fn">norm</span>(numerical) + np.linalg.<span class="c-fn">norm</span>(analytic_grad) + <span class="c-num">1e-8</span>)
+    <span class="c-kw">return</span> rel_error  <span class="c-cm"># < 1e-5: good. > 1e-3: broken.</span>
+</code></pre>
+  </section>
+
+  <!-- ── 13. Chain rule & Jacobians ── -->
+  <section id="chain">
+    <h2><span class="num">13</span> Chain rule & Jacobians</h2>
+
+    <div class="math">
+      <span class="label">chain rule — scalar-to-scalar</span>
+      \(\dfrac{d}{dx}f(g(x)) = f'(g(x))\cdot g'(x)\)<br>
+      <br>
+      <span class="label">chain rule — vector-to-vector (Jacobians)</span>
+      If \(y = f(x)\) with \(x\in\mathbb{R}^n\), \(y\in\mathbb{R}^m\):<br>
+      \(J = \partial y/\partial x\) <span class="dim">shape m×n · entry \(J_{ij} = \partial y_i/\partial x_j\)</span><br>
+      <br>
+      \(z = g(f(x)) \;\Rightarrow\; \partial z/\partial x = (\partial z/\partial y)(\partial y/\partial x) = J_g \cdot J_f\)<br>
+      <br>
+      <span class="label">backprop = vector-Jacobian products (VJPs)</span>
+      Given upstream gradient \(\delta = \partial L/\partial y\) (row vector),<br>
+      downstream: \(\delta \cdot J = \partial L/\partial x\) <span class="note">never form full Jacobian explicitly</span>
+    </div>
+
+    <div class="trace">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem;color:var(--muted);">Jacobians of common operations</span>
+      y = Wx + b &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inf">∂y/∂x = W</span> &nbsp;&nbsp; <span class="inf">∂y/∂W = xᵀ</span> (as outer product)<br>
+      y = σ(x) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inf">∂y/∂x = diag(σ(x)·(1−σ(x)))</span><br>
+      y = relu(x) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inf">∂y/∂x = diag(x > 0)</span> (diagonal)<br>
+      y = softmax(x) &nbsp;&nbsp;&nbsp;<span class="inf">∂y/∂x = diag(y) − yyᵀ</span> &nbsp;&nbsp; <span class="ok">(but use cross-entropy shortcut)</span><br>
+      L = ‖y−t‖²  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hi">∂L/∂y = 2(y−t)</span>
+    </div>
+  </section>
+
+  <!-- ── 14. Convexity ── -->
+  <section id="convexity">
+    <h2><span class="num">14</span> Convexity & the loss landscape</h2>
+
+    <div class="math">
+      <span class="label">convex function definition</span>
+      \(f(\lambda x+(1-\lambda)y) \leq \lambda f(x)+(1-\lambda)f(y)\quad\forall\lambda\in[0,1]\)<br>
+      <span class="note">← the line segment between any two points lies above the function</span><br>
+      <br>
+      <span class="label">equivalent condition (twice differentiable)</span>
+      \(f\text{ convex} \;\Leftrightarrow\; \nabla^2 f(x)\succeq 0\) (Hessian PSD everywhere)<br>
+      <br>
+      <span class="label">strong convexity</span>
+      \(\nabla^2 f(x)\succeq\mu I\;\;(\mu>0)\) <span class="note">unique minimum, linear convergence guaranteed</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Convex losses</div>
+        <p>MSE, cross-entropy, hinge loss — for linear models, these have a unique global minimum. SGD converges.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Non-convex NNs</div>
+        <p>Neural nets: non-convex, many local minima and saddle points. But in practice, large overparameterized nets rarely get stuck.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">saddle points vs local minima</div>
+      In high dimensions, local minima are rare — most critical points (∇f=0) are saddle points.
+      The Hessian at a saddle has both positive and negative eigenvalues.
+      SGD noise and momentum help escape saddle points naturally.
+    </div>
+
+    <div class="math">
+      <span class="label">second-order optimality conditions</span>
+      Necessary: ∇f(x*) = 0 &nbsp;&nbsp;<span class="note">← first-order condition (gradient zero)</span><br>
+      Local min: ∇²f(x*) ⪰ 0 (PSD) &nbsp;&nbsp;<span class="note">← all eigenvalues ≥ 0</span><br>
+      Saddle point: ∇²f(x*) indefinite &nbsp;&nbsp;<span class="note">← mixed positive and negative eigenvalues</span>
+    </div>
+  </section>
+
+  <!-- ── 15. Lagrange multipliers ── -->
+  <section id="lagrange">
+    <h2><span class="num">15</span> Lagrange multipliers & constrained optim</h2>
+    <p>Optimize f(x) subject to equality constraints g(x) = 0. The Lagrangian reformulates this as unconstrained.</p>
+
+    <div class="math">
+      <span class="label">Lagrangian</span>
+      \(\mathcal{L}(x,\lambda) = f(x) + \lambda^T g(x)\)<br>
+      Stationarity: \(\nabla_x\mathcal{L}=0\) and \(\nabla_\lambda\mathcal{L}=g(x)=0\)<br>
+      <br>
+      <span class="label">KKT conditions (inequality constraints g(x) ≤ 0)</span>
+      \(\nabla f + \sum_i\lambda_i\nabla g_i = 0\) <span class="note">stationarity</span><br>
+      \(\lambda_i\geq 0,\;\;g_i(x)\leq 0,\;\;\lambda_i g_i(x)=0\) <span class="note">complementary slackness</span>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">where this appears in ML</div>
+      <strong>SVM:</strong> maximize margin = constrained QP → Lagrangian → dual problem → kernel trick.<br>
+      <strong>PCA:</strong> maximize variance subject to ‖w‖=1 → Lagrangian → eigenproblem.<br>
+      <strong>Sparse coding:</strong> minimize reconstruction error s.t. ‖z‖₀ ≤ k.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--       INFORMATION THEORY              -->
+  <!-- ══════════════════════════════════════ -->
+
+  <!-- ── 16. Entropy & KL ── -->
+  <section id="entropy">
+    <h2><span class="num">16</span> Entropy & KL divergence</h2>
+
+    <div class="math">
+      <span class="label">Shannon entropy — uncertainty of a distribution</span>
+      \(H(P) = -\sum_x P(x)\log P(x)\) <span class="note">bits if log₂, nats if ln</span><br>
+      Uniform → maximum entropy &nbsp;&nbsp; Deterministic → \(H=0\)<br>
+      <br>
+      <span class="label">cross-entropy — expected log-loss under P using Q</span>
+      \(H(P,Q) = -\sum_x P(x)\log Q(x)\) <span class="note">≥ H(P) always</span><br>
+      <span class="hi">= training objective for classification (P = true labels, Q = model output)</span><br>
+      <br>
+      <span class="label">KL divergence — how different Q is from P</span>
+      \(\mathrm{KL}(P\|Q) = \sum_x P(x)\log\dfrac{P(x)}{Q(x)} = H(P,Q)-H(P)\)<br>
+      \(\mathrm{KL}\geq 0\) always &nbsp;&nbsp; \(\mathrm{KL}=0\) iff \(P=Q\) &nbsp;&nbsp; <span class="bad">\(\mathrm{KL}(P\|Q)\neq\mathrm{KL}(Q\|P)\)</span><br>
+      <span class="note">Not a distance metric (asymmetric). Forward KL — mode-covering.</span>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-label">VAE loss = reconstruction + KL</div>
+      ELBO = E[log P(x|z)] − KL(Q(z|x) ‖ P(z))<br>
+      The KL term regularizes the latent space toward the prior (standard Gaussian).
+      Minimizing KL(Q‖P) is "reverse KL" — mode-seeking (favors sharp, zero-forcing distributions).
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-kw">def</span> <span class="c-fn">entropy</span>(p):
+    p = p[p > <span class="c-num">0</span>]               <span class="c-cm"># avoid log(0)</span>
+    <span class="c-kw">return</span> -(p * np.<span class="c-fn">log</span>(p)).<span class="c-fn">sum</span>()
+
+<span class="c-kw">def</span> <span class="c-fn">cross_entropy</span>(p, q):
+    q = np.<span class="c-fn">clip</span>(q, <span class="c-num">1e-9</span>, <span class="c-bi">None</span>)   <span class="c-cm"># numerical safety</span>
+    <span class="c-kw">return</span> -(p * np.<span class="c-fn">log</span>(q)).<span class="c-fn">sum</span>()
+
+<span class="c-kw">def</span> <span class="c-fn">kl_divergence</span>(p, q):       <span class="c-cm"># KL(P ‖ Q)</span>
+    mask = p > <span class="c-num">0</span>
+    <span class="c-kw">return</span> (p[mask] * np.<span class="c-fn">log</span>(p[mask] / np.<span class="c-fn">clip</span>(q[mask], <span class="c-num">1e-9</span>, <span class="c-bi">None</span>))).<span class="c-fn">sum</span>()
+
+<span class="c-cm"># Verify: KL(P‖Q) = H(P,Q) - H(P)</span>
+<span class="c-fn">cross_entropy</span>(p, q) - <span class="c-fn">entropy</span>(p) == <span class="c-fn">kl_divergence</span>(p, q)  <span class="c-cm"># True</span>
+</code></pre>
+  </section>
+
+  <!-- ── 17. Mutual information ── -->
+  <section id="infogain">
+    <h2><span class="num">17</span> Mutual information & information gain</h2>
+
+    <div class="math">
+      <span class="label">mutual information — shared information between X and Y</span>
+      \(I(X;Y) = H(X)-H(X|Y) = H(Y)-H(Y|X) = \mathrm{KL}(P(X,Y)\,\|\,P(X)P(Y))\)<br>
+      \(I(X;Y)\geq 0\) &nbsp;&nbsp; \(I(X;Y)=0\) iff \(X\perp Y\) (independent)<br>
+      <br>
+      <span class="label">information gain (decision trees)</span>
+      \(\text{IG}(S,A) = H(S) - \sum_v \dfrac{|S_v|}{|S|}H(S_v)\) <span class="note">← entropy reduction after split on A</span><br>
+      Gini impurity: \(1-\sum_i p_i^2\) <span class="note">← faster approx used in sklearn</span>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">where this matters in ML</div>
+      <strong>Feature selection:</strong> MI between feature and label — select features with highest MI.<br>
+      <strong>Decision trees:</strong> ID3 splits on max information gain; CART uses Gini.<br>
+      <strong>Representation learning:</strong> maximize I(encoder output; input) (infoNCE loss, contrastive learning).<br>
+      <strong>ICA:</strong> minimize mutual information between components.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── 18. Key intuitions ── -->
+  <section id="intuitions">
+    <h2><span class="num">18</span> Key interview intuitions</h2>
+
+    <div class="callout">
+      <div class="callout-label">why does SVD give the best low-rank approximation?</div>
+      The Eckart–Young theorem: truncating to the top-k singular values minimizes both Frobenius
+      and spectral norm error simultaneously. Geometrically: the singular vectors are the directions
+      that capture the most "energy" (variance) in the data — it's PCA on the matrix itself.
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">L1 induces sparsity, L2 does not — why?</div>
+      The L1 ball (a diamond in 2D) has corners on the axes. When the elliptical loss contours
+      touch the constraint set, they most often hit a corner — where one coordinate is zero.
+      The L2 ball is smooth — no corners — so optimal solutions are rarely sparse.
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">what does the covariance matrix encode?</div>
+      Each off-diagonal entry Σᵢⱼ = Cov(Xᵢ, Xⱼ) — how much two features move together.
+      Its eigenvectors are the principal components; eigenvalues are the variances in those directions.
+      A diagonal covariance = independent features. Singular covariance = features are linearly dependent.
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">MLE ↔ loss functions</div>
+      Gaussian likelihood → MSE loss.<br>
+      Bernoulli likelihood → Binary cross-entropy.<br>
+      Categorical likelihood → Cross-entropy.<br>
+      Laplace likelihood → MAE (L1 loss).<br>
+      Every standard loss is a negative log-likelihood of some distribution.
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-label">why is the gradient orthogonal to level curves?</div>
+      A level curve is {x : f(x) = c}. Moving along it doesn't change f, so the directional
+      derivative (dot product with gradient) is zero — meaning the gradient is orthogonal
+      to any tangent of the level curve. This is why gradient descent moves perpendicular to contour lines.
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">condition number & numerical stability</div>
+      κ(A) = σ_max / σ_min = ‖A‖·‖A⁻¹‖. A large condition number (≫1) means the matrix
+      is nearly singular — small perturbations in input cause large errors in output.
+      Ill-conditioned systems are numerically unstable; features on very different scales
+      produce ill-conditioned (X ᵀX) matrices → always normalize.
+    </div>
+  </section>
+
+  <!-- ── 19. Checklist ── -->
+  <section id="checklist">
+    <h2><span class="num">19</span> Before the interview — checklist</h2>
+    <ul class="checklist">
+      <li>Can explain SVD geometrically: what U, Σ, Vᵀ each do to the input space</li>
+      <li>Can derive PCA from SVD of centered data, explain explained variance ratio</li>
+      <li>Knows the Eckart–Young theorem: why SVD gives the best rank-k approximation</li>
+      <li>Can state eigendecomposition for symmetric matrices and why eigenvalues are real</li>
+      <li>Understands L1 vs L2 norm geometry and why L1 induces sparsity</li>
+      <li>Can derive the normal equations (XᵀX)w = Xᵀy from least-squares projection</li>
+      <li>Knows Bayes' theorem and can apply it (posterior ∝ likelihood × prior)</li>
+      <li>Can connect MLE to loss functions: Gaussian→MSE, Bernoulli→BCE, Laplace→MAE</li>
+      <li>Understands why MAP = MLE + regularization (Gaussian prior → L2, Laplace → L1)</li>
+      <li>Can compute entropy, cross-entropy, and KL divergence from scratch</li>
+      <li>Knows KL is asymmetric and what forward vs reverse KL encourage</li>
+      <li>Can write the chain rule for vector-to-vector functions (Jacobians)</li>
+      <li>Understands convexity, when gradient descent converges, and what saddle points are</li>
+      <li>Knows the Lagrangian formulation and where KKT conditions appear (SVM)</li>
+      <li>Can explain the condition number and why ill-conditioned matrices are dangerous</li>
+    </ul>
+
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.85;">
+        The deep connection: <strong>every matrix in ML is a geometric object</strong>.
+        Weight matrices transform spaces, covariance matrices encode shapes of data clouds,
+        singular values tell you the effective rank of a representation.
+        When you can see the geometry behind the formula, the formula becomes obvious.
+      </p>
+    </div>
+  </section>
+
+</main>
+</div>
+</body>
+</html>

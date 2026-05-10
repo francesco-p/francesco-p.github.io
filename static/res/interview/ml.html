@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Learning — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0d0d0d;
+  --bg2:      #141414;
+  --bg3:      #1a1a1a;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.13);
+  --text:     #e8e4dc;
+  --muted:    #7a7570;
+  --accent:   #c8b97a;
+  --accent2:  #7abfc8;
+  --accent3:  #c87ab2;
+  --green:    #7ac87a;
+  --red:      #c87a7a;
+  --orange:   #c8956a;
+  --code-bg:  #111;
+  --tag-bg:   rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nav-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.nav-section {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 1.5rem 0 0.5rem;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+nav a {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+  font-weight: 300;
+}
+nav a:hover { color: var(--accent); }
+
+.nav-bottom {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.nav-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 2px 0;
+  font-family: 'DM Mono', monospace;
+}
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main {
+  padding: 3rem 3.5rem 6rem;
+  max-width: 800px;
+}
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 1rem;
+  font-family: 'DM Mono', monospace;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 1.2rem;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 300;
+}
+
+.hero-desc {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 540px;
+  line-height: 1.8;
+}
+
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+
+.pill {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Sections ── */
+section { margin-bottom: 3.5rem; scroll-margin-top: 2rem; }
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+h2 .num {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+
+h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin: 1.8rem 0 0.6rem;
+  font-weight: 500;
+}
+
+p { margin-bottom: 0.9rem; }
+strong { font-weight: 500; color: var(--text); }
+
+/* ── Code ── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1.25rem 1.4rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.code-label {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9c0b0;
+}
+
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #4a4740; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+
+/* Inline code */
+p code, li code, td code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 2px solid var(--accent);
+  background: rgba(200,185,122,0.05);
+  padding: 1rem 1.25rem;
+  margin: 1.2rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+}
+.callout.blue   { border-left-color: var(--accent2); background: rgba(122,191,200,0.05); }
+.callout.red    { border-left-color: var(--red);     background: rgba(200,122,122,0.05); }
+.callout.green  { border-left-color: var(--green);   background: rgba(122,200,122,0.05); }
+.callout.orange { border-left-color: var(--orange);  background: rgba(200,149,106,0.05); }
+
+.callout-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  opacity: 0.55;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Concept cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+}
+
+.card-title {
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* ── Table ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 1rem 0;
+}
+
+th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border2);
+  padding: 0.5rem 0.75rem;
+  font-weight: 400;
+  font-family: 'DM Mono', monospace;
+}
+
+td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--muted);
+}
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+/* ── Trace box ── */
+.trace {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 2;
+}
+.trace .hi  { color: var(--accent); font-weight: 500; }
+.trace .ok  { color: var(--green); }
+.trace .bad { color: var(--red); }
+.trace .inf { color: var(--accent2); }
+
+/* ── Math display ── */
+.math {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.9rem 1.2rem;
+  margin: 1rem 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 1.9;
+}
+.math .label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.math .note { color: var(--muted); font-style: italic; font-size: 12px; }
+.math .katex { font-size: 1em; }
+
+/* ── Checklist ── */
+.checklist { list-style: none; margin: 0.8rem 0; }
+.checklist li {
+  padding: 0.4rem 0 0.4rem 1.4rem;
+  position: relative;
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: '○';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+  font-size: 11px;
+  top: 0.55rem;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+/* ── Three-col grid ── */
+.trio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.4rem 4rem; }
+  .card-grid, .trio { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">ML Primer</div>
+
+  <span class="nav-section">Foundations</span>
+  <a href="#taxonomy">Problem taxonomy</a>
+  <a href="#numpy">NumPy essentials</a>
+  <a href="#workflow">ML workflow</a>
+  <a href="#loss">Loss functions</a>
+  <a href="#optim">Optimizers</a>
+
+  <span class="nav-section">Core algorithms</span>
+  <a href="#linreg">Linear regression</a>
+  <a href="#logreg">Logistic regression</a>
+  <a href="#regularization">Regularization</a>
+  <a href="#metrics">Metrics</a>
+
+  <span class="nav-section">Neural networks</span>
+  <a href="#backprop">Backpropagation</a>
+  <a href="#pytorch">PyTorch pattern</a>
+  <a href="#layers">Key layers</a>
+  <a href="#activations">Activations</a>
+  <a href="#training">Training loop</a>
+
+  <span class="nav-section">Advanced</span>
+  <a href="#cnn">CNNs</a>
+  <a href="#rnn">RNNs & LSTMs</a>
+  <a href="#attention">Attention</a>
+  <a href="#tricks">Training tricks</a>
+
+  <span class="nav-section">Interview</span>
+  <a href="#concepts">Key questions</a>
+  <a href="#checklist">Checklist</a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;opacity:.6;">quick ref</div>
+    <div class="nav-stat"><span>MSE loss</span><span>O(n)</span></div>
+    <div class="nav-stat"><span>Softmax</span><span>O(C)</span></div>
+    <div class="nav-stat"><span>Conv2d</span><span>O(k²·C·HW)</span></div>
+    <div class="nav-stat"><span>Attention</span><span>O(n²·d)</span></div>
+    <div class="nav-stat"><span>Backprop</span><span>O(params)</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Interview Primer · Machine Learning</div>
+    <h1>Data in,<br><em>gradients</em> out</h1>
+    <p class="hero-desc">
+      ML is applied calculus + statistics at scale. Master the conceptual loop —
+      define a loss, compute gradients, update weights — and every model from linear regression
+      to transformers is a variation on that theme. NumPy for intuition; PyTorch for production.
+    </p>
+    <div class="pill-row">
+      <span class="pill">NumPy</span>
+      <span class="pill">PyTorch</span>
+      <span class="pill">Backprop</span>
+      <span class="pill">CNNs</span>
+      <span class="pill">Attention</span>
+      <span class="pill">Regularization</span>
+      <span class="pill">Metrics</span>
+    </div>
+  </div>
+
+  <!-- ── 1. Problem taxonomy ── -->
+  <section id="taxonomy">
+    <h2><span class="num">01</span> Problem taxonomy</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Supervised</div>
+        <p>Labeled (X, y) pairs. Learn f(X) → y. Classification, regression, ranking.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Unsupervised</div>
+        <p>No labels. Find structure: clustering (k-means), dimensionality reduction (PCA), density estimation.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Self-supervised</div>
+        <p>Labels derived from data itself. Masked language modeling, contrastive learning (SimCLR).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Reinforcement</div>
+        <p>Agent + environment + reward signal. Policy learns via exploration. Q-learning, PPO.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Task type</th><th>Output</th><th>Typical loss</th></tr></thead>
+      <tbody>
+        <tr><td>Regression</td><td>continuous scalar</td><td>MSE, MAE, Huber</td></tr>
+        <tr><td>Binary classification</td><td>probability ∈ [0,1]</td><td>Binary cross-entropy</td></tr>
+        <tr><td>Multi-class</td><td>probability vector (C classes)</td><td>Cross-entropy + softmax</td></tr>
+        <tr><td>Multi-label</td><td>independent binary per class</td><td>BCE per label</td></tr>
+        <tr><td>Sequence-to-sequence</td><td>variable-length sequence</td><td>Cross-entropy per token</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 2. NumPy essentials ── -->
+  <section id="numpy">
+    <h2><span class="num">02</span> NumPy essentials</h2>
+    <p>NumPy is the lingua franca of ML math. Master broadcasting — it's behind every vectorized operation in both NumPy and PyTorch.</p>
+
+    <h3>Array creation & inspection</h3>
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+<span class="c-cm"># Creation</span>
+X = np.<span class="c-fn">zeros</span>((<span class="c-num">100</span>, <span class="c-num">10</span>))        <span class="c-cm"># shape (100, 10), dtype float64</span>
+I = np.<span class="c-fn">eye</span>(<span class="c-num">4</span>)                  <span class="c-cm"># 4×4 identity</span>
+r = np.random.<span class="c-fn">randn</span>(<span class="c-num">3</span>, <span class="c-num">3</span>)     <span class="c-cm"># standard normal</span>
+
+<span class="c-cm"># Key attributes</span>
+X.shape      <span class="c-cm"># (100, 10)</span>
+X.dtype      <span class="c-cm"># float64</span>
+X.ndim       <span class="c-cm"># 2</span>
+X.size       <span class="c-cm"># 1000</span>
+
+<span class="c-cm"># Reshape / transpose</span>
+X.<span class="c-fn">reshape</span>(<span class="c-num">10</span>, <span class="c-num">-1</span>)              <span class="c-cm"># -1 inferred; shape (10, 100)</span>
+X.T                             <span class="c-cm"># transpose; shape (10, 100)</span>
+X[np.<span class="c-fn">newaxis</span>, ...]            <span class="c-cm"># add axis at front → (1, 100, 10)</span>
+</code></pre>
+
+    <h3>Broadcasting rules</h3>
+    <div class="callout blue">
+      <div class="callout-label">the three rules</div>
+      1. If arrays differ in number of dims, prepend 1s to the smaller shape.<br>
+      2. Dimensions of size 1 are stretched to match the other.<br>
+      3. If sizes differ and neither is 1 → error.
+    </div>
+    <pre><code>
+<span class="c-cm"># shape (3,1) + shape (1,4) → shape (3,4)</span>
+a = np.<span class="c-fn">array</span>([[<span class="c-num">1</span>],[<span class="c-num">2</span>],[<span class="c-num">3</span>]])   <span class="c-cm"># (3,1)</span>
+b = np.<span class="c-fn">array</span>([[<span class="c-num">10</span>,<span class="c-num">20</span>,<span class="c-num">30</span>,<span class="c-num">40</span>]])  <span class="c-cm"># (1,4)</span>
+a + b                           <span class="c-cm"># (3,4) — outer-sum without loops</span>
+
+<span class="c-cm"># Practical: subtract per-feature mean from dataset</span>
+X -= X.<span class="c-fn">mean</span>(axis=<span class="c-num">0</span>)           <span class="c-cm"># mean shape (10,) broadcasts over (100,10)</span>
+</code></pre>
+
+    <h3>Vectorized ML operations</h3>
+    <pre><code>
+<span class="c-cm"># Matrix multiply — the core of every linear layer</span>
+W = np.random.<span class="c-fn">randn</span>(<span class="c-num">10</span>, <span class="c-num">5</span>)
+b = np.<span class="c-fn">zeros</span>(<span class="c-num">5</span>)
+out = X @ W + b                 <span class="c-cm"># (100,10) @ (10,5) + (5,) → (100,5)</span>
+
+<span class="c-cm"># Softmax (numerically stable)</span>
+<span class="c-kw">def</span> <span class="c-fn">softmax</span>(z):
+    e = np.<span class="c-fn">exp</span>(z - z.<span class="c-fn">max</span>(axis=<span class="c-num">-1</span>, keepdims=<span class="c-bi">True</span>))
+    <span class="c-kw">return</span> e / e.<span class="c-fn">sum</span>(axis=<span class="c-num">-1</span>, keepdims=<span class="c-bi">True</span>)
+
+<span class="c-cm"># MSE loss + gradient</span>
+<span class="c-kw">def</span> <span class="c-fn">mse</span>(y_pred, y):      <span class="c-kw">return</span> ((y_pred - y)**<span class="c-num">2</span>).<span class="c-fn">mean</span>()
+<span class="c-kw">def</span> <span class="c-fn">mse_grad</span>(y_pred, y): <span class="c-kw">return</span> <span class="c-num">2</span> * (y_pred - y) / <span class="c-bi">len</span>(y)
+</code></pre>
+  </section>
+
+  <!-- ── 3. ML Workflow ── -->
+  <section id="workflow">
+    <h2><span class="num">03</span> The ML workflow</h2>
+    <p>Every ML project follows this loop. Getting the splits wrong kills everything downstream.</p>
+
+    <div class="trio">
+      <div class="card">
+        <div class="card-title">1 · Data</div>
+        <p>Collect, clean, split train/val/test. No test data until the very end. Normalize features.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">2 · Model</div>
+        <p>Choose architecture. Start simple. Overfit on a tiny batch first — if it can't overfit, the model is broken.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">3 · Evaluate</div>
+        <p>Track loss and metric on val set. Check train/val gap (overfitting vs underfitting). Iterate.</p>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">data leakage — the silent killer</div>
+      Fit normalization (mean, std, scaler) on <strong>training data only</strong>, then apply to val/test.
+      Fitting on the full dataset leaks test information into training — your metrics will be optimistically wrong.
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-cm"># Correct split + normalization</span>
+<span class="c-kw">from</span> sklearn.model_selection <span class="c-kw">import</span> train_test_split
+
+X_train, X_test, y_train, y_test = <span class="c-fn">train_test_split</span>(
+    X, y, test_size=<span class="c-num">0.2</span>, random_state=<span class="c-num">42</span>
+)
+
+mean = X_train.<span class="c-fn">mean</span>(axis=<span class="c-num">0</span>)   <span class="c-cm"># ← fit on train ONLY</span>
+std  = X_train.<span class="c-fn">std</span>(axis=<span class="c-num">0</span>)
+X_train = (X_train - mean) / (std + <span class="c-num">1e-8</span>)
+X_test  = (X_test  - mean) / (std + <span class="c-num">1e-8</span>)  <span class="c-cm"># ← transform with train stats</span>
+</code></pre>
+  </section>
+
+  <!-- ── 4. Loss functions ── -->
+  <section id="loss">
+    <h2><span class="num">04</span> Loss functions</h2>
+
+    <div class="math">
+      <span class="label">MSE — regression</span>
+      \(\mathcal{L} = \dfrac{1}{n}\sum_i (\hat{y}_i - y_i)^2\)
+    </div>
+    <div class="math">
+      <span class="label">Binary cross-entropy — binary classification</span>
+      \(\mathcal{L} = -\dfrac{1}{n}\sum_i\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]\)
+    </div>
+    <div class="math">
+      <span class="label">Cross-entropy — multi-class (after softmax)</span>
+      \(\mathcal{L} = -\dfrac{1}{n}\sum_i \log\hat{y}_{[y_i]}\) <span class="note">← log-prob of the true class</span>
+    </div>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-kw">import</span> torch
+<span class="c-kw">import</span> torch.nn <span class="c-kw">as</span> nn
+
+<span class="c-cm"># PyTorch loss functions</span>
+mse  = nn.<span class="c-fn">MSELoss</span>()
+bce  = nn.<span class="c-fn">BCEWithLogitsLoss</span>()   <span class="c-cm"># numerically stable: sigmoid inside</span>
+ce   = nn.<span class="c-fn">CrossEntropyLoss</span>()      <span class="c-cm"># applies softmax internally</span>
+
+<span class="c-cm"># CrossEntropyLoss expects raw logits, NOT probabilities</span>
+logits = torch.<span class="c-fn">randn</span>(<span class="c-num">8</span>, <span class="c-num">10</span>)      <span class="c-cm"># batch=8, classes=10</span>
+labels = torch.<span class="c-fn">randint</span>(<span class="c-num">0</span>, <span class="c-num">10</span>, (<span class="c-num">8</span>,))
+loss = <span class="c-fn">ce</span>(logits, labels)
+</code></pre>
+
+    <div class="callout">
+      <div class="callout-label">why logits, not softmax?</div>
+      Passing softmax output into log inside cross-entropy causes numerical instability (log of near-zero).
+      PyTorch's <code>CrossEntropyLoss</code> fuses softmax + log + NLL for numerical safety. Never double-apply softmax.
+    </div>
+  </section>
+
+  <!-- ── 5. Optimizers ── -->
+  <section id="optim">
+    <h2><span class="num">05</span> Optimizers</h2>
+
+    <table>
+      <thead><tr><th>Optimizer</th><th>Update rule</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>SGD</td><td>\(\theta \leftarrow \theta - \eta\,\nabla\mathcal{L}\)</td><td>Simple. Sensitive to lr. No adaptivity.</td></tr>
+        <tr><td>SGD+momentum</td><td>\(v \leftarrow \beta v + \nabla\mathcal{L};\;\theta \leftarrow \theta - \eta v\)</td><td>Accelerates in consistent directions. β≈0.9.</td></tr>
+        <tr><td>RMSProp</td><td>\(\theta \leftarrow \theta - \eta\,\nabla\mathcal{L}/\!\sqrt{v+\varepsilon}\)</td><td>Per-parameter adaptive lr. Good for RNNs.</td></tr>
+        <tr><td>Adam</td><td>\(\theta \leftarrow \theta - \eta\,\hat{m}/(\sqrt{\hat{v}}+\varepsilon)\)</td><td>Momentum + adaptive lr. Default choice. lr=1e-3.</td></tr>
+        <tr><td>AdamW</td><td>Adam + decoupled weight decay</td><td>Preferred for transformers. Fixes L2 reg in Adam.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>SGD vs Adam — the real difference</h3>
+
+    <div class="math">
+      <span class="label">SGD with momentum</span>
+      \(v_t = \beta v_{t-1} + \nabla_\theta\mathcal{L}_t\)<br>
+      \(\theta_t = \theta_{t-1} - \eta\,v_t\)<br>
+      <span class="dim">β≈0.9 · single global lr · no per-parameter scaling</span>
+    </div>
+
+    <div class="math">
+      <span class="label">Adam — full update rule</span>
+      \(m_t = \beta_1 m_{t-1} + (1-\beta_1)\nabla_\theta\mathcal{L}_t\) <span class="note">← 1st moment (mean of gradients)</span><br>
+      \(v_t = \beta_2 v_{t-1} + (1-\beta_2)(\nabla_\theta\mathcal{L}_t)^2\) <span class="note">← 2nd moment (uncentred variance)</span><br>
+      \(\hat{m}_t = m_t/(1-\beta_1^t),\quad \hat{v}_t = v_t/(1-\beta_2^t)\) <span class="note">← bias correction (critical early in training)</span><br>
+      \(\theta_t = \theta_{t-1} - \eta\,\hat{m}_t\,/\,(\sqrt{\hat{v}_t}+\varepsilon)\)<br>
+      <span class="dim">Defaults: β₁=0.9, β₂=0.999, ε=1e-8, lr=1e-3</span>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">what Adam actually does differently from SGD</div>
+      <strong>Gradient scaling per parameter.</strong> Adam tracks the running average of squared gradients \((\hat{v})\).
+      When a parameter receives consistently large gradients, \(\sqrt{\hat{v}}\) is large and the effective step is <em>shrunk</em>.
+      When gradients are small or rare (sparse features, embedding rows), \(\sqrt{\hat{v}}\) is small and the step is <em>amplified</em>.
+      This is crucial for models with very uneven gradient magnitudes — e.g., transformers where embedding rows for rare tokens get almost no gradient signal.<br><br>
+      <strong>Momentum on the gradient itself.</strong> The \(\hat{m}\) term gives Adam its "heavy ball" property: it averages gradients over recent steps, smoothing out noise without needing careful lr tuning.
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">when to use SGD vs Adam</div>
+      <strong>Use SGD+momentum</strong> for CNNs on image tasks (ResNet, ViT): with a well-tuned cosine schedule + warmup, SGD often achieves better final accuracy than Adam. The lack of adaptive scaling acts as an implicit regularizer.<br><br>
+      <strong>Use Adam / AdamW</strong> for transformers and anything with sparse gradients (embeddings, NLP, LLMs): the per-parameter scaling handles the extreme variance in gradient magnitude across layers. <em>AdamW</em> is preferred over Adam because it decouples weight decay from the adaptive update — in vanilla Adam, weight decay is effectively scaled by \(1/\sqrt{\hat{v}}\), weakening it for parameters with large gradients.
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">Adam's memory cost</div>
+      Adam stores two additional tensors per parameter (m and v) — <strong>3× the memory of SGD</strong> for the optimizer state alone.
+      For a 70B parameter model in fp32: SGD needs ~280 GB, Adam needs ~840 GB just for optimizer state.
+      This is why mixed-precision training (fp16/bf16 parameters, fp32 optimizer state) and 8-bit Adam (quantized m, v) matter at scale.
+    </div>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-kw">import</span> torch.optim <span class="c-kw">as</span> optim
+
+<span class="c-cm"># AdamW — default for transformers</span>
+optimizer = optim.<span class="c-fn">AdamW</span>(model.<span class="c-fn">parameters</span>(), lr=<span class="c-num">1e-3</span>, weight_decay=<span class="c-num">1e-2</span>,
+                          betas=(<span class="c-num">0.9</span>, <span class="c-num">0.999</span>), eps=<span class="c-num">1e-8</span>)
+
+<span class="c-cm"># SGD+momentum — for CNNs</span>
+optimizer_sgd = optim.<span class="c-fn">SGD</span>(model.<span class="c-fn">parameters</span>(), lr=<span class="c-num">0.1</span>,
+                            momentum=<span class="c-num">0.9</span>, weight_decay=<span class="c-num">1e-4</span>, nesterov=<span class="c-bi">True</span>)
+
+<span class="c-cm"># Cosine schedule with warmup — standard for both</span>
+scheduler = optim.lr_scheduler.<span class="c-fn">OneCycleLR</span>(optimizer, max_lr=<span class="c-num">1e-3</span>,
+                                            steps_per_epoch=<span class="c-fn">len</span>(train_loader),
+                                            epochs=num_epochs)
+</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ── 6. Linear regression from scratch ── -->
+  <section id="linreg">
+    <h2><span class="num">06</span> Linear regression — from scratch</h2>
+    <p>The simplest model: f(x) = Xw + b. Minimizing MSE has a closed-form solution (normal equations) — but gradient descent scales better.</p>
+
+    <div class="math">
+      <span class="label">normal equations (closed-form)</span>
+      \(w^* = (X^TX)^{-1}X^Ty\)
+    </div>
+
+    <pre><span class="code-label">numpy — gradient descent</span><code>
+<span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+<span class="c-kw">class</span> <span class="c-bi">LinearRegression</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, lr=<span class="c-num">0.01</span>, epochs=<span class="c-num">1000</span>):
+        self.lr, self.epochs = lr, epochs
+
+    <span class="c-kw">def</span> <span class="c-fn">fit</span>(self, X, y):
+        n, d = X.shape
+        self.w = np.<span class="c-fn">zeros</span>(d)
+        self.b = <span class="c-num">0.0</span>
+
+        <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(self.epochs):
+            y_hat = X @ self.w + self.b
+            err   = y_hat - y
+            self.w -= self.lr * (X.T @ err) / n   <span class="c-cm"># dL/dw</span>
+            self.b -= self.lr * err.<span class="c-fn">mean</span>()         <span class="c-cm"># dL/db</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">predict</span>(self, X):
+        <span class="c-kw">return</span> X @ self.w + self.b
+</code></pre>
+
+    <div class="trace">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem;color:var(--muted);">gradient derivation · MSE</span>
+      L  = (1/n) · ||Xw − y||²<br>
+      dL/dw = <span class="hi">(2/n) · Xᵀ(Xw − y)</span> &nbsp;← chain rule through matrix multiply<br>
+      dL/db = <span class="hi">(2/n) · Σ(Xw − y)</span><br>
+      <span class="inf">At minimum: dL/dw = 0 → XᵀXw = Xᵀy → normal equations</span>
+    </div>
+  </section>
+
+  <!-- ── 7. Logistic regression ── -->
+  <section id="logreg">
+    <h2><span class="num">07</span> Logistic regression</h2>
+    <p>Binary classifier. Output is a probability via sigmoid; trained with binary cross-entropy.</p>
+
+    <div class="math">
+      <span class="label">sigmoid + BCE</span>
+      \(\sigma(z) = \dfrac{1}{1+e^{-z}},\quad z = Xw+b\)<br>
+      \(\mathcal{L} = -\dfrac{1}{n}\sum_i\bigl[y_i\log\sigma(z_i)+(1-y_i)\log(1-\sigma(z_i))\bigr]\)<br>
+      \(\partial\mathcal{L}/\partial w = \dfrac{1}{n}X^T(\sigma(z)-y)\) <span class="note">← elegant gradient</span>
+    </div>
+
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-kw">def</span> <span class="c-fn">sigmoid</span>(z): <span class="c-kw">return</span> <span class="c-num">1</span> / (<span class="c-num">1</span> + np.<span class="c-fn">exp</span>(-z))
+
+<span class="c-kw">class</span> <span class="c-bi">LogisticRegression</span>:
+    <span class="c-kw">def</span> <span class="c-fn">fit</span>(self, X, y, lr=<span class="c-num">0.1</span>, epochs=<span class="c-num">500</span>):
+        n, d = X.shape
+        self.w = np.<span class="c-fn">zeros</span>(d); self.b = <span class="c-num">0.0</span>
+        <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(epochs):
+            p = <span class="c-fn">sigmoid</span>(X @ self.w + self.b)
+            self.w -= lr * X.T @ (p - y) / n
+            self.b -= lr * (p - y).<span class="c-fn">mean</span>()
+
+    <span class="c-kw">def</span> <span class="c-fn">predict_proba</span>(self, X): <span class="c-kw">return</span> <span class="c-fn">sigmoid</span>(X @ self.w + self.b)
+    <span class="c-kw">def</span> <span class="c-fn">predict</span>(self, X):       <span class="c-kw">return</span> (self.<span class="c-fn">predict_proba</span>(X) >= <span class="c-num">0.5</span>).<span class="c-fn">astype</span>(<span class="c-bi">int</span>)
+</code></pre>
+  </section>
+
+  <!-- ── 8. Regularization ── -->
+  <section id="regularization">
+    <h2><span class="num">08</span> Regularization</h2>
+    <p>Reduces overfitting by adding a penalty to large weights. Controls the bias-variance tradeoff.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">L2 (Ridge / weight decay)</div>
+        <p>Penalty: λ·||w||². Shrinks weights smoothly toward zero. Equivalent to Gaussian prior on weights.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">L1 (Lasso)</div>
+        <p>Penalty: λ·||w||₁. Produces sparse weights (exact zeros). Useful for feature selection.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Dropout</div>
+        <p>Randomly zeros units during training (p≈0.1–0.5). Acts as ensemble of subnetworks. Off at inference.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Batch Normalization</div>
+        <p>Normalizes activations per mini-batch. Stabilizes training, allows higher lr. Has learnable γ, β.</p>
+      </div>
+    </div>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-cm"># L2 via weight_decay in optimizer (preferred)</span>
+optim.<span class="c-fn">Adam</span>(model.<span class="c-fn">parameters</span>(), lr=<span class="c-num">1e-3</span>, weight_decay=<span class="c-num">1e-4</span>)
+
+<span class="c-cm"># Dropout layer</span>
+dropout = nn.<span class="c-fn">Dropout</span>(p=<span class="c-num">0.3</span>)   <span class="c-cm"># 30% of activations zeroed during training</span>
+
+<span class="c-cm"># BatchNorm in a block</span>
+block = nn.<span class="c-fn">Sequential</span>(
+    nn.<span class="c-fn">Linear</span>(<span class="c-num">256</span>, <span class="c-num">128</span>),
+    nn.<span class="c-fn">BatchNorm1d</span>(<span class="c-num">128</span>),
+    nn.<span class="c-fn">ReLU</span>(),
+    nn.<span class="c-fn">Dropout</span>(<span class="c-num">0.2</span>),
+)
+</code></pre>
+
+    <div class="callout orange">
+      <div class="callout-label">train vs eval mode</div>
+      <code>model.train()</code> enables dropout and uses batch stats for BN.
+      <code>model.eval()</code> disables dropout and uses running stats for BN.
+      Forgetting this is one of the most common bugs in PyTorch inference code.
+    </div>
+  </section>
+
+  <!-- ── 9. Metrics ── -->
+  <section id="metrics">
+    <h2><span class="num">09</span> Metrics</h2>
+
+    <div class="math">
+      <span class="label">classification metrics (from confusion matrix)</span>
+      \(\text{Precision} = \dfrac{TP}{TP+FP}\) <span class="note">← of predicted positive, how many actually are</span><br>
+      \(\text{Recall} = \dfrac{TP}{TP+FN}\) <span class="note">← of actual positive, how many were caught</span><br>
+      \(F_1 = \dfrac{2\cdot P\cdot R}{P+R}\) <span class="note">← harmonic mean; balanced</span><br>
+      AUC-ROC: area under TPR vs FPR curve across all thresholds
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">when accuracy fails</div>
+      With 99% negative samples, a model predicting "always negative" gets 99% accuracy.
+      Use <strong>F1</strong> (class imbalance), <strong>AUC-ROC</strong> (ranking quality), or
+      <strong>PR-AUC</strong> (severe imbalance) instead.
+    </div>
+
+    <table>
+      <thead><tr><th>Metric</th><th>Good for</th></tr></thead>
+      <tbody>
+        <tr><td>MAE / RMSE</td><td>Regression; MAE is robust to outliers, RMSE penalizes large errors more</td></tr>
+        <tr><td>Accuracy</td><td>Balanced classification only</td></tr>
+        <tr><td>F1</td><td>Imbalanced binary classification</td></tr>
+        <tr><td>AUC-ROC</td><td>Ranking / probability calibration</td></tr>
+        <tr><td>mAP</td><td>Object detection, information retrieval</td></tr>
+        <tr><td>Perplexity</td><td>Language models (exp of avg cross-entropy)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- ── 10. Backpropagation ── -->
+  <section id="backprop">
+    <h2><span class="num">10</span> Backpropagation</h2>
+    <p>Backprop is just the chain rule applied systematically to a computation graph, propagated from loss back to every parameter.</p>
+
+    <div class="math">
+      <span class="label">chain rule — scalar case</span>
+      \(\dfrac{\partial\mathcal{L}}{\partial w} = \dfrac{\partial\mathcal{L}}{\partial z}\cdot\dfrac{\partial z}{\partial w}\quad\text{where } z = wx+b\)<br>
+      <span style="color:var(--accent2);">Each layer: receives upstream gradient, computes local gradient, passes product downstream.</span>
+    </div>
+
+    <h3>Manual backprop — one layer</h3>
+    <pre><span class="code-label">numpy</span><code>
+<span class="c-cm"># Forward: z = XW + b, a = relu(z), L = MSE(a, y)</span>
+<span class="c-kw">def</span> <span class="c-fn">relu</span>(z):       <span class="c-kw">return</span> np.<span class="c-fn">maximum</span>(<span class="c-num">0</span>, z)
+<span class="c-kw">def</span> <span class="c-fn">relu_grad</span>(z):  <span class="c-kw">return</span> (z > <span class="c-num">0</span>).<span class="c-fn">astype</span>(<span class="c-bi">float</span>)
+
+Z = X @ W + b
+A = <span class="c-fn">relu</span>(Z)
+L = ((A - y)**<span class="c-num">2</span>).<span class="c-fn">mean</span>()
+
+<span class="c-cm"># Backward</span>
+dL_dA = <span class="c-num">2</span> * (A - y) / y.size         <span class="c-cm"># dL/dA</span>
+dL_dZ = dL_dA * <span class="c-fn">relu_grad</span>(Z)          <span class="c-cm"># dL/dZ  (elementwise)</span>
+dL_dW = X.T @ dL_dZ                     <span class="c-cm"># dL/dW  (matrix form)</span>
+dL_db = dL_dZ.<span class="c-fn">sum</span>(axis=<span class="c-num">0</span>)             <span class="c-cm"># dL/db</span>
+dL_dX = dL_dZ @ W.T                     <span class="c-cm"># dL/dX  (for upstream layers)</span>
+</code></pre>
+
+    <div class="callout">
+      <div class="callout-label">PyTorch autograd does this automatically</div>
+      Every tensor with <code>requires_grad=True</code> records its operations in a computational graph.
+      Calling <code>.backward()</code> on the loss triggers backprop through the whole graph.
+      Gradients accumulate in <code>.grad</code> — always call <code>optimizer.zero_grad()</code> before each step.
+    </div>
+  </section>
+
+  <!-- ── 11. PyTorch pattern ── -->
+  <section id="pytorch">
+    <h2><span class="num">11</span> The PyTorch pattern</h2>
+    <p>Every PyTorch model is a subclass of <code>nn.Module</code> with a <code>forward()</code> method. Autograd handles the rest.</p>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-kw">import</span> torch
+<span class="c-kw">import</span> torch.nn <span class="c-kw">as</span> nn
+
+<span class="c-kw">class</span> <span class="c-bi">MLP</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, in_dim, hidden, out_dim, dropout=<span class="c-num">0.2</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.net = nn.<span class="c-fn">Sequential</span>(
+            nn.<span class="c-fn">Linear</span>(in_dim, hidden),
+            nn.<span class="c-fn">LayerNorm</span>(hidden),
+            nn.<span class="c-fn">ReLU</span>(),
+            nn.<span class="c-fn">Dropout</span>(dropout),
+            nn.<span class="c-fn">Linear</span>(hidden, out_dim),
+        )
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        <span class="c-kw">return</span> self.net(x)
+
+<span class="c-cm"># Instantiate, move to device</span>
+device = <span class="c-str">"cuda"</span> <span class="c-kw">if</span> torch.cuda.<span class="c-fn">is_available</span>() <span class="c-kw">else</span> <span class="c-str">"cpu"</span>
+model  = <span class="c-fn">MLP</span>(<span class="c-num">784</span>, <span class="c-num">256</span>, <span class="c-num">10</span>).<span class="c-fn">to</span>(device)
+
+<span class="c-cm"># Inspect parameters</span>
+total = <span class="c-fn">sum</span>(p.<span class="c-fn">numel</span>() <span class="c-kw">for</span> p <span class="c-kw">in</span> model.<span class="c-fn">parameters</span>())
+<span class="c-fn">print</span>(<span class="c-str">f"Parameters: {total:,}"</span>)
+</code></pre>
+  </section>
+
+  <!-- ── 12. Key layers ── -->
+  <section id="layers">
+    <h2><span class="num">12</span> Key layers & what they do</h2>
+    <table>
+      <thead><tr><th>Layer</th><th>Output shape</th><th>Key params / purpose</th></tr></thead>
+      <tbody>
+        <tr><td>nn.Linear(in, out)</td><td>(B, out)</td><td>Fully-connected: y = xWᵀ + b. Core of MLPs.</td></tr>
+        <tr><td>nn.Conv2d(Cin, Cout, k)</td><td>(B, Cout, H', W')</td><td>Local receptive field k×k. Weight sharing across space.</td></tr>
+        <tr><td>nn.MaxPool2d(k)</td><td>(B, C, H/k, W/k)</td><td>Spatial downsampling. No learnable params.</td></tr>
+        <tr><td>nn.BatchNorm1d/2d</td><td>same</td><td>Normalize per-batch. Learnable γ (scale) and β (shift).</td></tr>
+        <tr><td>nn.LayerNorm(d)</td><td>same</td><td>Normalize per-sample across features. Preferred in transformers.</td></tr>
+        <tr><td>nn.Embedding(V, d)</td><td>(B, T, d)</td><td>Lookup table: integer token → dense vector.</td></tr>
+        <tr><td>nn.MultiheadAttention</td><td>(B, T, d)</td><td>Scaled dot-product attention with h heads.</td></tr>
+        <tr><td>nn.LSTM(d, h)</td><td>(B, T, h)</td><td>Recurrent; cell state carries long-term memory.</td></tr>
+        <tr><td>nn.Dropout(p)</td><td>same</td><td>Zero random units. Disabled in eval mode.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 13. Activations ── -->
+  <section id="activations">
+    <h2><span class="num">13</span> Activation functions</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">ReLU(x) = max(0,x)</div>
+        <p>Default for hidden layers. Fast. Dying ReLU problem when inputs always negative (gradient = 0 forever).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">GELU(x) ≈ x·Φ(x)</div>
+        <p>Smooth approximation of ReLU. Standard in transformers (BERT, GPT). Slightly better than ReLU in practice.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Sigmoid(x) = 1/(1+e⁻ˣ)</div>
+        <p>Output ∈ (0,1). Binary classification output. Vanishing gradient for |x| large — avoid in hidden layers.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Tanh(x)</div>
+        <p>Output ∈ (−1,1). Zero-centered (better than sigmoid for hidden). Still suffers vanishing gradients.</p>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">vanishing gradient problem</div>
+      Deep networks with sigmoid/tanh: gradients shrink exponentially as they backpropagate.
+      Early layers get near-zero updates — training stalls.
+      Solutions: ReLU activations, residual connections (skip-connections), careful initialization.
+    </div>
+  </section>
+
+  <!-- ── 14. Training loop ── -->
+  <section id="training">
+    <h2><span class="num">14</span> The canonical training loop</h2>
+
+    <pre><span class="code-label">pytorch — full loop</span><code>
+<span class="c-kw">def</span> <span class="c-fn">train</span>(model, loader, optimizer, criterion, device):
+    model.<span class="c-fn">train</span>()                          <span class="c-cm"># enable dropout, BN train mode</span>
+    total_loss = <span class="c-num">0.0</span>
+
+    <span class="c-kw">for</span> X_batch, y_batch <span class="c-kw">in</span> loader:
+        X_batch = X_batch.<span class="c-fn">to</span>(device)
+        y_batch = y_batch.<span class="c-fn">to</span>(device)
+
+        optimizer.<span class="c-fn">zero_grad</span>()              <span class="c-cm"># 1. clear stale gradients</span>
+        logits = <span class="c-fn">model</span>(X_batch)             <span class="c-cm"># 2. forward pass</span>
+        loss   = <span class="c-fn">criterion</span>(logits, y_batch)  <span class="c-cm"># 3. compute loss</span>
+        loss.<span class="c-fn">backward</span>()                     <span class="c-cm"># 4. backprop</span>
+        nn.utils.<span class="c-fn">clip_grad_norm_</span>(           <span class="c-cm"># 5. gradient clipping (optional)</span>
+            model.<span class="c-fn">parameters</span>(), max_norm=<span class="c-num">1.0</span>
+        )
+        optimizer.<span class="c-fn">step</span>()                    <span class="c-cm"># 6. update weights</span>
+        total_loss += loss.<span class="c-fn">item</span>()
+
+    <span class="c-kw">return</span> total_loss / <span class="c-fn">len</span>(loader)
+
+<span class="c-dec">@torch.no_grad</span>()                          <span class="c-cm"># disables autograd for speed + memory</span>
+<span class="c-kw">def</span> <span class="c-fn">evaluate</span>(model, loader, criterion, device):
+    model.<span class="c-fn">eval</span>()                           <span class="c-cm"># disable dropout, use BN running stats</span>
+    total_loss = <span class="c-num">0.0</span>
+    <span class="c-kw">for</span> X_batch, y_batch <span class="c-kw">in</span> loader:
+        logits = <span class="c-fn">model</span>(X_batch.<span class="c-fn">to</span>(device))
+        loss   = <span class="c-fn">criterion</span>(logits, y_batch.<span class="c-fn">to</span>(device))
+        total_loss += loss.<span class="c-fn">item</span>()
+    <span class="c-kw">return</span> total_loss / <span class="c-fn">len</span>(loader)
+</code></pre>
+
+    <div class="trace">
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem;color:var(--muted);">6-step loop — must memorize</span>
+      1. <span class="hi">zero_grad()</span> &nbsp;&nbsp; ← gradients accumulate by default; clear them<br>
+      2. <span class="hi">forward()</span> &nbsp;&nbsp;&nbsp; ← model(X) builds the computation graph<br>
+      3. <span class="hi">loss()</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ← scalar you'll differentiate<br>
+      4. <span class="hi">backward()</span> &nbsp;&nbsp; ← populate .grad on every param<br>
+      5. <span class="ok">clip_grad</span> &nbsp;&nbsp;&nbsp; ← optional but good practice for transformers/RNNs<br>
+      6. <span class="hi">step()</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ← optimizer applies the gradients
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── 15. CNNs ── -->
+  <section id="cnn">
+    <h2><span class="num">15</span> Convolutional Neural Networks</h2>
+    <p>CNNs exploit spatial locality and translation invariance. A kernel slides over the input, computing dot products — same weights everywhere.</p>
+
+    <div class="math">
+      <span class="label">output spatial size after conv</span>
+      H_out = ⌊(H_in + 2·padding − kernel) / stride⌋ + 1
+    </div>
+
+    <pre><span class="code-label">pytorch — conv block</span><code>
+<span class="c-kw">class</span> <span class="c-bi">ConvBlock</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, in_c, out_c, k=<span class="c-num">3</span>, stride=<span class="c-num">1</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.block = nn.<span class="c-fn">Sequential</span>(
+            nn.<span class="c-fn">Conv2d</span>(in_c, out_c, k, stride=stride, padding=k//<span class="c-num">2</span>, bias=<span class="c-bi">False</span>),
+            nn.<span class="c-fn">BatchNorm2d</span>(out_c),
+            nn.<span class="c-fn">ReLU</span>(inplace=<span class="c-bi">True</span>),
+        )
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x): <span class="c-kw">return</span> self.block(x)
+
+<span class="c-cm"># Residual / skip connection (ResNet idea)</span>
+<span class="c-kw">class</span> <span class="c-bi">ResBlock</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, channels):
+        <span class="c-fn">super</span>().__init__()
+        self.conv1 = <span class="c-fn">ConvBlock</span>(channels, channels)
+        self.conv2 = nn.<span class="c-fn">Conv2d</span>(channels, channels, <span class="c-num">3</span>, padding=<span class="c-num">1</span>, bias=<span class="c-bi">False</span>)
+        self.bn    = nn.<span class="c-fn">BatchNorm2d</span>(channels)
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x):
+        <span class="c-kw">return</span> nn.functional.<span class="c-fn">relu</span>(self.bn(self.conv2(self.conv1(x))) + x)
+        <span class="c-cm"># ↑ skip connection: add input x to the transformed output</span>
+</code></pre>
+
+    <div class="callout green">
+      <div class="callout-label">why residual connections?</div>
+      They allow gradients to flow directly to early layers (shortcut highway), enabling training of very deep networks (100+ layers).
+      Without them, deep CNNs suffer from vanishing gradients. ResNet showed this in 2015 — still foundational.
+    </div>
+  </section>
+
+  <!-- ── 16. RNNs ── -->
+  <section id="rnn">
+    <h2><span class="num">16</span> RNNs & LSTMs</h2>
+    <p>Process sequential data by maintaining a hidden state across timesteps. LSTMs solve the vanishing gradient problem with gated cell memory.</p>
+
+    <div class="math">
+      <span class="label">LSTM gates (simplified)</span>
+      f = σ(Wf·[h,x] + bf) &nbsp;&nbsp; ← forget gate: what to erase from cell<br>
+      i = σ(Wi·[h,x] + bi) &nbsp;&nbsp; ← input gate: what new info to write<br>
+      c = f⊙c_prev + i⊙tanh(Wc·[h,x]) &nbsp;&nbsp; ← new cell state<br>
+      h = σ(Wo·[h,x]) ⊙ tanh(c) &nbsp;&nbsp; ← output hidden state
+    </div>
+
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-cm"># Sequence classifier with LSTM</span>
+<span class="c-kw">class</span> <span class="c-bi">LSTMClassifier</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, vocab_size, embed_dim, hidden, n_classes):
+        <span class="c-fn">super</span>().__init__()
+        self.embed = nn.<span class="c-fn">Embedding</span>(vocab_size, embed_dim)
+        self.lstm  = nn.<span class="c-fn">LSTM</span>(embed_dim, hidden, batch_first=<span class="c-bi">True</span>)
+        self.head  = nn.<span class="c-fn">Linear</span>(hidden, n_classes)
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, tokens):
+        x  = self.<span class="c-fn">embed</span>(tokens)         <span class="c-cm"># (B, T) → (B, T, embed_dim)</span>
+        _, (h, _) = self.<span class="c-fn">lstm</span>(x)        <span class="c-cm"># h: (1, B, hidden) — last hidden state</span>
+        <span class="c-kw">return</span> self.<span class="c-fn">head</span>(h.<span class="c-fn">squeeze</span>(<span class="c-num">0</span>))  <span class="c-cm"># (B, n_classes)</span>
+</code></pre>
+  </section>
+
+  <!-- ── 17. Attention ── -->
+  <section id="attention">
+    <h2><span class="num">17</span> Attention & Transformers</h2>
+    <p>Attention lets every position attend to every other position directly — no sequential bottleneck. The transformer is just attention + feed-forward, stacked.</p>
+
+    <div class="math">
+      <span class="label">scaled dot-product attention</span>
+      Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V<br>
+      <span style="color:var(--accent2);">Q = queries, K = keys, V = values — all linear projections of input</span><br>
+      √d_k scaling prevents dot products from growing large → softmax saturation
+    </div>
+
+    <pre><span class="code-label">numpy — attention from scratch</span><code>
+<span class="c-kw">def</span> <span class="c-fn">attention</span>(Q, K, V, mask=<span class="c-bi">None</span>):
+    d_k = Q.shape[-<span class="c-num">1</span>]
+    scores = Q @ K.<span class="c-fn">swapaxes</span>(-<span class="c-num">2</span>, -<span class="c-num">1</span>) / np.<span class="c-fn">sqrt</span>(d_k)  <span class="c-cm"># (B, T, T)</span>
+    <span class="c-kw">if</span> mask <span class="c-kw">is not</span> <span class="c-bi">None</span>:
+        scores = np.<span class="c-kw">where</span>(mask, scores, -<span class="c-num">1e9</span>)      <span class="c-cm"># mask future tokens</span>
+    weights = <span class="c-fn">softmax</span>(scores)                       <span class="c-cm"># (B, T, T)</span>
+    <span class="c-kw">return</span> weights @ V                               <span class="c-cm"># (B, T, d_v)</span>
+
+<span class="c-cm"># Multi-head: run h attention heads in parallel, concat, project</span>
+<span class="c-cm"># PyTorch: nn.MultiheadAttention(d_model, num_heads)</span>
+</code></pre>
+
+    <div class="callout blue">
+      <div class="callout-label">positional encoding</div>
+      Attention is permutation-invariant — it sees no order. Positional encodings (sinusoidal or learned)
+      are added to token embeddings to inject sequence order. Without them, "dog bites man" ≡ "man bites dog".
+    </div>
+
+    <h3>Transformer block</h3>
+    <pre><span class="code-label">pytorch</span><code>
+<span class="c-kw">class</span> <span class="c-bi">TransformerBlock</span>(nn.<span class="c-bi">Module</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, d_model, n_heads, d_ff, dropout=<span class="c-num">0.1</span>):
+        <span class="c-fn">super</span>().__init__()
+        self.attn  = nn.<span class="c-fn">MultiheadAttention</span>(d_model, n_heads, dropout=dropout, batch_first=<span class="c-bi">True</span>)
+        self.ff    = nn.<span class="c-fn">Sequential</span>(nn.<span class="c-fn">Linear</span>(d_model, d_ff), nn.<span class="c-fn">GELU</span>(), nn.<span class="c-fn">Linear</span>(d_ff, d_model))
+        self.norm1 = nn.<span class="c-fn">LayerNorm</span>(d_model)
+        self.norm2 = nn.<span class="c-fn">LayerNorm</span>(d_model)
+        self.drop  = nn.<span class="c-fn">Dropout</span>(dropout)
+
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(self, x, mask=<span class="c-bi">None</span>):
+        <span class="c-cm"># Pre-norm (modern standard); original transformer used post-norm</span>
+        x = x + self.drop(self.attn(self.norm1(x), self.norm1(x), self.norm1(x), attn_mask=mask)[<span class="c-num">0</span>])
+        x = x + self.drop(self.ff(self.norm2(x)))
+        <span class="c-kw">return</span> x
+</code></pre>
+  </section>
+
+  <!-- ── 18. Training tricks ── -->
+  <section id="tricks">
+    <h2><span class="num">18</span> Training tricks that matter</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Gradient clipping</div>
+        <p>Cap gradient norm to prevent exploding gradients. Critical for RNNs and transformers. <code>max_norm=1.0</code> is standard.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Learning rate warmup</div>
+        <p>Linear lr increase for N steps before decay. Prevents early training instability. Transformer default: 4000 steps warmup.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Mixed precision (fp16)</div>
+        <p><code>torch.amp.autocast</code> + <code>GradScaler</code>. ~2× speedup on modern GPUs. Gradients scaled to avoid underflow.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Weight initialization</div>
+        <p>Kaiming for ReLU layers (<code>nn.init.kaiming_normal_</code>), Xavier for tanh/sigmoid. Bad init → vanishing/exploding from step 1.</p>
+      </div>
+    </div>
+
+    <pre><span class="code-label">pytorch — mixed precision</span><code>
+<span class="c-kw">from</span> torch.amp <span class="c-kw">import</span> autocast, GradScaler
+
+scaler = <span class="c-fn">GradScaler</span>()
+
+<span class="c-kw">for</span> X, y <span class="c-kw">in</span> loader:
+    optimizer.<span class="c-fn">zero_grad</span>()
+    <span class="c-kw">with</span> <span class="c-fn">autocast</span>(device_type=<span class="c-str">"cuda"</span>):      <span class="c-cm"># forward in fp16</span>
+        logits = <span class="c-fn">model</span>(X)
+        loss   = <span class="c-fn">criterion</span>(logits, y)
+    scaler.<span class="c-fn">scale</span>(loss).<span class="c-fn">backward</span>()           <span class="c-cm"># scaled backward</span>
+    scaler.<span class="c-fn">unscale_</span>(optimizer)
+    nn.utils.<span class="c-fn">clip_grad_norm_</span>(model.<span class="c-fn">parameters</span>(), <span class="c-num">1.0</span>)
+    scaler.<span class="c-fn">step</span>(optimizer)
+    scaler.<span class="c-fn">update</span>()
+</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ── 19. Key questions ── -->
+  <section id="concepts">
+    <h2><span class="num">19</span> Key interview questions</h2>
+
+    <div class="callout">
+      <div class="callout-label">bias vs variance tradeoff</div>
+      <strong>High bias (underfitting):</strong> model too simple; both train and val loss high. Fix: bigger model, more features.<br>
+      <strong>High variance (overfitting):</strong> train loss low, val loss high. Fix: regularization, more data, dropout.
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">why batch normalization works</div>
+      Reduces internal covariate shift (distribution of layer inputs changes during training).
+      Also acts as regularization (noise from batch statistics). Makes deeper networks trainable
+      without careful init. BN before activation is classic; after is also common.
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">why adam over SGD?</div>
+      Adam adapts learning rate per parameter using first and second moment estimates.
+      Works well with sparse gradients and non-stationary objectives.
+      SGD with momentum can generalize slightly better on some vision tasks — it's an active research question.
+      Use AdamW for transformers, SGD+momentum for ResNets.
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">what happens if you don't normalize inputs?</div>
+      Features on different scales cause the loss surface to be elongated — gradient descent zig-zags
+      in steep directions and is slow in shallow ones. Convergence is dramatically slower.
+      Always normalize before training.
+    </div>
+
+    <div class="callout red">
+      <div class="callout-label">gradient vanishing vs exploding</div>
+      <strong>Vanishing:</strong> gradients → 0, early layers don't learn. Caused by deep sigmoids/tanh.
+      Fix: ReLU, residual connections, careful init, BatchNorm.<br>
+      <strong>Exploding:</strong> gradients → ∞, NaN loss. Caused by deep networks, poor init, high lr.
+      Fix: gradient clipping, lower lr, better init.
+    </div>
+
+    <h3>NumPy gotchas to know cold</h3>
+    <pre><code>
+<span class="c-cm"># Shape (n,) vs (n,1) — they're different!</span>
+a = np.<span class="c-fn">ones</span>(<span class="c-num">5</span>)        <span class="c-cm"># shape (5,)  — 1D</span>
+b = np.<span class="c-fn">ones</span>((<span class="c-num">5</span>,<span class="c-num">1</span>))    <span class="c-cm"># shape (5,1) — column vector</span>
+a.T.shape           <span class="c-cm"># → (5,) — transpose does nothing on 1D!</span>
+b.T.shape           <span class="c-cm"># → (1,5) — correct row vector</span>
+
+<span class="c-cm"># @ vs * — know your operators</span>
+A @ B               <span class="c-cm"># matrix multiply</span>
+A * B               <span class="c-cm"># elementwise multiply (Hadamard product)</span>
+
+<span class="c-cm"># Views vs copies — dangerous with in-place ops</span>
+y = x[<span class="c-num">2</span>:<span class="c-num">5</span>]          <span class="c-cm"># view — modifying y modifies x</span>
+y = x[<span class="c-num">2</span>:<span class="c-num">5</span>].<span class="c-fn">copy</span>()  <span class="c-cm"># explicit copy — safe</span>
+</code></pre>
+  </section>
+
+  <!-- ── 20. Checklist ── -->
+  <section id="checklist">
+    <h2><span class="num">20</span> Before the interview — checklist</h2>
+    <ul class="checklist">
+      <li>Can explain gradient descent and backprop from first principles (chain rule)</li>
+      <li>Knows the 6-step PyTorch training loop by heart (zero_grad → forward → loss → backward → clip → step)</li>
+      <li>Understands why <code>model.train()</code> vs <code>model.eval()</code> matters</li>
+      <li>Can derive the MSE and BCE gradients manually</li>
+      <li>Understands broadcasting rules and can predict output shapes</li>
+      <li>Knows difference between L1 / L2 regularization and dropout</li>
+      <li>Can explain bias-variance tradeoff and diagnose over/underfitting from loss curves</li>
+      <li>Understands why accuracy fails on imbalanced data; knows F1, AUC-ROC</li>
+      <li>Can explain vanishing/exploding gradients and their fixes</li>
+      <li>Understands Conv2d output shape formula and what stride/padding do</li>
+      <li>Can explain scaled dot-product attention and why √d_k scaling matters</li>
+      <li>Knows why positional encoding is needed in transformers</li>
+      <li>Can explain why LayerNorm is preferred over BatchNorm in transformers</li>
+      <li>Understands data leakage and the correct way to normalize a dataset</li>
+      <li>Knows Adam update rule at a high level; when to prefer AdamW</li>
+    </ul>
+
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.85;">
+        The core insight that connects everything: <strong>ML is optimization</strong>.
+        Define what "good" means (loss), measure how each parameter affects it (gradient),
+        move in the direction that reduces it (optimizer). Every model, every architecture,
+        every trick is a refinement of that loop.
+      </p>
+    </div>
+  </section>
+
+</main>
+</div>
+</body>
+</html>

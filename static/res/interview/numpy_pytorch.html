@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NumPy & PyTorch — Interview Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d0d;
+  --bg2:        #141414;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #e8e4dc;
+  --muted:      #7a7570;
+  --accent:     #c8b97a;
+  --accent2:    #7abfc8;
+  --accent3:    #c87ab2;
+  --green:      #7ac87a;
+  --red:        #c87a7a;
+  --orange:     #c8956a;
+  --code-bg:    #0a0a0a;
+  --tag-bg:     rgba(200,185,122,0.1);
+  --tag-border: rgba(200,185,122,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ── */
+nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border2);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.nav-logo { font-family: 'Fraunces', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
+.nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 1.4rem 0 0.4rem; font-weight: 500; opacity: 0.55; }
+nav a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; padding: 3px 0; transition: color 0.15s; font-weight: 300; }
+nav a:hover { color: var(--accent); }
+.diff {
+  display: inline-block; font-size: 9px; font-family: 'DM Mono', monospace;
+  padding: 1px 5px; border-radius: 2px; letter-spacing: 0.06em; vertical-align: middle; margin-left: 4px;
+}
+.diff.e { background: rgba(122,200,122,0.12); border: 1px solid rgba(122,200,122,0.25); color: var(--green); }
+.diff.m { background: rgba(200,185,122,0.12); border: 1px solid rgba(200,185,122,0.25); color: var(--accent); }
+.diff.h { background: rgba(200,122,122,0.12); border: 1px solid rgba(200,122,122,0.25); color: var(--red); }
+
+.nav-bottom { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+.nav-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 2px 0; font-family: 'DM Mono', monospace; }
+.nav-stat span:last-child { color: var(--accent2); }
+
+/* ── Main ── */
+main { padding: 3rem 3.5rem 6rem; max-width: 840px; }
+
+/* ── Hero ── */
+.hero { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 500; margin-bottom: 1rem; font-family: 'DM Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2.1rem, 4vw, 2.9rem); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 1.2rem; }
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.hero-desc { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.85; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; }
+.pill { font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+
+/* ── Problem sections ── */
+.problem-section { margin-bottom: 4rem; scroll-margin-top: 2rem; }
+
+.section-header { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border2); flex-wrap: wrap; }
+.section-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.section-num { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); font-weight: 400; letter-spacing: 0.06em; }
+.section-tag { font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 8px; border-radius: 2px; border: 1px solid; letter-spacing: 0.06em; }
+.tag-numpy  { color: var(--orange);  border-color: rgba(200,149,106,0.3); background: rgba(200,149,106,0.07); }
+.tag-torch  { color: var(--accent2); border-color: rgba(122,191,200,0.3); background: rgba(122,191,200,0.07); }
+
+/* ── Problem card ── */
+.problem { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 1.5rem; overflow: hidden; }
+.problem-head { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border); gap: 1rem; }
+.problem-title { font-family: 'DM Mono', monospace; font-size: 13.5px; font-weight: 500; color: var(--text); }
+.problem-meta { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.badge { font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 7px; border-radius: 2px; border: 1px solid; }
+.badge.easy   { color: var(--green); border-color: rgba(122,200,122,0.3); background: rgba(122,200,122,0.08); }
+.badge.medium { color: var(--accent); border-color: rgba(200,185,122,0.3); background: rgba(200,185,122,0.08); }
+.badge.hard   { color: var(--red); border-color: rgba(200,122,122,0.3); background: rgba(200,122,122,0.08); }
+
+.problem-body { padding: 1rem 1.2rem; }
+.problem-desc { font-size: 13.5px; color: var(--muted); line-height: 1.65; margin-bottom: 0.8rem; }
+.problem-examples { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 0.7rem 1rem; margin-bottom: 1rem; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); line-height: 1.8; }
+.problem-examples .ex-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); opacity: 0.6; margin-bottom: 0.3rem; }
+.problem-examples .ex-in  { color: var(--accent2); }
+.problem-examples .ex-out { color: var(--green); }
+
+/* ── Code block ── */
+.code-wrap { position: relative; }
+.code-header { display: flex; align-items: center; justify-content: space-between; background: #080808; padding: 0.5rem 1rem; border-top: 1px solid var(--border2); }
+.code-lang { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.copy-btn {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  background: none; border: 1px solid var(--border2); border-radius: 3px; padding: 3px 8px;
+  cursor: pointer; transition: all 0.15s; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--tag-border); }
+.copy-btn.copied { color: var(--green); border-color: rgba(122,200,122,0.3); }
+
+pre.code {
+  background: var(--code-bg);
+  padding: 1.1rem 1.2rem;
+  overflow-x: auto;
+  margin: 0;
+  border: none;
+}
+pre.code code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #c9c0b0;
+  display: block;
+}
+.c-kw  { color: #c87ab2; }
+.c-fn  { color: #7abfc8; }
+.c-cls { color: #e0c070; }
+.c-str { color: #7ac87a; }
+.c-num { color: #c8b97a; }
+.c-cm  { color: #454340; font-style: italic; }
+.c-bi  { color: #c8956a; }
+.c-dec { color: #a07ac0; }
+.c-op  { color: #c87ab2; }
+
+/* ── Insight / hint boxes ── */
+.insight {
+  border-left: 2px solid var(--accent2);
+  background: rgba(122,191,200,0.05);
+  padding: 0.75rem 1rem;
+  margin: 0.8rem 0 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.65;
+}
+.insight.green  { border-left-color: var(--green);  background: rgba(122,200,122,0.05); }
+.insight.orange { border-left-color: var(--orange); background: rgba(200,149,106,0.05); }
+.insight.purple { border-left-color: var(--accent3); background: rgba(200,122,178,0.05); }
+.insight.red    { border-left-color: var(--red);    background: rgba(200,122,122,0.05); }
+.insight-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.55; font-family: 'DM Mono', monospace; margin-bottom: 0.25rem; }
+
+/* ── Complexity row ── */
+.complexity {
+  display: flex; gap: 1.5rem; padding: 0.5rem 0; flex-wrap: wrap;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+  border-top: 1px solid var(--border); margin-top: 0.8rem; padding-top: 0.7rem;
+}
+.complexity-item span:first-child { color: var(--muted); margin-right: 4px; }
+.complexity-item span:last-child  { color: var(--accent); }
+
+p.note { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0.5rem 0; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+@media (max-width: 720px) {
+  .shell { grid-template-columns: 1fr; }
+  nav { display: none; }
+  main { padding: 2rem 1.2rem 4rem; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ── -->
+<nav>
+  <div class="nav-logo">NumPy &amp; PyTorch</div>
+
+  <span class="nav-section">NumPy</span>
+  <a href="#np-index">Indexing &amp; ops <span class="diff e">easy</span></a>
+  <a href="#np-advanced">Broadcasting &amp; einsum <span class="diff m">med</span></a>
+  <a href="#np-strides">Memory layout &amp; strides <span class="diff m">med</span></a>
+
+  <span class="nav-section">PyTorch</span>
+  <a href="#torch-shapes">Reshape, permute, squeeze <span class="diff m">med</span></a>
+  <a href="#torch-adv">gather, scatter, topk <span class="diff h">hard</span></a>
+  <a href="#torch-cheat">Tensor cheat sheet <span class="diff m">med</span></a>
+  <a href="#torch-autograd">Autograd mechanics <span class="diff m">med</span></a>
+
+  <span class="nav-section">Other Primers</span>
+  <a href="index.html">&#8592; All Primers</a>
+
+  <div class="nav-bottom">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;opacity:.6;">problems</div>
+    <div class="nav-stat"><span>Total</span><span>7</span></div>
+    <div class="nav-stat"><span>Easy</span><span>1</span></div>
+    <div class="nav-stat"><span>Medium</span><span>5</span></div>
+    <div class="nav-stat"><span>Hard</span><span>1</span></div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Interview Primer · NumPy &amp; PyTorch</div>
+    <h1>Arrays, tensors,<br><em>and the ops that matter</em></h1>
+    <p class="hero-desc">The NumPy and PyTorch operations that appear in every ML codebase — indexing modes, broadcasting, memory layout, shape manipulation, advanced indexing, and autograd internals. Know these cold before any ML-engineering interview.</p>
+    <div class="pill-row">
+      <span class="pill">NumPy</span>
+      <span class="pill">PyTorch</span>
+      <span class="pill">broadcasting</span>
+      <span class="pill">einsum</span>
+      <span class="pill">autograd</span>
+      <span class="pill">gather / scatter</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ -->
+  <!--      NUMPY                    -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="np-index">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">NumPy — Indexing &amp; Operations</span>
+      <span class="section-tag tag-numpy">NumPy</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Indexing, slicing, boolean masking, fancy indexing</span>
+        <div class="problem-meta"><span class="badge easy">easy</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">The four indexing modes in NumPy. The critical distinction: slicing returns a <strong>view</strong>, while boolean and fancy indexing return <strong>copies</strong>. Getting this wrong silently corrupts data.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">numpy</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+A = np.<span class="c-fn">arange</span>(<span class="c-num">12</span>).<span class="c-fn">reshape</span>(<span class="c-num">3</span>, <span class="c-num">4</span>)
+<span class="c-cm"># [[ 0  1  2  3]
+#  [ 4  5  6  7]
+#  [ 8  9 10 11]]</span>
+
+<span class="c-cm"># ── 1. Basic slicing → VIEW (no copy, shares memory)</span>
+A[<span class="c-num">1</span>:, <span class="c-num">2</span>:]         <span class="c-cm"># rows 1-2, cols 2-3 → [[6,7],[10,11]]</span>
+A[:, ::<span class="c-num">2</span>]          <span class="c-cm"># every other column  → [[0,2],[4,6],[8,10]]</span>
+A[<span class="c-num">1</span>]               <span class="c-cm"># row 1 as 1D         → [4,5,6,7]</span>
+
+<span class="c-cm"># ── 2. Boolean masking → COPY</span>
+mask = A > <span class="c-num">6</span>
+A[mask]              <span class="c-cm"># [ 7  8  9 10 11]</span>
+A[A % <span class="c-num">2</span> == <span class="c-num">0</span>]      <span class="c-cm"># even elements</span>
+A[A > <span class="c-num">5</span>] = -<span class="c-num">1</span>      <span class="c-cm"># in-place assignment via mask (modifies A directly)</span>
+
+<span class="c-cm"># ── 3. Fancy indexing (integer arrays) → COPY</span>
+rows = np.<span class="c-fn">array</span>([<span class="c-num">0</span>, <span class="c-num">2</span>])
+cols = np.<span class="c-fn">array</span>([<span class="c-num">1</span>, <span class="c-num">3</span>])
+A[rows, cols]        <span class="c-cm"># picks (0,1) and (2,3) → [1, 11]</span>
+A[[<span class="c-num">0</span>, <span class="c-num">2</span>]]           <span class="c-cm"># pick entire rows 0 and 2</span>
+
+<span class="c-cm"># ── 4. np.where — vectorized if-else</span>
+np.<span class="c-fn">where</span>(A > <span class="c-num">5</span>, A, <span class="c-num">0</span>)  <span class="c-cm"># keep values >5, else 0</span>
+np.<span class="c-fn">where</span>(A > <span class="c-num">5</span>)        <span class="c-cm"># returns tuple of index arrays per dim</span>
+
+<span class="c-cm"># ── Pitfall: (n,) vs (n,1) — very common bug</span>
+v = np.<span class="c-fn">ones</span>(<span class="c-num">4</span>)         <span class="c-cm"># shape (4,) — 1D row vector</span>
+v[:, np.<span class="c-fn">newaxis</span>]       <span class="c-cm"># shape (4,1) — column vector</span>
+v[np.<span class="c-fn">newaxis</span>, :]       <span class="c-cm"># shape (1,4) — explicit row vector</span>
+
+<span class="c-cm"># Check if two arrays share memory</span>
+np.<span class="c-fn">shares_memory</span>(A, A[<span class="c-num">1</span>:])   <span class="c-cm"># True — slice is a view</span>
+np.<span class="c-fn">shares_memory</span>(A, A[[<span class="c-num">0</span>]])  <span class="c-cm"># False — fancy index is a copy</span></code></pre>
+        </div>
+        <div class="insight"><div class="insight-label">view vs copy</div>Slicing returns a <strong>view</strong> — modifying it modifies the original array. Boolean and fancy indexing return <strong>copies</strong>. Always use <code>.copy()</code> explicitly when you need independence. Verify with <code>np.shares_memory(a, b)</code>.</div>
+      </div>
+    </div>
+
+    <div class="problem" id="np-advanced">
+      <div class="problem-head">
+        <span class="problem-title">Broadcasting, axis ops, einsum, argsort</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">The operations that actually show up in ML code — normalizing batches, computing pairwise distances, top-k selection. Broadcasting alignment goes right-to-left: trailing dimensions must match or be 1.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">numpy</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+X = np.random.<span class="c-fn">randn</span>(<span class="c-num">100</span>, <span class="c-num">10</span>)   <span class="c-cm"># (batch=100, features=10)</span>
+
+<span class="c-cm"># ── Normalize each sample to unit L2 norm</span>
+norms = np.linalg.<span class="c-fn">norm</span>(X, axis=<span class="c-num">1</span>, keepdims=<span class="c-bi">True</span>)  <span class="c-cm"># (100,1)</span>
+X_norm = X / norms                                  <span class="c-cm"># broadcast: (100,10)/(100,1)</span>
+
+<span class="c-cm"># ── Pairwise cosine similarity matrix (100×100)</span>
+sim = X_norm @ X_norm.T    <span class="c-cm"># (100,10) @ (10,100) → (100,100)</span>
+
+<span class="c-cm"># ── Pairwise squared Euclidean distances without a loop</span>
+<span class="c-cm"># Use: ‖a-b‖² = ‖a‖² + ‖b‖² - 2aᵀb</span>
+sq = (X**<span class="c-num">2</span>).<span class="c-fn">sum</span>(axis=<span class="c-num">1</span>, keepdims=<span class="c-bi">True</span>)   <span class="c-cm"># (100,1)</span>
+D2 = sq + sq.T - <span class="c-num">2</span> * (X @ X.T)           <span class="c-cm"># (100,100) — broadcasts sq (100,1) + sq.T (1,100)</span>
+
+<span class="c-cm"># ── Softmax (numerically stable)</span>
+<span class="c-kw">def</span> <span class="c-fn">softmax</span>(logits, axis=-<span class="c-num">1</span>):
+    e = np.<span class="c-fn">exp</span>(logits - logits.<span class="c-fn">max</span>(axis=axis, keepdims=<span class="c-bi">True</span>))
+    <span class="c-kw">return</span> e / e.<span class="c-fn">sum</span>(axis=axis, keepdims=<span class="c-bi">True</span>)
+
+<span class="c-cm"># ── einsum — the universal contraction notation</span>
+A = np.random.<span class="c-fn">randn</span>(<span class="c-num">3</span>, <span class="c-num">4</span>)
+B = np.random.<span class="c-fn">randn</span>(<span class="c-num">4</span>, <span class="c-num">5</span>)
+np.<span class="c-fn">einsum</span>(<span class="c-str">'ij,jk->ik'</span>, A, B)          <span class="c-cm"># matrix multiply (same as A@B)</span>
+np.<span class="c-fn">einsum</span>(<span class="c-str">'bij,bjk->bik'</span>, A, B)      <span class="c-cm"># batched matmul (add batch dim b)</span>
+np.<span class="c-fn">einsum</span>(<span class="c-str">'ii->'</span>, A[:min(A.shape):])  <span class="c-cm"># trace: sum diagonal elements</span>
+np.<span class="c-fn">einsum</span>(<span class="c-str">'ij->i'</span>, A)                <span class="c-cm"># row sums: equivalent to A.sum(axis=1)</span>
+np.<span class="c-fn">einsum</span>(<span class="c-str">'ij,ij->i'</span>, A[:, :<span class="c-num">3</span>], A[:, :<span class="c-num">3</span>])  <span class="c-cm"># per-row dot product</span>
+
+<span class="c-cm"># ── Top-k indices (argsort trick)</span>
+scores = np.random.<span class="c-fn">randn</span>(<span class="c-num">20</span>)
+k = <span class="c-num">5</span>
+top_k_idx    = np.<span class="c-fn">argsort</span>(scores)[-k:][::-<span class="c-num">1</span>]    <span class="c-cm"># k largest, sorted desc</span>
+bottom_k_idx = np.<span class="c-fn">argsort</span>(scores)[:k]             <span class="c-cm"># k smallest, sorted asc</span>
+top_k_unsorted = np.<span class="c-fn">argpartition</span>(scores, -k)[-k:]  <span class="c-cm"># O(n) — unordered top-k</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Pairwise dist</span><span>O(n²d)</span></div><div class="complexity-item"><span>argsort top-k</span><span>O(n log n)</span></div><div class="complexity-item"><span>argpartition</span><span>O(n)</span></div></div>
+        <div class="insight green"><div class="insight-label">argpartition vs argsort</div>Use <code>np.argpartition(arr, -k)[-k:]</code> when you need top-k indices but don't care about their order within those k. O(n) vs O(n log n). Only argsort those k elements if you need them ranked.</div>
+      </div>
+    </div>
+
+    <div class="problem" id="np-strides">
+      <div class="problem-head">
+        <span class="problem-title">Memory layout, strides, and contiguity</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">NumPy arrays are just flat buffers of bytes. Strides tell NumPy how many bytes to jump per index step in each dimension. Understanding this explains why slices are free (zero copy) and why some operations require a contiguous layout.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">numpy</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> numpy <span class="c-kw">as</span> np
+
+A = np.<span class="c-fn">arange</span>(<span class="c-num">12</span>, dtype=np.float64).<span class="c-fn">reshape</span>(<span class="c-num">3</span>, <span class="c-num">4</span>)
+<span class="c-cm"># shape   = (3, 4)
+# strides = (32, 8)   ← 32 bytes to next row, 8 bytes to next col
+#            3 rows × 4 cols × 8 bytes per float64 = 96 bytes total</span>
+
+<span class="c-cm"># ── Slice is a view — strides change, buffer doesn't</span>
+col = A[:, <span class="c-num">1</span>]          <span class="c-cm"># shape (3,), strides (32,) — every 32 bytes</span>
+row = A[<span class="c-num">0</span>, :]          <span class="c-cm"># shape (4,), strides (8,)  — every 8 bytes</span>
+every_other = A[:, ::<span class="c-num">2</span>] <span class="c-cm"># shape (3,2), strides (32,16) — still a view</span>
+
+<span class="c-cm"># ── Contiguity: C-order (row-major) vs Fortran-order (col-major)</span>
+A.<span class="c-fn">flags</span>[<span class="c-str">'C_CONTIGUOUS'</span>]    <span class="c-cm"># True  — rows are contiguous in memory</span>
+A.T.<span class="c-fn">flags</span>[<span class="c-str">'C_CONTIGUOUS'</span>]  <span class="c-cm"># False — transpose changes strides</span>
+A.T.<span class="c-fn">flags</span>[<span class="c-str">'F_CONTIGUOUS'</span>]  <span class="c-cm"># True  — now Fortran order</span>
+
+<span class="c-cm"># ── Why this matters: some C-extensions require contiguous input</span>
+<span class="c-cm"># np.frombuffer, cv2.imencode, etc. will raise if non-contiguous</span>
+safe = np.<span class="c-fn">ascontiguousarray</span>(A.T)  <span class="c-cm"># makes a C-contiguous copy if needed</span>
+
+<span class="c-cm"># ── as_strided: create views with custom strides (advanced)</span>
+<span class="c-kw">from</span> numpy.lib.stride_tricks <span class="c-kw">import</span> as_strided
+
+x = np.<span class="c-fn">arange</span>(<span class="c-num">8</span>, dtype=np.float64)
+<span class="c-cm"># Sliding window of size 3 over x — no copy</span>
+windows = <span class="c-fn">as_strided</span>(x, shape=(<span class="c-num">6</span>, <span class="c-num">3</span>), strides=(x.itemsize, x.itemsize))
+<span class="c-cm"># [[0,1,2],[1,2,3],[2,3,4],[3,4,5],[4,5,6],[5,6,7]]</span>
+<span class="c-cm"># ⚠ Never write to as_strided results — overlapping memory</span>
+
+<span class="c-cm"># ── Practical: why column iteration is slow</span>
+A_big = np.random.<span class="c-fn">randn</span>(<span class="c-num">10000</span>, <span class="c-num">10000</span>)
+<span class="c-cm"># Iterating rows → cache-friendly (contiguous memory access)</span>
+<span class="c-cm"># Iterating cols → cache-unfriendly (stride = 80000 bytes per step)</span>
+<span class="c-cm"># Prefer operations along axis=1 (rows) over axis=0 (cols) for speed</span></code></pre>
+        </div>
+        <div class="insight orange"><div class="insight-label">strides mental model</div>A stride of <code>(32, 8)</code> on a float64 array means: "step 32 bytes to move to the next row, 8 bytes for the next column." <code>A.T</code> just swaps the strides to <code>(8, 32)</code> — no data moves. That's why <code>.T</code> is O(1) but non-contiguous.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════ -->
+  <!--      PYTORCH                  -->
+  <!-- ══════════════════════════════ -->
+  <div class="problem-section" id="torch-shapes">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">PyTorch — Shape Manipulation</span>
+      <span class="section-tag tag-torch">PyTorch</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Reshape, permute, squeeze/unsqueeze, masked_fill</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">Shape manipulation is 80% of debugging in PyTorch. Know the difference between <code>view</code>, <code>reshape</code>, and when to call <code>contiguous()</code> — and why <code>permute</code> breaks contiguity.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">pytorch</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> torch
+
+x = torch.<span class="c-fn">randn</span>(<span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>)   <span class="c-cm"># (B=2, T=3, d=4)</span>
+
+<span class="c-cm"># ── view vs reshape</span>
+x.<span class="c-fn">view</span>(<span class="c-num">2</span>, <span class="c-num">12</span>)              <span class="c-cm"># zero-copy — requires contiguous memory</span>
+x.<span class="c-fn">reshape</span>(<span class="c-num">2</span>, <span class="c-num">12</span>)           <span class="c-cm"># safe — copies if not contiguous</span>
+x.<span class="c-fn">contiguous</span>().<span class="c-fn">view</span>(<span class="c-num">2</span>, <span class="c-num">12</span>) <span class="c-cm"># explicit pattern: force contiguous, then view</span>
+
+<span class="c-cm"># ── permute — reorder all dimensions</span>
+x.<span class="c-fn">permute</span>(<span class="c-num">0</span>, <span class="c-num">2</span>, <span class="c-num">1</span>)         <span class="c-cm"># (B,T,d) → (B,d,T)  — non-contiguous result</span>
+x.<span class="c-fn">transpose</span>(<span class="c-num">1</span>, <span class="c-num">2</span>)          <span class="c-cm"># swap 2 dims only — same as permute(0,2,1) here</span>
+
+<span class="c-cm"># After permute/transpose → not contiguous → .view() will error</span>
+x_t = x.<span class="c-fn">permute</span>(<span class="c-num">0</span>, <span class="c-num">2</span>, <span class="c-num">1</span>)
+x_t.<span class="c-fn">is_contiguous</span>()        <span class="c-cm"># False</span>
+x_t.<span class="c-fn">contiguous</span>().<span class="c-fn">view</span>(-<span class="c-num">1</span>, <span class="c-num">3</span>)  <span class="c-cm"># must copy first</span>
+
+<span class="c-cm"># ── squeeze / unsqueeze — add or remove size-1 dims</span>
+x.<span class="c-fn">unsqueeze</span>(<span class="c-num">0</span>)             <span class="c-cm"># (2,3,4) → (1,2,3,4) — add dim at position 0</span>
+x.<span class="c-fn">squeeze</span>(<span class="c-num">0</span>)               <span class="c-cm"># remove dim 0 only if size=1, else no-op</span>
+x[<span class="c-bi">None</span>, ...]               <span class="c-cm"># add batch dim at front (same as unsqueeze(0))</span>
+x[..., <span class="c-bi">None</span>]               <span class="c-cm"># add dim at back → (2,3,4,1)</span>
+
+<span class="c-cm"># ── masked_fill — the standard causal attention mask</span>
+T = <span class="c-num">5</span>
+causal_mask = torch.<span class="c-fn">ones</span>(T, T, dtype=torch.bool).<span class="c-fn">triu</span>(<span class="c-num">1</span>)
+<span class="c-cm"># upper triangle (excl. diagonal) marks future tokens</span>
+scores = torch.<span class="c-fn">randn</span>(T, T)
+scores.<span class="c-fn">masked_fill</span>(causal_mask, <span class="c-bi">float</span>(<span class="c-str">'-inf'</span>))  <span class="c-cm"># future → -∞ → softmax ≈ 0</span>
+
+<span class="c-cm"># ── einsum in PyTorch — same syntax as NumPy</span>
+Q = torch.<span class="c-fn">randn</span>(<span class="c-num">2</span>, <span class="c-num">8</span>, <span class="c-num">64</span>)   <span class="c-cm"># (B, T, d_head)</span>
+K = torch.<span class="c-fn">randn</span>(<span class="c-num">2</span>, <span class="c-num">8</span>, <span class="c-num">64</span>)
+torch.<span class="c-fn">einsum</span>(<span class="c-str">'bte,bse->bts'</span>, Q, K)  <span class="c-cm"># batched dot → (B,T,T) attention logits</span></code></pre>
+        </div>
+        <div class="insight"><div class="insight-label">view vs reshape</div><code>.view()</code> is zero-copy but requires contiguous memory. After <code>.permute()</code> or <code>.transpose()</code>, memory is non-contiguous. Use <code>.contiguous().view()</code> or just <code>.reshape()</code> which handles both cases silently.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="problem-section" id="torch-adv">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">PyTorch — Advanced Indexing</span>
+      <span class="section-tag tag-torch">PyTorch</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">gather, scatter_add, index_select, topk</span>
+        <div class="problem-meta"><span class="badge hard">hard</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">The advanced indexing ops that appear in attention, loss functions, recommendation systems, and graph networks. Hard to remember without a mental model — learn the pattern, not the API.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">pytorch</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> torch
+
+<span class="c-cm"># ── gather: "for each row, pick the value at this column index"</span>
+<span class="c-cm"># out[i][j] = input[i][index[i][j]]   (dim=1)</span>
+<span class="c-cm"># output shape == index shape — always</span>
+logits = torch.<span class="c-fn">tensor</span>([[<span class="c-num">0.1</span>, <span class="c-num">0.9</span>, <span class="c-num">0.5</span>],
+                         [<span class="c-num">0.8</span>, <span class="c-num">0.2</span>, <span class="c-num">0.6</span>]])  <span class="c-cm"># (2,3)</span>
+labels = torch.<span class="c-fn">tensor</span>([[<span class="c-num">1</span>], [<span class="c-num">0</span>]])             <span class="c-cm"># (2,1) — true class indices</span>
+gathered = logits.<span class="c-fn">gather</span>(dim=<span class="c-num">1</span>, index=labels) <span class="c-cm"># → [[0.9],[0.8]]</span>
+
+<span class="c-cm"># ── Practical: NLL loss built from scratch with gather</span>
+B, C = <span class="c-num">4</span>, <span class="c-num">10</span>
+logits = torch.<span class="c-fn">randn</span>(B, C)
+labels = torch.<span class="c-fn">randint</span>(<span class="c-num">0</span>, C, (B,))
+log_probs = torch.nn.functional.<span class="c-fn">log_softmax</span>(logits, dim=-<span class="c-num">1</span>)   <span class="c-cm"># (B,C)</span>
+nll = -log_probs.<span class="c-fn">gather</span>(<span class="c-num">1</span>, labels.<span class="c-fn">unsqueeze</span>(<span class="c-num">1</span>)).<span class="c-fn">squeeze</span>(<span class="c-num">1</span>)  <span class="c-cm"># (B,)</span>
+loss = nll.<span class="c-fn">mean</span>()
+
+<span class="c-cm"># ── scatter_add: accumulate into output tensor</span>
+<span class="c-cm"># out[index[i][j]][j] += src[i][j]   (dim=0)</span>
+<span class="c-cm"># "send each value to a target row and sum contributions"</span>
+src   = torch.<span class="c-fn">tensor</span>([[<span class="c-num">1.0</span>, <span class="c-num">2.0</span>], [<span class="c-num">3.0</span>, <span class="c-num">4.0</span>], [<span class="c-num">5.0</span>, <span class="c-num">6.0</span>]])  <span class="c-cm"># (3,2)</span>
+index = torch.<span class="c-fn">tensor</span>([[<span class="c-num">0</span>, <span class="c-num">1</span>], [<span class="c-num">0</span>, <span class="c-num">2</span>], [<span class="c-num">1</span>, <span class="c-num">2</span>]])            <span class="c-cm"># (3,2)</span>
+out   = torch.<span class="c-fn">zeros</span>(<span class="c-num">3</span>, <span class="c-num">2</span>)
+out.<span class="c-fn">scatter_add_</span>(<span class="c-num">0</span>, index, src)
+<span class="c-cm"># Graph neural networks: aggregate neighbour features into node embeddings</span>
+
+<span class="c-cm"># ── index_select: select slices along one dimension</span>
+x = torch.<span class="c-fn">randn</span>(<span class="c-num">5</span>, <span class="c-num">4</span>)
+idx = torch.<span class="c-fn">tensor</span>([<span class="c-num">0</span>, <span class="c-num">2</span>, <span class="c-num">4</span>])
+x.<span class="c-fn">index_select</span>(<span class="c-num">0</span>, idx)          <span class="c-cm"># rows 0,2,4 → (3,4) — differentiable</span>
+<span class="c-cm"># Same as x[idx] but explicit; use when you want gradients through the index op</span>
+
+<span class="c-cm"># ── torch.topk — returns values AND indices together</span>
+scores = torch.<span class="c-fn">tensor</span>([<span class="c-num">3.0</span>, <span class="c-num">1.0</span>, <span class="c-num">4.0</span>, <span class="c-num">1.5</span>, <span class="c-num">9.0</span>, <span class="c-num">2.6</span>])
+vals, idx = torch.<span class="c-fn">topk</span>(scores, k=<span class="c-num">3</span>)                      <span class="c-cm"># vals=[9,4,3], idx=[4,2,0]</span>
+vals, idx = torch.<span class="c-fn">topk</span>(scores, k=<span class="c-num">3</span>, largest=<span class="c-bi">False</span>)        <span class="c-cm"># bottom-3</span>
+vals, idx = torch.<span class="c-fn">topk</span>(scores, k=<span class="c-num">3</span>, sorted=<span class="c-bi">False</span>)         <span class="c-cm"># unordered top-k (faster)</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>gather / scatter</span><span>O(index.numel())</span></div><div class="complexity-item"><span>topk</span><span>O(n log k)</span></div></div>
+        <div class="insight purple"><div class="insight-label">gather mental model</div>Think of <code>gather(dim=1, index)</code> as: "for each row, go to the column specified by index and pick that value." The output shape always equals the index shape. This is exactly how NLL loss extracts the log-probability of the correct class from a (B, C) logit matrix.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="problem-section" id="torch-cheat">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">PyTorch — Common ML Operations</span>
+      <span class="section-tag tag-torch">PyTorch</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">Common ML tensor operations — cheat sheet</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">The operations that appear in every ML codebase. Know these cold — one-hot encoding, normalization, numpy bridge, sampling utilities.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">pytorch + numpy</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> torch, numpy <span class="c-kw">as</span> np
+
+<span class="c-cm"># ── One-hot encoding</span>
+labels = torch.<span class="c-fn">tensor</span>([<span class="c-num">2</span>, <span class="c-num">0</span>, <span class="c-num">1</span>])
+one_hot = torch.nn.functional.<span class="c-fn">one_hot</span>(labels, num_classes=<span class="c-num">5</span>).<span class="c-fn">float</span>()
+<span class="c-cm"># NumPy equivalent: np.eye(5)[labels]</span>
+
+<span class="c-cm"># ── Manual BatchNorm (normalize a batch over feature dim)</span>
+X = torch.<span class="c-fn">randn</span>(<span class="c-num">32</span>, <span class="c-num">128</span>)
+mean = X.<span class="c-fn">mean</span>(dim=<span class="c-num">0</span>, keepdim=<span class="c-bi">True</span>)
+std  = X.<span class="c-fn">std</span>(dim=<span class="c-num">0</span>, keepdim=<span class="c-bi">True</span>)
+X_norm = (X - mean) / (std + <span class="c-num">1e-8</span>)
+
+<span class="c-cm"># ── Move between NumPy and PyTorch</span>
+arr  = np.<span class="c-fn">ones</span>((<span class="c-num">3</span>, <span class="c-num">4</span>), dtype=np.float32)
+t    = torch.<span class="c-fn">from_numpy</span>(arr)       <span class="c-cm"># shares memory — modifying one modifies both</span>
+arr2 = t.<span class="c-fn">numpy</span>()                   <span class="c-cm"># tensor → numpy (CPU only, shares memory)</span>
+arr3 = t.<span class="c-fn">detach</span>().<span class="c-fn">cpu</span>().<span class="c-fn">numpy</span>()   <span class="c-cm"># safe: handles GPU and grad tensors</span>
+
+<span class="c-cm"># ── Prediction utilities</span>
+probs = torch.<span class="c-fn">softmax</span>(torch.<span class="c-fn">randn</span>(<span class="c-num">10</span>), dim=<span class="c-num">0</span>)
+pred  = probs.<span class="c-fn">argmax</span>()             <span class="c-cm"># greedy: highest prob class</span>
+top5  = probs.<span class="c-fn">topk</span>(<span class="c-num">5</span>).indices      <span class="c-cm"># top-5 class indices</span>
+cumsum = probs.<span class="c-fn">cumsum</span>(dim=<span class="c-num">0</span>)       <span class="c-cm"># nucleus sampling: find cutoff at p=0.9</span>
+
+<span class="c-cm"># ── Clamp, sign</span>
+x = torch.<span class="c-fn">randn</span>(<span class="c-num">5</span>)
+x.<span class="c-fn">clamp</span>(min=-<span class="c-num">1.0</span>, max=<span class="c-num">1.0</span>)      <span class="c-cm"># equivalent to np.clip</span>
+x.<span class="c-fn">clamp_</span>(min=<span class="c-num">0</span>)                  <span class="c-cm"># in-place ReLU</span>
+x.<span class="c-fn">sign</span>()                          <span class="c-cm"># +1, 0, or -1 per element</span>
+
+<span class="c-cm"># ── Shape diagnostics — print this when debugging</span>
+<span class="c-fn">print</span>(x.shape, x.dtype, x.device, x.requires_grad)</code></pre>
+        </div>
+        <div class="insight orange"><div class="insight-label">from_numpy shares memory</div><code>torch.from_numpy(arr)</code> and <code>tensor.numpy()</code> share the same memory buffer — modifying one modifies the other. Use <code>arr.copy()</code> or <code>tensor.clone()</code> if you need independent copies.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="problem-section" id="torch-autograd">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">PyTorch — Autograd Mechanics</span>
+      <span class="section-tag tag-torch">PyTorch</span>
+    </div>
+
+    <div class="problem">
+      <div class="problem-head">
+        <span class="problem-title">How autograd works: the computation graph</span>
+        <div class="problem-meta"><span class="badge medium">medium</span></div>
+      </div>
+      <div class="problem-body">
+        <p class="problem-desc">PyTorch builds a dynamic computation graph as you do forward ops. Each tensor tracks its grad_fn. Calling <code>.backward()</code> walks this DAG in reverse, accumulating gradients via the chain rule. Understanding this makes debugging gradient issues tractable.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">pytorch</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre class="code"><code><span class="c-kw">import</span> torch
+
+<span class="c-cm"># ── Leaf tensors: the graph starts here</span>
+x = torch.<span class="c-fn">tensor</span>([<span class="c-num">2.0</span>, <span class="c-num">3.0</span>], requires_grad=<span class="c-bi">True</span>)  <span class="c-cm"># leaf, tracked</span>
+w = torch.<span class="c-fn">tensor</span>([<span class="c-num">1.0</span>, <span class="c-num">2.0</span>], requires_grad=<span class="c-bi">True</span>)
+
+<span class="c-cm"># ── Forward pass builds the graph</span>
+z = (x * w).<span class="c-fn">sum</span>()   <span class="c-cm"># z = x0*w0 + x1*w1 = 2 + 6 = 8</span>
+<span class="c-fn">print</span>(z.grad_fn)     <span class="c-cm"># SumBackward0 — autograd knows how to differentiate sum</span>
+
+<span class="c-cm"># ── Backward: accumulates .grad on leaf tensors</span>
+z.<span class="c-fn">backward</span>()
+<span class="c-fn">print</span>(x.grad)        <span class="c-cm"># tensor([1., 2.])   → dz/dx = w</span>
+<span class="c-fn">print</span>(w.grad)        <span class="c-cm"># tensor([2., 3.])   → dz/dw = x</span>
+
+<span class="c-cm"># ── IMPORTANT: grads accumulate — zero before each step</span>
+z2 = (x * w).<span class="c-fn">sum</span>()
+z2.<span class="c-fn">backward</span>()
+<span class="c-fn">print</span>(x.grad)        <span class="c-cm"># tensor([2., 4.]) — doubled! grad was not zeroed</span>
+x.grad.<span class="c-fn">zero_</span>()       <span class="c-cm"># reset before next forward pass</span>
+<span class="c-cm"># optimizer.zero_grad() does this for all params automatically</span>
+
+<span class="c-cm"># ── no_grad: disable graph building (inference / val loop)</span>
+<span class="c-kw">with</span> torch.no_grad():
+    out = x * w      <span class="c-cm"># no grad_fn — saves memory and compute</span>
+
+<span class="c-cm"># ── detach: cut a tensor out of the graph mid-computation</span>
+target = x.<span class="c-fn">detach</span>()  <span class="c-cm"># same data, no grad — used in target networks (DQN)</span>
+
+<span class="c-cm"># ── retain_graph: call backward() more than once</span>
+z = (x * w).<span class="c-fn">sum</span>()
+z.<span class="c-fn">backward</span>(retain_graph=<span class="c-bi">True</span>)  <span class="c-cm"># graph survives — needed for multi-loss training</span>
+z.<span class="c-fn">backward</span>()                    <span class="c-cm"># second backward on same graph</span>
+
+<span class="c-cm"># ── Custom gradient: torch.autograd.Function</span>
+<span class="c-kw">class</span> <span class="c-cls">ClampSTE</span>(torch.autograd.Function):
+    <span class="c-str">"""Clamp forward, straight-through estimator backward."""</span>
+    <span class="c-dec">@staticmethod</span>
+    <span class="c-kw">def</span> <span class="c-fn">forward</span>(ctx, x, lo, hi):
+        <span class="c-kw">return</span> x.<span class="c-fn">clamp</span>(lo, hi)
+    <span class="c-dec">@staticmethod</span>
+    <span class="c-kw">def</span> <span class="c-fn">backward</span>(ctx, grad_output):
+        <span class="c-kw">return</span> grad_output, <span class="c-bi">None</span>, <span class="c-bi">None</span>  <span class="c-cm"># pass gradient through unchanged</span>
+
+y = <span class="c-cls">ClampSTE</span>.<span class="c-fn">apply</span>(x, <span class="c-num">0.0</span>, <span class="c-num">1.0</span>)  <span class="c-cm"># used in quantization-aware training</span></code></pre>
+        </div>
+        <div class="complexity"><div class="complexity-item"><span>Forward</span><span>O(ops)</span></div><div class="complexity-item"><span>Backward</span><span>O(ops) — same order</span></div><div class="complexity-item"><span>Graph memory</span><span>proportional to depth</span></div></div>
+        <div class="insight red"><div class="insight-label">gradient accumulation is a feature</div>Gradients accumulate into <code>.grad</code> by design — this is how gradient accumulation over multiple micro-batches works. But it also means forgetting to call <code>optimizer.zero_grad()</code> silently corrupts training. Always zero before forward, not after.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre.code');
+  const text = pre.innerText || pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+</script>
+</body>
+</html>
