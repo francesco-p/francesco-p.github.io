@@ -1,3 +1,8 @@
+- title: "Training-Free Fine-Grained Semantic Segmentations in Low Data Regimes: A FungiTastic Baseline"
+  image: "/imgs/paper11-preview.png"
+  authors: "Sebastian Cavada, Francesco Pelosin, Lapo Faggi"
+  venue: "13th Workshop on Fine-Grained Visual Categorization (CVPR 2026)"
+  pdf: "https://arxiv.org/pdf/2605.22492"
 - title: "Bounding Box-Guided Diffusion for Synthesizing Industrial Images and Segmentation Maps"
   image: "/imgs/paper10-preview.png"
   authors: "Alessandro Simoni*, Francesco Pelosin*"

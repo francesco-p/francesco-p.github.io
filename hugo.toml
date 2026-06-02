@@ -6,6 +6,9 @@ theme = "github.com/canstand/compost"
 enableEmoji = true
 enableRobotsTXT = true
 
+[security.node.permissions]
+  disable = true
+
 [build]
   _merge = "deep"
 
