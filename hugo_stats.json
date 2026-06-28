@@ -37,8 +37,14 @@
       "strong",
       "style",
       "svg",
+      "table",
+      "tbody",
+      "td",
       "template",
+      "th",
+      "thead",
       "title",
+      "tr",
       "ul"
     ],
     "classes": [
@@ -268,16 +274,20 @@
     "ids": [
       "-podxiv",
       "blue-channel",
+      "connecting-to-opencode",
       "green-channel",
+      "llamacpp-single-user",
       "neural-gas-playground",
       "ngas-pytorch",
       "reconstruction",
       "red-channel",
+      "summary",
       "switchTheme",
       "the-code",
       "the-explanation",
       "the-idea",
       "timeline",
+      "vllm-multiple-users",
       "what-got-extracted"
     ]
   }
