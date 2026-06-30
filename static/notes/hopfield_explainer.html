@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hopfield Model — An Interactive Explainer</title>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$']],
+      displayMath: [['$$', '$$']],
+      tags: 'none'
+    },
+    options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" crossorigin="anonymous"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&family=Playfair+Display:wght@700;900&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --paper: #f5f4ef;
+    --dim: #8a8a8a;
+    --accent: #3d5a80;
+    --hot: #e07a5f;
+    --cool: #81b29a;
+    --rule: #d0cfc8;
+    --card: #ffffff;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --display: 'Playfair Display', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 3rem 2rem 2rem;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: .8rem;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .subtitle {
+    font-weight: 300;
+    font-size: 1.05rem;
+    color: #444;
+    max-width: 600px;
+  }
+
+  /* ── LAYOUT ─────────────────────────────────────────── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 2rem 5rem;
+  }
+
+  section {
+    margin-top: 3.5rem;
+    padding-top: 3.5rem;
+    border-top: 1px solid var(--rule);
+  }
+  section:first-child { border-top: none; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: .3rem;
+  }
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--hot);
+    margin-bottom: .8rem;
+  }
+  p { margin-bottom: 1rem; color: #333; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── EQUATION BOXES ─────────────────────────────────── */
+  .eq-block {
+    background: var(--ink);
+    color: #e8e8f0;
+    border-radius: 6px;
+    padding: 1.4rem 2.2rem 1.4rem 1.8rem;
+    font-size: 1.05rem;
+    margin: 1.5rem 0;
+    position: relative;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .eq-block::before {
+    content: attr(data-label);
+    position: absolute;
+    top: .6rem; right: 1rem;
+    font-family: var(--mono);
+    font-size: .62rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #666;
+  }
+  /* Make MathJax inherit light color inside dark boxes */
+  .eq-block .MJX-TEX, .eq-block mjx-container { color: #e8e8f0 !important; }
+  .eq-block mjx-container svg { filter: invert(0); }
+  /* MathJax color overrides inside dark blocks */
+  .eq-block { --mj-color: #e8e8f0; }
+
+  /* ── CALLOUT ────────────────────────────────────────── */
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: .8rem 1.2rem;
+    background: #eef2f7;
+    border-radius: 0 4px 4px 0;
+    margin: 1.2rem 0;
+    font-size: .95rem;
+  }
+  .callout strong { color: var(--accent); }
+
+  /* ── INTERACTIVE GRID ───────────────────────────────── */
+  .demo-wrapper {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 1.8rem;
+    margin-top: 1.5rem;
+  }
+  .demo-title {
+    font-family: var(--mono);
+    font-size: .75rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 1.2rem;
+  }
+
+  /* neuron grid */
+  .grid-row { display: flex; gap: 6px; margin-bottom: 6px; justify-content: center; }
+  .cell {
+    width: 38px; height: 38px;
+    border-radius: 4px;
+    border: 1.5px solid var(--rule);
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: .75rem; color: #aaa;
+    user-select: none;
+  }
+  .cell.on  { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cell.off { background: var(--paper); }
+  .cell:hover { transform: scale(1.08); }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: .7rem;
+    margin-top: 1.2rem; align-items: center;
+  }
+  button {
+    font-family: var(--mono);
+    font-size: .75rem;
+    letter-spacing: .06em;
+    padding: .5rem 1.1rem;
+    border-radius: 4px;
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  button:hover { background: var(--ink); color: var(--paper); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: #2c4460; }
+  button.danger { border-color: var(--hot); color: var(--hot); }
+  button.danger:hover { background: var(--hot); color: #fff; }
+
+  .status-bar {
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--dim);
+    margin-top: 1rem;
+    min-height: 1.4rem;
+  }
+  .status-bar span { color: var(--accent); font-weight: 600; }
+
+  /* weight matrix display */
+  .matrix-grid {
+    display: grid;
+    gap: 3px;
+    margin: 1rem 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+  }
+  .w-cell {
+    text-align: center;
+    padding: 4px 2px;
+    border-radius: 3px;
+    font-size: .65rem;
+  }
+
+  /* ── CAPACITY SECTION ───────────────────────────────── */
+  .capacity-row {
+    display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.2rem;
+  }
+  .cap-card {
+    flex: 1; min-width: 150px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem;
+    background: var(--card);
+    text-align: center;
+  }
+  .cap-card .big {
+    font-family: var(--display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .cap-card .label {
+    font-family: var(--mono);
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dim);
+    margin-top: .3rem;
+  }
+
+  /* ── STEP ANNOTATION ────────────────────────────────── */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex; gap: 1rem;
+    margin-bottom: 1.2rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: .75rem;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: .2rem;
+  }
+  .step p { margin-bottom: 0; }
+
+  /* recall animation */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .pulsing { animation: pulse .6s 3; }
+
+  /* tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--rule); margin-bottom: 1.5rem; }
+  .tab {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .6rem 1.2rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    color: var(--dim);
+    transition: color .15s, border-color .15s;
+  }
+  .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── CROSSTALK VIZ ──────────────────────────────────── */
+  .bar-row {
+    display: flex; align-items: center; gap: .8rem;
+    margin-bottom: .6rem;
+    font-family: var(--mono); font-size: .72rem;
+  }
+  .bar-label { width: 70px; text-align: right; color: var(--dim); }
+  .bar-track {
+    flex: 1; height: 20px; background: #eee;
+    border-radius: 10px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 10px;
+    transition: width .4s ease;
+    background: var(--cool);
+  }
+  .bar-fill.bad { background: var(--hot); }
+  .bar-val { width: 50px; font-size: .68rem; color: var(--dim); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 2rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--dim);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Neural Network Theory · Chapter 2</div>
+  <h1>The Hopfield Model</h1>
+  <p class="subtitle">An interactive guide to associative memory — how a network of neurons can store and recall patterns.</p>
+</header>
+
+<main>
+
+<!-- ── SECTION 0: INTUITION ──────────────────────────── -->
+<section>
+  <div class="section-tag">The Big Idea</div>
+  <h2>What is this model for?</h2>
+  <p>Imagine you see a blurry, half-obscured photo of a face. Somehow your brain fills in the gaps and recognizes the person. The Hopfield model is a mathematical toy that does the same thing — it's a network of binary neurons that can <strong>store memories as attractors</strong> and <strong>recall them from partial or noisy inputs</strong>.</p>
+  <p>Each neuron is either <strong>firing (+1)</strong> or <strong>silent (−1)</strong>. A "memory" is just a specific pattern of +1s and −1s across all neurons. The network is wired so that once you start near a stored memory, it snaps you all the way there.</p>
+  <div class="callout">
+    <strong>Key insight:</strong> The weights <em>w<sub>ij</sub></em> encode the memories. The update rule drives the network toward those memories. You never need to search — the physics does it for you.
+  </div>
+</section>
+
+<!-- ── SECTION 1: UPDATE RULE ─────────────────────────── -->
+<section>
+  <div class="section-tag">Equation 2.4</div>
+  <h2>The Update Rule</h2>
+  <p>At each step, each neuron looks at all its inputs and decides whether to fire:</p>
+
+  <div class="eq-block" data-label="Eq. 2.4">
+    $$S_i := \operatorname{sgn}\!\left(\sum_j w_{ij}\, S_j\right)$$
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <p>$S_j$ — the current state of every other neuron $j$ (either $+1$ or $-1$).</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <p>$w_{ij}$ — the connection weight from neuron $j$ to neuron $i$. Positive means "fire together", negative means "suppress each other".</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <p>$\sum_j w_{ij} S_j$ — the weighted vote. If positive, neuron $i$ fires ($+1$); if negative, it stays silent ($-1$). That's what $\operatorname{sgn}(\cdot)$ does.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <p>Neurons update <em>asynchronously</em> — one at a time, randomly — until nothing changes. That stable state is a <strong>stored memory</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 2: HEBB RULE ───────────────────────────── -->
+<section>
+  <div class="section-tag">Equations 2.7 & 2.9</div>
+  <h2>How to Wire the Weights</h2>
+  <p>Given a set of patterns you want to memorize, how do you set the weights? The answer is the <strong>Hebb rule</strong> (inspired by neuroscience: "neurons that fire together, wire together").</p>
+
+  <p>For <strong>one pattern</strong> $\xi_i$:</p>
+  <div class="eq-block" data-label="Eq. 2.7">
+    $$w_{ij} = \frac{1}{N}\,\xi_i\,\xi_j$$
+  </div>
+
+  <p>For <strong>p patterns</strong> $\xi^{\mu}$:</p>
+  <div class="eq-block" data-label="Eq. 2.9">
+    $$w_{ij} = \frac{1}{N}\sum_{\mu=1}^{p}\xi_i^{\mu}\,\xi_j^{\mu}$$
+  </div>
+
+  <div class="callout">
+    <strong>Why does this work?</strong> If $\xi_i$ and $\xi_j$ agree ($+1,+1$ or $-1,-1$), their product is $+1$ → they excite each other. If they disagree ($+1,-1$), the product is $-1$ → they inhibit each other. The weight encodes whether each pair of neurons is "friends" or "enemies" in a given memory.
+  </div>
+
+  <!-- INTERACTIVE WEIGHT MATRIX -->
+  <div class="demo-wrapper">
+    <div class="demo-title">Interactive · Weight Matrix for a 4-Neuron Network</div>
+    <p style="font-size:.9rem;color:#555;margin-bottom:1.2rem;">Click neurons to toggle a pattern, then see the resulting weight matrix w<sub>ij</sub> = (1/N) ξ<sub>i</sub>ξ<sub>j</sub>.</p>
+
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-bottom:.5rem;">PATTERN ξ (click to toggle)</div>
+        <div id="pattern-neurons" class="grid-row"></div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div style="font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-bottom:.5rem;">WEIGHT MATRIX w<sub>ij</sub></div>
+        <div id="weight-matrix"></div>
+      </div>
+    </div>
+    <div class="status-bar" id="weight-status"></div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: RECALL ──────────────────────────────── -->
+<section>
+  <div class="section-tag">Equations 2.10 – 2.12</div>
+  <h2>Recall: Fixing a Noisy Pattern</h2>
+  <p>Once the weights are set, the network can recover a stored pattern from a corrupted version. The math behind why this works: substituting the Hebb rule into the net input gives</p>
+
+  <div class="eq-block" data-label="Eq. 2.11 / 2.12">
+    $$h_i^{\nu} = \xi_i^{\nu} \;+\; \underbrace{\frac{1}{N}\sum_j\sum_{\mu\neq\nu}\xi_i^{\mu}\,\xi_j^{\mu}\,\xi_j^{\nu}}_{\text{crosstalk from other patterns}}$$
+  </div>
+
+  <p>The first term is exactly the stored pattern value $\xi_i^\nu$. If the crosstalk term is small (few patterns stored), then $\operatorname{sgn}(h_i^\nu) = \xi_i^\nu$, so the network faithfully retrieves the memory.</p>
+
+  <!-- INTERACTIVE RECALL DEMO -->
+  <div class="demo-wrapper">
+    <div class="demo-title">Interactive · Store & Recall on a 5×5 Grid</div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('store')">① Store a pattern</div>
+      <div class="tab" onclick="switchTab('recall')">② Corrupt & Recall</div>
+    </div>
+
+    <div id="tab-store" class="tab-content active">
+      <p style="font-size:.9rem;color:#555;margin-bottom:1rem;">Draw a pattern by clicking the cells (black = +1, white = −1), then click <strong>Store Pattern</strong>.</p>
+      <div id="draw-grid"></div>
+      <div class="controls">
+        <button class="primary" onclick="storePattern()">Store Pattern</button>
+        <button onclick="clearDraw()">Clear</button>
+        <button onclick="randomPattern()">Random</button>
+      </div>
+      <div class="status-bar" id="store-status"></div>
+      <div id="stored-thumbs" style="margin-top:1.2rem;"></div>
+    </div>
+
+    <div id="tab-recall" class="tab-content">
+      <p style="font-size:.9rem;color:#555;margin-bottom:1rem;">Start with a stored pattern, add noise, then watch the network recover it.</p>
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
+        <div>
+          <div style="font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-bottom:.5rem;">CURRENT STATE (click to flip)</div>
+          <div id="recall-grid"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;justify-content:center;margin-top:1.5rem;">
+          <button class="primary" onclick="runRecall()">▶ Run Update Step</button>
+          <button onclick="addNoise()">Add Noise (20%)</button>
+          <button onclick="loadStoredForRecall()">Load Pattern</button>
+          <button class="danger" onclick="clearAll()">Reset All</button>
+        </div>
+      </div>
+      <div class="status-bar" id="recall-status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: CROSSTALK & CAPACITY ───────────────── -->
+<section>
+  <div class="section-tag">Equation 2.13</div>
+  <h2>Crosstalk & Storage Capacity</h2>
+  <p>When many patterns are stored, the weight matrix mixes them all together. For each neuron $i$ in pattern $\nu$, there's a <strong>crosstalk term</strong>:</p>
+
+  <div class="eq-block" data-label="Eq. 2.13">
+    $$C_i^{\nu} \;\equiv\; -\xi_i^{\nu}\,\frac{1}{N}\sum_j\sum_{\mu\neq\nu}\xi_i^{\mu}\,\xi_j^{\mu}\,\xi_j^{\nu}$$
+  </div>
+
+  <p>If $C_i^\nu$ is <strong>negative</strong>: the crosstalk helps (or is harmless). If it's <strong>positive and large</strong>: it flips the sign of $h_i^\nu$ and corrupts the memory.</p>
+
+  <div class="callout">
+    <strong>The 0.138N rule:</strong> With random patterns, the crosstalk stays manageable only up to about $p \approx 0.138 \times N$ patterns. Beyond that, memories interfere catastrophically. A 1000-neuron network can store ~138 patterns reliably.
+  </div>
+
+  <!-- CAPACITY VISUALIZER -->
+  <div class="demo-wrapper">
+    <div class="demo-title">Interactive · Crosstalk as a function of stored patterns</div>
+    <p style="font-size:.9rem;color:#555;margin-bottom:1.2rem;">Drag the slider to add more patterns and see how crosstalk noise grows.</p>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <label style="font-family:var(--mono);font-size:.78rem;">Patterns stored (p):</label>
+      <input type="range" id="p-slider" min="1" max="20" value="2" style="flex:1;min-width:120px;" oninput="updateCapacity()">
+      <span id="p-val" style="font-family:var(--mono);font-weight:600;color:var(--accent);min-width:30px;">2</span>
+    </div>
+    <div class="capacity-row" id="cap-cards"></div>
+    <div style="margin-top:1.5rem;">
+      <div style="font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-bottom:.8rem;">RECALL RELIABILITY PER PATTERN (N=100 neurons)</div>
+      <div id="crosstalk-bars"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: SUMMARY ─────────────────────────────── -->
+<section>
+  <div class="section-tag">Summary</div>
+  <h2>Putting it all together</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <p><strong>Neurons</strong> take values $+1$ or $-1$. A "memory" is a specific vector of these values.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <p><strong>Hebb rule</strong> (Eq. 2.9): set $w_{ij} = \frac{1}{N}\sum_\mu \xi_i^\mu \xi_j^\mu$. Neurons that co-activate in memories get positive weights.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <p><strong>Update rule</strong> (Eq. 2.4): each neuron takes the sign of its weighted input $\sum_j w_{ij}S_j$. Repeated until stable — the network has found an attractor.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <p><strong>Capacity</strong>: the crosstalk term $C_i^\nu$ (Eq. 2.13) from other memories stays small only up to $p \approx 0.138N$ patterns. Beyond this threshold, retrieval fails.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>Hopfield, J.J. (1982). Neural networks and physical systems with emergent collective computational abilities. PNAS.</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// WEIGHT MATRIX DEMO (4 neurons)
+// ═══════════════════════════════════════════════
+const N_SMALL = 4;
+let smallPattern = [1, -1, 1, -1];
+
+function initSmallPattern() {
+  const row = document.getElementById('pattern-neurons');
+  row.innerHTML = '';
+  smallPattern.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'cell' + (v === 1 ? ' on' : ' off');
+    c.textContent = v === 1 ? '+1' : '−1';
+    c.style.width = '52px';
+    c.onclick = () => { smallPattern[i] *= -1; initSmallPattern(); };
+    row.appendChild(c);
+  });
+  renderWeightMatrix();
+}
+
+function renderWeightMatrix() {
+  const grid = document.getElementById('weight-matrix');
+  const labels = ['n1','n2','n3','n4'];
+  let html = `<div style="display:grid;grid-template-columns:30px repeat(${N_SMALL},42px);gap:3px;font-family:var(--mono);font-size:.65rem;">`;
+  // header row
+  html += `<div></div>`;
+  labels.forEach(l => html += `<div style="text-align:center;color:var(--dim)">${l}</div>`);
+  for (let i = 0; i < N_SMALL; i++) {
+    html += `<div style="color:var(--dim);text-align:right;padding-right:4px;line-height:30px">${labels[i]}</div>`;
+    for (let j = 0; j < N_SMALL; j++) {
+      if (i === j) {
+        html += `<div style="text-align:center;line-height:30px;color:#ccc">—</div>`;
+      } else {
+        const w = (smallPattern[i] * smallPattern[j]) / N_SMALL;
+        const bg = w > 0 ? `rgba(61,90,128,${Math.abs(w)*4})` : `rgba(224,122,95,${Math.abs(w)*4})`;
+        const col = Math.abs(w) > 0.1 ? '#fff' : '#333';
+        html += `<div style="text-align:center;line-height:30px;background:${bg};color:${col};border-radius:3px">${w.toFixed(2)}</div>`;
+      }
+    }
+  }
+  html += `</div>`;
+  grid.innerHTML = html;
+
+  const pos = [], neg = [];
+  for (let i = 0; i < N_SMALL; i++)
+    for (let j = i+1; j < N_SMALL; j++) {
+      const w = smallPattern[i]*smallPattern[j]/N_SMALL;
+      (w > 0 ? pos : neg).push(`n${i+1}–n${j+1}`);
+    }
+  document.getElementById('weight-status').innerHTML =
+    `<span style="color:var(--cool)">Excitatory (+)</span>: ${pos.join(', ') || 'none'} &nbsp;|&nbsp; <span style="color:var(--hot)">Inhibitory (−)</span>: ${neg.join(', ') || 'none'}`;
+}
+
+// ═══════════════════════════════════════════════
+// 5×5 STORE & RECALL DEMO
+// ═══════════════════════════════════════════════
+const N5 = 25, ROWS5 = 5;
+let drawState = new Array(N5).fill(-1);
+let weights5 = Array.from({length:N5}, () => new Array(N5).fill(0));
+let recallState = new Array(N5).fill(-1);
+let storedPatterns = [];
+
+function buildGrid(id, state, onclick) {
+  const wrap = document.getElementById(id);
+  wrap.innerHTML = '';
+  for (let r = 0; r < ROWS5; r++) {
+    const row = document.createElement('div');
+    row.className = 'grid-row';
+    for (let c = 0; c < ROWS5; c++) {
+      const idx = r*ROWS5+c;
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (state[idx]===1?' on':' off');
+      cell.id = `${id}-${idx}`;
+      if (onclick) cell.onclick = () => onclick(idx);
+      row.appendChild(cell);
+    }
+    wrap.appendChild(row);
+  }
+}
+
+function refreshGrid(id, state) {
+  state.forEach((v, i) => {
+    const c = document.getElementById(`${id}-${i}`);
+    if (c) { c.className = 'cell' + (v===1?' on':' off'); }
+  });
+}
+
+function toggleDraw(idx) { drawState[idx] *= -1; refreshGrid('draw-grid', drawState); }
+function clearDraw()  { drawState.fill(-1); refreshGrid('draw-grid', drawState); }
+function randomPattern() { drawState = drawState.map(() => Math.random()>.5?1:-1); refreshGrid('draw-grid', drawState); }
+
+function storePattern() {
+  const pat = [...drawState];
+  storedPatterns.push(pat);
+  // update weights: w_ij += (1/N) * ξ_i * ξ_j
+  for (let i = 0; i < N5; i++)
+    for (let j = 0; j < N5; j++)
+      if (i !== j) weights5[i][j] += pat[i]*pat[j]/N5;
+
+  document.getElementById('store-status').innerHTML =
+    `Pattern <span>#${storedPatterns.length}</span> stored. Total: <span>${storedPatterns.length}</span> pattern(s).`;
+  renderThumbs();
+  recallState = [...pat]; // preload into recall tab
+  refreshGrid('recall-grid', recallState);
+}
+
+function renderThumbs() {
+  const wrap = document.getElementById('stored-thumbs');
+  if (storedPatterns.length === 0) { wrap.innerHTML=''; return; }
+  let html = `<div style="font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-bottom:.5rem;">STORED PATTERNS</div><div style="display:flex;gap:.8rem;flex-wrap:wrap;">`;
+  storedPatterns.forEach((p, pi) => {
+    html += `<div style="cursor:pointer" onclick="loadPattern(${pi})" title="Load pattern ${pi+1}">`;
+    html += `<div style="font-family:var(--mono);font-size:.6rem;color:var(--dim);margin-bottom:3px;">P${pi+1}</div>`;
+    html += `<div style="display:grid;grid-template-columns:repeat(5,8px);gap:1px;">`;
+    p.forEach(v => { html += `<div style="width:8px;height:8px;border-radius:1px;background:${v===1?'var(--accent)':'#e0e0e0'}"></div>`; });
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+  wrap.innerHTML = html;
+}
+
+function loadPattern(pi) {
+  recallState = [...storedPatterns[pi]];
+  refreshGrid('recall-grid', recallState);
+  document.getElementById('recall-status').innerHTML = `Loaded pattern <span>#${pi+1}</span>. Add noise or run update steps.`;
+}
+
+function loadStoredForRecall() {
+  if (storedPatterns.length === 0) { document.getElementById('recall-status').innerHTML='No patterns stored yet. Go to ① first.'; return; }
+  loadPattern(0);
+}
+
+function addNoise() {
+  let flipped = 0;
+  recallState = recallState.map(v => { if (Math.random()<.2) { flipped++; return v*-1; } return v; });
+  refreshGrid('recall-grid', recallState);
+  document.getElementById('recall-status').innerHTML = `Flipped <span>${flipped}</span> neurons. Run update steps to recall.`;
+}
+
+function runRecall() {
+  if (storedPatterns.length === 0) {
+    document.getElementById('recall-status').innerHTML = 'Store a pattern first in tab ①.';
+    return;
+  }
+  // one full asynchronous pass (random order)
+  const order = [...Array(N5).keys()].sort(() => Math.random()-.5);
+  let changes = 0;
+  order.forEach(i => {
+    let h = 0;
+    for (let j = 0; j < N5; j++) h += weights5[i][j]*recallState[j];
+    const newVal = h >= 0 ? 1 : -1;
+    if (newVal !== recallState[i]) { recallState[i] = newVal; changes++; }
+  });
+  refreshGrid('recall-grid', recallState);
+
+  // check similarity to stored patterns
+  let best = -1, bestPat = -1;
+  storedPatterns.forEach((p, pi) => {
+    const sim = p.reduce((acc, v, i) => acc + (v===recallState[i]?1:0), 0)/N5;
+    if (sim > best) { best = sim; bestPat = pi+1; }
+  });
+  const pct = Math.round(best*100);
+  document.getElementById('recall-status').innerHTML =
+    changes === 0
+      ? `<span>Stable state reached!</span> Closest to pattern #${bestPat} (${pct}% match).`
+      : `Updated <span>${changes}</span> neuron(s). Closest: pattern #${bestPat} (<span>${pct}%</span> match). Keep stepping!`;
+}
+
+function clearAll() {
+  weights5 = Array.from({length:N5}, () => new Array(N5).fill(0));
+  storedPatterns = [];
+  recallState.fill(-1);
+  refreshGrid('recall-grid', recallState);
+  document.getElementById('recall-status').innerHTML = '';
+  document.getElementById('store-status').innerHTML = '';
+  document.getElementById('stored-thumbs').innerHTML = '';
+  drawState.fill(-1);
+  refreshGrid('draw-grid', drawState);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['store','recall'][i]===name));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════
+// CAPACITY / CROSSTALK VISUALIZER
+// ═══════════════════════════════════════════════
+function updateCapacity() {
+  const p = parseInt(document.getElementById('p-slider').value);
+  const N = 100;
+  document.getElementById('p-val').textContent = p;
+
+  // theoretical crosstalk std ≈ sqrt(p/N)
+  const noiseStd = Math.sqrt(p / N);
+  const signalStrength = 1.0;
+  const snr = signalStrength / noiseStd;
+  const reliability = Math.min(1, Math.max(0, 1 - (p / (0.138 * N))));
+  const capacity = (0.138 * N).toFixed(0);
+
+  document.getElementById('cap-cards').innerHTML = `
+    <div class="cap-card">
+      <div class="big">${p}</div>
+      <div class="label">Patterns stored</div>
+    </div>
+    <div class="cap-card">
+      <div class="big">${capacity}</div>
+      <div class="label">Max safe capacity (0.138N)</div>
+    </div>
+    <div class="cap-card">
+      <div class="big">${(noiseStd*100).toFixed(1)}%</div>
+      <div class="label">Crosstalk noise (σ)</div>
+    </div>
+    <div class="cap-card">
+      <div class="big" style="color:${reliability>0.3?'var(--cool)':'var(--hot)'}">${Math.round(reliability*100)}%</div>
+      <div class="label">Estimated recall reliability</div>
+    </div>
+  `;
+
+  // bar chart: first 6 patterns
+  const displayed = Math.min(p, 6);
+  let bars = '';
+  for (let mu = 1; mu <= displayed; mu++) {
+    const local_noise = noiseStd * (0.8 + 0.4*Math.random());
+    const reliable = local_noise < 0.3;
+    const fillPct = Math.min(95, Math.max(5, local_noise * 250));
+    bars += `<div class="bar-row">
+      <div class="bar-label">P${mu}</div>
+      <div class="bar-track"><div class="bar-fill ${reliable?'':'bad'}" style="width:${fillPct}%"></div></div>
+      <div class="bar-val">${reliable?'✓ ok':'✗ noisy'}</div>
+    </div>`;
+  }
+  if (p > 6) bars += `<div style="font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-top:.4rem;">… and ${p-6} more patterns (all increasingly affected)</div>`;
+  document.getElementById('crosstalk-bars').innerHTML = bars;
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  initSmallPattern();
+  buildGrid('draw-grid', drawState, toggleDraw);
+  buildGrid('recall-grid', recallState, idx => {
+    recallState[idx] *= -1;
+    refreshGrid('recall-grid', recallState);
+  });
+  updateCapacity();
+  // Typeset any remaining inline math after interactive elements load
+  if (window.MathJax) MathJax.typesetPromise();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{{ define "main" }}
+  <section class="mx-auto min-w-0 max-w-2xl flex-grow lg:max-w-3xl">
+    {{ partial "section-header.html" . }}
+    <ul class="mt-8 divide-y divide-neutral-300 dark:divide-neutral-600">
+      {{ range hugo.Data.notes }}
+        <li class="py-3">
+          <a href="/notes/{{ .file }}" class="text-lg font-medium hover:underline">
+            {{ .title }}
+          </a>
+        </li>
+      {{ end }}
+    </ul>
+  </section>
+{{ end }}

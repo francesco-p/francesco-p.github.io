@@ -1,0 +1,8 @@
+- title: "adaLN-Zero & SPADE — conditioning in neural networks"
+  file: "adaln_spade_notes.html"
+
+- title: "RoPE — a geometrical explaination"
+  file: "rope_geometry.html"
+  
+- title: "Hopfield Model — examples"
+  file: "hopfield_explainer.html"

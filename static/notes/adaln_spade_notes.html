@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>adaLN-Zero & SPADE — Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #FAF8F3;
+    --paper:     #FFFFFF;
+    --ink:       #2B2A26;
+    --ink-soft:  #57544D;
+    --ink-faint: #8A867D;
+    --line:      #E7E2D6;
+    --line-soft: #F0ECE2;
+    --accent:    #B5482B;
+    --accent-2:  #2F6E5C;
+    --accent-3:  #9A6A1E;
+    --blue:      #355C8C;
+    --code-bg:   #F5F2EA;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 28px 120px; }
+
+  header {
+    padding: 80px 0 44px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 22px;
+  }
+
+  header h1 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: clamp(34px, 6vw, 54px);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+
+  header h1 em { font-style: italic; color: var(--accent); }
+
+  .lede {
+    font-family: 'Newsreader', serif;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+
+  .toc {
+    margin-bottom: 64px;
+    padding: 26px 30px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+
+  .toc-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+
+  .toc ol { list-style: none; counter-reset: t; }
+
+  .toc li {
+    counter-increment: t;
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 5px 0;
+  }
+
+  .toc li::before {
+    content: counter(t, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    min-width: 24px;
+  }
+
+  .toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; }
+  .toc a:hover { border-bottom-color: var(--accent); }
+
+  section { margin-bottom: 76px; }
+
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  h2 {
+    font-family: 'Newsreader', serif;
+    font-weight: 600;
+    font-size: clamp(26px, 4vw, 34px);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 26px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  h3 {
+    font-family: 'Newsreader', serif;
+    font-weight: 600;
+    font-size: 21px;
+    color: var(--ink);
+    margin: 40px 0 12px;
+  }
+
+  h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--accent-2);
+    margin: 28px 0 8px;
+    text-transform: lowercase;
+  }
+
+  p { margin-bottom: 18px; }
+
+  strong { font-weight: 600; color: var(--ink); }
+  em { color: var(--accent); font-style: italic; }
+
+  a { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(53,92,140,0.3); }
+  a:hover { border-bottom-color: var(--blue); }
+
+  .term {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent-3);
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 18px 22px;
+    overflow-x: auto;
+    margin: 22px 0;
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  pre code { font-family: 'JetBrains Mono', monospace; color: #3A382F; }
+
+  .kw { color: #9A2D2D; }
+  .fn { color: #355C8C; }
+  .st { color: #2F6E5C; }
+  .cm { color: #9A968B; font-style: italic; }
+  .nu { color: #9A6A1E; }
+  .cl { color: #6A4A8C; }
+
+  .mathwrap { margin: 22px 0; padding: 8px 0; overflow-x: auto; }
+
+  .callout {
+    margin: 26px 0;
+    padding: 18px 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--ink-faint);
+    border-radius: 0 4px 4px 0;
+  }
+  .callout.insight { border-left-color: var(--accent-2); }
+  .callout.warning { border-left-color: var(--accent); }
+  .callout.key     { border-left-color: var(--accent-3); }
+  .callout.ref     { border-left-color: var(--blue); background: #F8F6F1; }
+
+  .callout-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .callout.insight .callout-tag { color: var(--accent-2); }
+  .callout.warning .callout-tag { color: var(--accent); }
+  .callout.key     .callout-tag { color: var(--accent-3); }
+  .callout.ref     .callout-tag { color: var(--blue); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  figure {
+    margin: 32px 0;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px 20px 12px;
+  }
+  figure svg { display: block; width: 100%; height: auto; }
+  figcaption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+    line-height: 1.5;
+  }
+
+  .svg-t  { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; }
+  .svg-ts { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 24px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--ink);
+    font-weight: 500;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-2); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 36px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  footer .rlabel {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+  footer .refs { display: flex; flex-direction: column; gap: 10px; }
+
+  [id] { scroll-margin-top: 24px; }
+
+  mjx-container { color: var(--ink); }
+  mjx-container[display="true"] { margin: 0 !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">self-notes · diffusion transformers</div>
+    <h1>Conditioning by modulation:<br><em>adaLN-Zero</em> and <em>SPADE</em></h1>
+    <p class="lede">
+      How DiT injects conditioning signals through adaptive normalization, why zero-initialization
+      matters, and how the same idea generalizes to spatial conditioning with segmentation masks.
+    </p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <div class="toc-label">contents</div>
+    <ol>
+      <li><a href="#adaln">adaLN — adaptive layer norm</a></li>
+      <li><a href="#adaln-zero">adaLN-Zero — adding the gate</a></li>
+      <li><a href="#why">Why zero-init wins</a></li>
+      <li><a href="#spade">SPADE — spatial modulation</a></li>
+      <li><a href="#link">The connection</a></li>
+      <li><a href="#synth">Synthesis — spatial adaLN-Zero</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section id="adaln">
+    <div class="sec-num">01</div>
+    <h2>adaLN — adaptive layer norm</h2>
+
+    <p>
+      Standard LayerNorm normalizes activations, then applies <em>fixed</em> learned affine parameters.
+      adaLN makes those parameters <em>dynamic</em>: the scale and shift are produced on the fly from a
+      conditioning vector <span class="term">c</span> — typically a timestep embedding plus a class embedding,
+      passed through a small MLP.
+    </p>
+
+    <div class="mathwrap">
+      \[
+      \gamma, \beta = \mathrm{MLP}(c)
+      \qquad
+      x_{\text{mod}} = \mathrm{LN}(x)\odot(1+\gamma) + \beta
+      \]
+    </div>
+
+    <p>
+      The <span class="term">(1 + γ)</span> form is deliberate — it centers the multiplicative scale at
+      \(1\) (identity), so training starts neutral instead of at zero scale. In DiT this happens
+      <strong>twice per block</strong> (before attention, before the FFN), giving four parameters per block:
+      \(\gamma_1,\beta_1\) and \(\gamma_2,\beta_2\).
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 680 330" role="img" aria-label="adaLN DiT block data flow">
+        <defs>
+          <marker id="arr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#8A867D" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <rect x="40" y="40" width="150" height="40" rx="5" fill="#F5F2EA" stroke="#9A6A1E" stroke-width="1"/>
+        <text class="svg-ts" x="115" y="64" text-anchor="middle" fill="#9A6A1E">condition c</text>
+
+        <line x1="115" y1="80" x2="115" y2="108" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr1)"/>
+
+        <rect x="40" y="108" width="150" height="40" rx="5" fill="#F5F2EA" stroke="#9A6A1E" stroke-width="1"/>
+        <text class="svg-ts" x="115" y="132" text-anchor="middle" fill="#9A6A1E">SiLU + Linear</text>
+
+        <line x1="115" y1="148" x2="115" y2="176" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr1)"/>
+
+        <rect x="40" y="176" width="150" height="40" rx="5" fill="#FBEFE7" stroke="#B5482B" stroke-width="1"/>
+        <text class="svg-ts" x="115" y="200" text-anchor="middle" fill="#B5482B">γ (scale), β (shift)</text>
+
+        <rect x="380" y="40" width="180" height="40" rx="5" fill="#FFFFFF" stroke="#E7E2D6" stroke-width="1"/>
+        <text class="svg-ts" x="470" y="64" text-anchor="middle" fill="#57544D">input x (residual)</text>
+
+        <line x1="470" y1="80" x2="470" y2="104" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr1)"/>
+
+        <rect x="360" y="104" width="220" height="48" rx="5" fill="#EAF2EE" stroke="#2F6E5C" stroke-width="1"/>
+        <text class="svg-t" x="470" y="124" text-anchor="middle" fill="#2F6E5C">Modulate</text>
+        <text class="svg-ts" x="470" y="141" text-anchor="middle" fill="#2F6E5C">x ⊙ (1+γ) + β</text>
+
+        <line x1="190" y1="196" x2="356" y2="135" stroke="#B5482B" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr1)"/>
+
+        <line x1="470" y1="152" x2="470" y2="176" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr1)"/>
+
+        <rect x="380" y="176" width="180" height="40" rx="5" fill="#FFFFFF" stroke="#E7E2D6" stroke-width="1"/>
+        <text class="svg-ts" x="470" y="200" text-anchor="middle" fill="#57544D">Attention / FFN</text>
+
+        <line x1="470" y1="216" x2="470" y2="240" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr1)"/>
+
+        <rect x="360" y="240" width="220" height="48" rx="5" fill="#EAF2EE" stroke="#2F6E5C" stroke-width="1"/>
+        <text class="svg-t" x="470" y="260" text-anchor="middle" fill="#2F6E5C">Residual add</text>
+        <text class="svg-ts" x="470" y="277" text-anchor="middle" fill="#2F6E5C">out + x</text>
+
+        <path d="M380 60 L300 60 L300 264 L356 264" fill="none" stroke="#C9C3B5" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+        <text class="svg-ts" x="300" y="166" text-anchor="middle" fill="#8A867D" transform="rotate(-90 300 166)">residual</text>
+      </svg>
+      <figcaption>adaLN block — condition produces γ, β (global, shared across all tokens). No gate on the residual.</figcaption>
+    </figure>
+
+    <pre><code><span class="cm"># c: condition  [B, cond_dim]   x: tokens [B, T, D]</span>
+shift1, scale1, shift2, scale2 = MLP(SiLU(c)).chunk(<span class="nu">4</span>, -<span class="nu">1</span>)
+
+x_mod = LayerNorm(x) * (<span class="nu">1</span> + scale1) + shift1
+x = x + Attention(x_mod)          <span class="cm"># plain residual</span>
+
+x_mod = LayerNorm(x) * (<span class="nu">1</span> + scale2) + shift2
+x = x + FFN(x_mod)</code></pre>
+
+    <div class="callout warning">
+      <div class="callout-tag">limitation</div>
+      <p>The same \(\gamma,\beta\) are broadcast to <strong>every token</strong>. Conditioning is global — every image patch gets identical modulation. Fine for class/timestep signals; it discards spatial structure.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="adaln-zero">
+    <div class="sec-num">02</div>
+    <h2>adaLN-Zero — adding the gate</h2>
+
+    <p>
+      adaLN-Zero (Peebles &amp; Xie, DiT 2023) adds one element: a per-block <em>gating scalar</em> \(\alpha\)
+      that multiplies each sub-block's output <em>before</em> the residual add. The linear layer producing
+      \(\alpha\) is <strong>initialized to zero</strong>.
+    </p>
+
+    <div class="mathwrap">
+      \[
+      \gamma_1,\beta_1,\alpha_1,\ \gamma_2,\beta_2,\alpha_2 = \mathrm{Linear}\big(\mathrm{SiLU}(c)\big)
+      \]
+      \[
+      x \leftarrow x + \alpha_1 \odot \mathrm{Attn}\!\big(\mathrm{LN}(x)\odot(1+\gamma_1)+\beta_1\big)
+      \]
+      \[
+      x \leftarrow x + \alpha_2 \odot \mathrm{FFN}\!\big(\mathrm{LN}(x)\odot(1+\gamma_2)+\beta_2\big)
+      \]
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 680 360" role="img" aria-label="adaLN-Zero DiT block data flow with alpha gate">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#8A867D" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <rect x="40" y="40" width="150" height="40" rx="5" fill="#F5F2EA" stroke="#9A6A1E" stroke-width="1"/>
+        <text class="svg-ts" x="115" y="64" text-anchor="middle" fill="#9A6A1E">condition c</text>
+
+        <line x1="115" y1="80" x2="115" y2="104" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+        <rect x="40" y="104" width="150" height="40" rx="5" fill="#F5F2EA" stroke="#9A6A1E" stroke-width="1"/>
+        <text class="svg-ts" x="115" y="128" text-anchor="middle" fill="#9A6A1E">SiLU + Linear</text>
+
+        <line x1="115" y1="144" x2="115" y2="168" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+        <rect x="32" y="168" width="166" height="50" rx="5" fill="#FBEFE7" stroke="#B5482B" stroke-width="1.4"/>
+        <text class="svg-ts" x="115" y="189" text-anchor="middle" fill="#B5482B">γ, β  +  α</text>
+        <text x="115" y="206" text-anchor="middle" fill="#B5482B" style="font-family:'JetBrains Mono',monospace;font-size:10px">α linear = zero-init</text>
+
+        <rect x="380" y="40" width="180" height="40" rx="5" fill="#FFFFFF" stroke="#E7E2D6" stroke-width="1"/>
+        <text class="svg-ts" x="470" y="64" text-anchor="middle" fill="#57544D">input x (residual)</text>
+
+        <line x1="470" y1="80" x2="470" y2="100" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+        <rect x="360" y="100" width="220" height="44" rx="5" fill="#EAF2EE" stroke="#2F6E5C" stroke-width="1"/>
+        <text class="svg-ts" x="470" y="118" text-anchor="middle" fill="#2F6E5C">Modulate · x⊙(1+γ)+β</text>
+        <text x="470" y="134" text-anchor="middle" fill="#57544D" style="font-family:'JetBrains Mono',monospace;font-size:10px">then Attention / FFN</text>
+
+        <line x1="470" y1="144" x2="470" y2="168" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+        <rect x="378" y="168" width="184" height="48" rx="5" fill="#FBEFE7" stroke="#B5482B" stroke-width="1.6"/>
+        <text class="svg-t" x="470" y="188" text-anchor="middle" fill="#B5482B">Scale by α</text>
+        <text class="svg-ts" x="470" y="205" text-anchor="middle" fill="#B5482B">out ⊙ α</text>
+
+        <line x1="198" y1="186" x2="356" y2="124" stroke="#B5482B" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr2)"/>
+        <line x1="198" y1="202" x2="374" y2="192" stroke="#B5482B" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr2)"/>
+
+        <line x1="470" y1="216" x2="470" y2="240" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+        <rect x="360" y="240" width="220" height="48" rx="5" fill="#EAF2EE" stroke="#2F6E5C" stroke-width="1"/>
+        <text class="svg-t" x="470" y="260" text-anchor="middle" fill="#2F6E5C">Residual add</text>
+        <text class="svg-ts" x="470" y="277" text-anchor="middle" fill="#2F6E5C">(out ⊙ α) + x</text>
+
+        <path d="M380 60 L300 60 L300 264 L356 264" fill="none" stroke="#C9C3B5" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr2)"/>
+        <text class="svg-ts" x="300" y="166" text-anchor="middle" fill="#8A867D" transform="rotate(-90 300 166)">residual</text>
+
+        <text class="svg-ts" x="470" y="322" text-anchor="middle" fill="#B5482B">α = 0 at init  →  block starts as identity</text>
+      </svg>
+      <figcaption>adaLN-Zero — the orange α gate scales each sub-block output. Zero-init makes α = 0, so every block begins as a pure residual pass-through.</figcaption>
+    </figure>
+
+    <h3>The zero-initialization</h3>
+    <pre><code>self.adaLN_modulation = nn.Sequential(
+    nn.SiLU(),
+    nn.Linear(cond_dim, <span class="nu">6</span> * hidden_size),
+)
+
+<span class="cm"># ★ the critical line</span>
+nn.init.zeros_(self.adaLN_modulation[-<span class="nu">1</span>].weight)
+nn.init.zeros_(self.adaLN_modulation[-<span class="nu">1</span>].bias)</code></pre>
+
+    <div class="callout insight">
+      <div class="callout-tag">key insight</div>
+      <p>At step 0 every modulation output is zero, so \(\alpha = 0\) and each block is an identity — only the residual stream flows. The network starts as a stack of no-ops and <em>learns to switch blocks on</em> gradually. That is the "Zero" in adaLN-Zero.</p>
+    </div>
+
+    <h3>An SE-like side note</h3>
+    <p>
+      The \(\alpha\) pathway is structurally close to a <strong>Squeeze-and-Excitation</strong> block — a side branch that
+      rescales the main features channel-wise. Omitting bias terms:
+    </p>
+    <div class="mathwrap">
+      \[
+      \underbrace{\big(c\odot\sigma(c)\big)\,W_\alpha}_{\text{adaLN-Zero's }\alpha}
+      \quad\Longleftrightarrow\quad
+      \underbrace{\mathrm{ReLU}(W_1 c)\,W_2}_{\text{SE module}}
+      \]
+    </div>
+    <p>This buys extra expressivity even before zero-init enters the picture.</p>
+  </section>
+
+  <!-- 3 -->
+  <section id="why">
+    <div class="sec-num">03</div>
+    <h2>Why zero-init wins</h2>
+
+    <p>The ICLR-2025 analysis (OpenReview&nbsp;E4roJSM9RM) decoupled three candidate explanations and ranked them:</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Factor</th><th>What it is</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td>SE-like structure</td><td>Adding α at all (even default init)</td><td>Moderate</td></tr>
+          <tr><td>Gradual update order</td><td>Zero-init delays gradients to some weights early on</td><td>Small</td></tr>
+          <tr><td>Zero-init position</td><td>Starting near the trained weight distribution</td><td><strong>Dominant</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      As training runs, the \(\alpha\) weights drift from a spike at zero toward a <strong>Gaussian-like
+      distribution centered at zero</strong>. Zero-init drops you near the center of that target already.
+      By an entropy argument, adaLN-Zero's distribution simply <em>spreads outward</em> (entropy increases —
+      the natural direction), while other inits must first contract toward zero, fighting the gradient.
+    </p>
+
+    <div class="callout key">
+      <div class="callout-tag">bonus · adaLN-Gaussian</div>
+      <p>Since the weights end up Gaussian anyway, initialize there directly and skip the trip. One line changes; the paper reports ≈2 FID points over adaLN-Zero.</p>
+      <pre style="margin:12px 0 0"><code><span class="cm"># replace the zeros_ weight line with:</span>
+nn.init.normal_(self.adaLN_modulation[-<span class="nu">1</span>].weight, std=<span class="nu">0.001</span>)</code></pre>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="spade">
+    <div class="sec-num">04</div>
+    <h2>SPADE — spatial modulation</h2>
+
+    <p>
+      SPADE (Park et&nbsp;al., CVPR 2019 — a.k.a. GauGAN) tackles a sibling problem: conditioning a generator on a
+      <strong>segmentation mask</strong> without normalization erasing its spatial layout.
+    </p>
+
+    <h3>The problem</h3>
+    <p>
+      Run a mask through an encoder, then normalize in the decoder, and the semantic signal washes out —
+      regions of the same label collapse to one normalized value, so spatial structure disappears. The fix
+      must be <em>spatially aware</em>.
+    </p>
+
+    <h3>The mechanism</h3>
+    <p>
+      Instead of a fixed affine layer after normalization, SPADE predicts \(\gamma\) and \(\beta\)
+      <strong>per spatial location</strong> from the mask, via a small CNN:
+    </p>
+
+    <div class="mathwrap">
+      \[
+      \gamma_{c,y,x}(\mathbf{m}),\ \beta_{c,y,x}(\mathbf{m}) = \mathrm{CNN}(\mathbf{m})
+      \]
+      \[
+      \mathrm{SPADE}(h,\mathbf{m})_{c,y,x} = \gamma_{c,y,x}(\mathbf{m})\,\frac{h_{c,y,x}-\mu_c}{\sigma_c} + \beta_{c,y,x}(\mathbf{m})
+      \]
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 680 300" role="img" aria-label="SPADE layer data flow">
+        <defs>
+          <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#8A867D" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <rect x="40" y="36" width="140" height="42" rx="5" fill="#F5F2EA" stroke="#9A6A1E" stroke-width="1"/>
+        <text class="svg-ts" x="110" y="54" text-anchor="middle" fill="#9A6A1E">mask m</text>
+        <text x="110" y="69" text-anchor="middle" fill="#9A6A1E" style="font-family:'JetBrains Mono',monospace;font-size:10px">[B,C,H,W]</text>
+
+        <line x1="180" y1="57" x2="214" y2="57" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr3)"/>
+
+        <rect x="216" y="36" width="150" height="42" rx="5" fill="#FFFFFF" stroke="#E7E2D6" stroke-width="1"/>
+        <text class="svg-ts" x="291" y="54" text-anchor="middle" fill="#57544D">Conv + ReLU</text>
+        <text x="291" y="69" text-anchor="middle" fill="#8A867D" style="font-family:'JetBrains Mono',monospace;font-size:10px">shared feature</text>
+
+        <line x1="366" y1="50" x2="400" y2="40" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr3)"/>
+        <line x1="366" y1="64" x2="400" y2="92" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr3)"/>
+
+        <rect x="402" y="22" width="150" height="36" rx="5" fill="#FBEFE7" stroke="#B5482B" stroke-width="1"/>
+        <text class="svg-ts" x="477" y="44" text-anchor="middle" fill="#B5482B">γ(y,x)  Conv 1×1</text>
+
+        <rect x="402" y="74" width="150" height="36" rx="5" fill="#EFE7F5" stroke="#6A4A8C" stroke-width="1"/>
+        <text class="svg-ts" x="477" y="96" text-anchor="middle" fill="#6A4A8C">β(y,x)  Conv 1×1</text>
+
+        <rect x="40" y="188" width="140" height="42" rx="5" fill="#FFFFFF" stroke="#E7E2D6" stroke-width="1"/>
+        <text class="svg-ts" x="110" y="206" text-anchor="middle" fill="#57544D">activation h</text>
+        <text x="110" y="221" text-anchor="middle" fill="#8A867D" style="font-family:'JetBrains Mono',monospace;font-size:10px">[B,C,H,W]</text>
+
+        <line x1="180" y1="209" x2="214" y2="209" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr3)"/>
+
+        <rect x="216" y="188" width="150" height="42" rx="5" fill="#EAF2EE" stroke="#2F6E5C" stroke-width="1"/>
+        <text class="svg-ts" x="291" y="206" text-anchor="middle" fill="#2F6E5C">Normalize</text>
+        <text x="291" y="221" text-anchor="middle" fill="#2F6E5C" style="font-family:'JetBrains Mono',monospace;font-size:10px">no affine</text>
+
+        <line x1="366" y1="209" x2="402" y2="209" stroke="#8A867D" stroke-width="1.2" marker-end="url(#arr3)"/>
+
+        <rect x="404" y="184" width="236" height="50" rx="5" fill="#EAF2EE" stroke="#2F6E5C" stroke-width="1.4"/>
+        <text class="svg-t" x="522" y="204" text-anchor="middle" fill="#2F6E5C">γ(y,x) ⊙ ĥ + β(y,x)</text>
+        <text x="522" y="221" text-anchor="middle" fill="#57544D" style="font-family:'JetBrains Mono',monospace;font-size:10px">spatially-varying affine</text>
+
+        <path d="M477 58 L477 128 L560 128 L560 180" fill="none" stroke="#B5482B" stroke-width="1.1" stroke-dasharray="4 3" marker-end="url(#arr3)"/>
+        <path d="M477 110 L477 150 L600 150 L600 180" fill="none" stroke="#6A4A8C" stroke-width="1.1" stroke-dasharray="4 3" marker-end="url(#arr3)"/>
+      </svg>
+      <figcaption>SPADE — a CNN turns the mask into per-pixel γ and β maps that modulate the normalized activation. Same idea as adaLN, but the parameters vary across space.</figcaption>
+    </figure>
+
+    <pre><code><span class="kw">class</span> <span class="cl">SPADE</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, ch, cond_ch):
+        <span class="fn">super</span>().__init__()
+        self.norm   = nn.InstanceNorm2d(ch, affine=<span class="kw">False</span>)
+        self.shared = nn.Sequential(nn.Conv2d(cond_ch, <span class="nu">128</span>, <span class="nu">3</span>, padding=<span class="nu">1</span>), nn.ReLU())
+        self.gamma  = nn.Conv2d(<span class="nu">128</span>, ch, <span class="nu">3</span>, padding=<span class="nu">1</span>)
+        self.beta   = nn.Conv2d(<span class="nu">128</span>, ch, <span class="nu">3</span>, padding=<span class="nu">1</span>)
+
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x, mask):
+        m = F.interpolate(mask, size=x.shape[<span class="nu">2</span>:], mode=<span class="st">'nearest'</span>)
+        f = self.shared(m)
+        <span class="kw">return</span> self.gamma(f) * self.norm(x) + self.beta(f)</code></pre>
+
+    <div class="callout ref">
+      <div class="callout-tag">paper</div>
+      <p>Park, Liu, Wang, Zhu — <em>Semantic Image Synthesis with Spatially-Adaptive Normalization</em>, CVPR 2019 (Oral).</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="link">
+    <div class="sec-num">05</div>
+    <h2>The connection</h2>
+
+    <p>adaLN-Zero and SPADE are <strong>the same move at different spatial granularity</strong>: normalize to strip dataset statistics, then re-inject conditioning through a learned affine transform.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Property</th><th>adaLN / adaLN-Zero</th><th>SPADE</th></tr></thead>
+        <tbody>
+          <tr><td>condition</td><td>vector (timestep, class)</td><td>image (segmentation mask)</td></tr>
+          <tr><td>predictor</td><td>MLP on vector</td><td>CNN on mask</td></tr>
+          <tr><td>params</td><td>γ, β (shared over tokens)</td><td>γ(y,x), β(y,x) per site</td></tr>
+          <tr><td>granularity</td><td>global</td><td>local / spatial</td></tr>
+          <tr><td>backbone</td><td>transformer (DiT)</td><td>conv decoder (GAN)</td></tr>
+          <tr><td>gate α</td><td>yes (Zero variant)</td><td>no</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout insight">
+      <div class="callout-tag">unifying view</div>
+      <p>Both are <strong>conditional affine modulation of a normalized activation</strong>. The only differences are what the condition is (vector vs image) and how coarsely the parameters are applied (one-per-channel vs one-per-site).</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="synth">
+    <div class="sec-num">06</div>
+    <h2>Synthesis — spatial adaLN-Zero</h2>
+
+    <p>
+      To condition a DiT on a <strong>binary mask</strong> while staying inside the adaLN family: replace the
+      modulation MLP with a CNN that emits <em>spatially-varying</em> versions of all six parameters
+      (including the \(\alpha\) gates), then modulate each patch token with the parameters at its own grid cell.
+      This is SPADE's spatial idea carried into the transformer, with the gate retained.
+    </p>
+
+    <div class="callout warning">
+      <div class="callout-tag">honesty note</div>
+      <p>This combination isn't a published, named method I can cite. SPADE is the citation for the spatial-modulation idea; the DiT paper is the citation for the gate and zero-init. The fusion below is a sensible design, not an established result.</p>
+    </div>
+
+    <div class="mathwrap">
+      \[
+      \big[\gamma_1,\beta_1,\alpha_1,\gamma_2,\beta_2,\alpha_2\big]
+      = \mathrm{CNN}(\mathbf{m}) \in \mathbb{R}^{B\times 6D\times \frac{H}{P}\times\frac{W}{P}}
+      \;\xrightarrow{\text{flatten}}\; \mathbb{R}^{B\times T\times 6D}
+      \]
+    </div>
+
+    <h4>1 · keep zero-init on the final conv</h4>
+    <pre><code>self.out_conv = nn.Conv2d(<span class="nu">256</span>, <span class="nu">6</span> * hidden_size, <span class="nu">1</span>)
+nn.init.zeros_(self.out_conv.weight)   <span class="cm"># preserves the adaLN-Zero property</span>
+nn.init.zeros_(self.out_conv.bias)</code></pre>
+
+    <h4>2 · fuse timestep additively in feature space</h4>
+    <pre><code>spatial = self.mask_cnn(mask)                     <span class="cm"># [B,256,H/P,W/P]</span>
+time    = self.time_proj(t_emb)[..., <span class="kw">None</span>, <span class="kw">None</span>] <span class="cm"># [B,256,1,1]</span>
+fused   = spatial + time                          <span class="cm"># broadcast -> global denoise signal</span></code></pre>
+
+    <h4>3 · spatial alignment is implicit</h4>
+    <p>If mask and image share patch size \(P\), then CNN cell \((i,j)\) modulates image token \((i,j)\) exactly. No extra positional encoding needed on the modulation maps.</p>
+
+    <div class="callout key">
+      <div class="callout-tag">scope reminder</div>
+      <p>What's spatial here is the <em>modulation</em>, not the attention. Self-attention still mixes tokens globally. To make the mask gate attention itself, you'd need attention bias or cross-attention — a different mechanism.</p>
+    </div>
+
+    <h3>Choosing an approach</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Approach</th><th>Spatial</th><th>Compute</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td>adaLN-Zero</td><td>no</td><td>min</td><td>class / timestep</td></tr>
+          <tr><td>SPADE</td><td>yes</td><td>low</td><td>conv decoder + mask</td></tr>
+          <tr><td>Spatial adaLN-Zero</td><td>yes</td><td>med</td><td>DiT + binary/semantic mask</td></tr>
+          <tr><td>Cross-attention to mask</td><td>yes</td><td>high</td><td>layout drives content</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="rlabel">references</div>
+    <div class="refs">
+      <a href="https://openreview.net/pdf?id=E4roJSM9RM">[1] Unveiling the Secret of adaLN-Zero in Diffusion Transformer — under review, ICLR 2025</a>
+      <a href="https://arxiv.org/abs/2212.09748">[2] Peebles &amp; Xie — Scalable Diffusion Models with Transformers (DiT) — ICCV 2023</a>
+      <a href="https://arxiv.org/abs/1903.07291">[3] Park, Liu, Wang, Zhu — Semantic Image Synthesis with Spatially-Adaptive Normalization (SPADE) — CVPR 2019</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

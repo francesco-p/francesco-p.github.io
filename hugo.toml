@@ -82,3 +82,8 @@ enableRobotsTXT = true
   name = "Blog"
   pageRef = "posts"
   weight = 2
+
+[[menu.main]]
+  name = "Self-Notes"
+  pageRef = "notes"
+  weight = 3

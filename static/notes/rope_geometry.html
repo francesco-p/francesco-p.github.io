@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why RoPE works — the geometry</title>
+<style>
+  :root{
+    --ink:#1b1d23; --ink-soft:#4a4f5c; --faint:#8b909d;
+    --paper:#f6f4ef; --card:#ffffff; --line:#e3ded3;
+    --q:#c2671a;     /* query / amber */
+    --k:#1f6f8a;     /* key / blue */
+    --pos:#1f8a5b;   /* positive dot */
+    --neg:#b3402f;   /* negative dot */
+    --code-bg:#1c2030; --code-ink:#e8eaf2; --com:#5c6680; --kw:#c792ea; --num:#f78c6c;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px; margin:0 auto; padding:0 22px}
+  code,.mono,pre{font-family:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace}
+
+  header{padding:66px 0 28px}
+  .eyebrow{font-size:12.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--q); font-weight:700; margin-bottom:14px}
+  h1{font-size:42px; line-height:1.06; margin:0 0 18px; letter-spacing:-.02em; font-weight:800}
+  h1 em{font-style:normal; color:var(--q)}
+  .lede{font-size:18.5px; color:var(--ink-soft); margin:0}
+  .pre-note{font-size:14px; color:var(--faint); margin-top:18px; padding-top:16px; border-top:1px solid var(--line)}
+
+  section{padding:42px 0; border-top:1px solid var(--line)}
+  .kp{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-weight:700; margin:0 0 6px}
+  .kp .n{color:var(--q)}
+  h2{font-size:27px; margin:4px 0 16px; letter-spacing:-.01em; font-weight:780; line-height:1.18}
+  p{margin:0 0 16px}
+  strong{font-weight:680}
+  .m{font-style:italic; font-family:Georgia,"Times New Roman",serif}
+  .sub{font-size:.72em; vertical-align:-.25em; font-style:normal}
+
+  /* interactive panel */
+  .viz{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin:22px 0}
+  .viz-grid{display:flex; gap:24px; align-items:center; flex-wrap:wrap}
+  svg{display:block; overflow:visible}
+  .panel{flex:1; min-width:230px}
+  label.sl{display:block; font-size:13px; color:var(--faint); margin:14px 0 5px; letter-spacing:.02em}
+  label.sl b{color:var(--ink); font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%}
+  input.q{accent-color:var(--q)} input.k{accent-color:var(--k)} input.g{accent-color:#7a5cc2}
+  .dotbar{height:16px; border-radius:8px; background:linear-gradient(90deg,#f3d9d4,#eee,#d4eadd); position:relative; margin:14px 0 6px; border:1px solid var(--line)}
+  .dotbar .mark{position:absolute; top:-4px; width:3px; height:24px; background:var(--ink); border-radius:2px; transform:translateX(-1.5px)}
+  .dotbar .mid{position:absolute; left:50%; top:0; bottom:0; width:1px; background:#c9c3b6}
+  .reads{font-size:14.5px; color:var(--ink-soft); margin-top:8px; line-height:1.85}
+  .reads .val{font-variant-numeric:tabular-nums; font-weight:700}
+  .reads .qv{color:var(--q)} .reads .kv{color:var(--k)}
+  .big{font-size:18px; font-weight:750; color:var(--ink)}
+  .chip{display:inline-block; background:#efe9dc; border:1px solid var(--line); border-radius:6px; padding:1px 8px; font-size:13.5px; font-family:"SF Mono",monospace}
+  .toggle{display:flex; align-items:center; gap:9px; margin-top:14px; font-size:14px; color:var(--ink-soft); cursor:pointer; user-select:none}
+  .toggle input{width:16px; height:16px; accent-color:var(--q)}
+  .btn{font:inherit; font-size:13px; padding:5px 11px; border:1px solid var(--line); background:#fbfaf6; border-radius:7px; cursor:pointer; color:var(--ink)}
+  .btn:hover{border-color:var(--q); color:var(--q)}
+
+  .legend{display:flex; gap:16px; font-size:13px; margin-top:12px; flex-wrap:wrap; color:var(--ink-soft)}
+  .legend span{display:inline-flex; align-items:center; gap:7px}
+  .arrowdot{width:12px; height:0; border-top:3px solid; border-radius:2px}
+
+  .callout{background:#fff8ef; border:1px solid #f0dcc0; border-left:3px solid var(--q); border-radius:9px; padding:15px 18px; margin:18px 0}
+  .callout.note{background:#eef6f4; border-color:#c5e0db; border-left-color:var(--k)}
+  .callout p:last-child{margin-bottom:0}
+
+  .mathbox{background:var(--code-bg); color:var(--code-ink); border-radius:12px; padding:20px 22px; margin:18px 0; font-size:15px; line-height:2.1}
+  .mathbox .lbl{color:var(--com); font-size:12.5px; text-transform:uppercase; letter-spacing:.1em; display:block; margin-bottom:10px}
+  .mathbox .eq{font-family:Georgia,serif; font-size:17px}
+  .mathbox b{color:#f6b26b}
+  .mathbox .step{color:#9aa6c2; font-size:13px; font-family:"SF Mono",monospace}
+
+  table{border-collapse:collapse; width:100%; font-size:14.5px; margin:10px 0}
+  th,td{border:1px solid var(--line); padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums}
+  th{background:#efe9dc; font-weight:650; font-size:12.5px; text-transform:uppercase; letter-spacing:.04em}
+  tr.hl td{background:#fff6ea}
+  td.mono{font-family:"SF Mono",monospace; font-size:13.5px}
+
+  footer{padding:38px 0 72px; color:var(--faint); font-size:14px; border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">RoPE · the geometry only</div>
+  <h1>Position is a <em>rotation</em>.<br>Attention reads the <em>twist</em>.</h1>
+  <p class="lede">No matrices to memorise, no layout bookkeeping. Just one geometric idea, three small toys to play with, and the single line of algebra that makes it click.</p>
+  <p class="pre-note">Assumes only: a vector has a length and a direction, and the dot product <span class="mono">a·b = |a||b|cos(angle between them)</span>. Everything else is built up below.</p>
+</header>
+
+<!-- KP1 -->
+<section id="kp1">
+  <p class="kp"><span class="n">Keypoint 1</span> — the foundation</p>
+  <h2>The dot product is just the angle between two arrows</h2>
+  <p>Attention scores a query against a key with a dot product. Geometrically that number isn't about <em>where</em> the arrows are — only the <strong>angle between them</strong>. Same direction → big positive score. Perpendicular → zero. Opposite → negative. Lengths only scale it.</p>
+  <div class="viz">
+    <div class="viz-grid">
+      <svg id="v1" width="220" height="220" viewBox="0 0 220 220"></svg>
+      <div class="panel">
+        <label class="sl">angle between them: <b><span id="v1ang">60</span>°</b></label>
+        <input id="v1s" class="g" type="range" min="0" max="360" step="1" value="60">
+        <div class="dotbar"><div class="mid"></div><div class="mark" id="v1mark"></div></div>
+        <div class="reads"><span class="big">a·b = cos(angle) = <span class="val" id="v1dot">0.50</span></span></div>
+        <div class="reads" style="font-size:13.5px">−1 at far left (opposite) · 0 in the middle (perpendicular) · +1 at far right (aligned)</div>
+      </div>
+    </div>
+  </div>
+  <p>Hold onto this: <strong>if we can control the angle between query and key, we control their attention score.</strong> RoPE's whole job is to make that angle carry position.</p>
+</section>
+
+<!-- KP2 -->
+<section id="kp2">
+  <p class="kp"><span class="n">Keypoint 2</span> — the move</p>
+  <h2>Rotate each arrow by an amount tied to its position</h2>
+  <p>Give every token a position number. Then <strong>spin its arrow by (position × a fixed rate&nbsp;<span class="m">θ</span>)</strong>. The query at position <span class="m">m</span> turns by <span class="m">m</span><span class="m">θ</span>; the key at position <span class="m">n</span> turns by <span class="m">n</span><span class="m">θ</span>. Because the rate is shared, the angle <em>between</em> them shifts by exactly <span class="chip">(m − n)·θ</span> — it depends only on the <strong>gap</strong> in their positions, never on where they sit absolutely.</p>
+
+  <div class="viz">
+    <div class="viz-grid">
+      <svg id="v2" width="240" height="240" viewBox="0 0 240 240"></svg>
+      <div class="panel">
+        <label class="sl">query position <b class="mono" style="color:var(--q)">m = <span id="v2m">3</span></b></label>
+        <input id="v2sm" class="q" type="range" min="0" max="16" step="1" value="3">
+        <label class="sl">key position <b class="mono" style="color:var(--k)">n = <span id="v2n">5</span></b></label>
+        <input id="v2sn" class="k" type="range" min="0" max="16" step="1" value="5">
+        <div class="reads">
+          gap = m − n = <span class="big" id="v2gap">−2</span><br>
+          relative twist = gap·θ = <span class="val" id="v2tw">−0.80</span> rad<br>
+          <span class="big">score = cos(twist) = <span class="val" id="v2dot">0.70</span></span>
+        </div>
+        <label class="toggle"><input type="checkbox" id="v2lock"> lock the gap (drag either slider)</label>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="arrowdot" style="border-color:var(--q)"></i>query, spun by m·θ</span>
+      <span><i class="arrowdot" style="border-color:var(--k)"></i>key, spun by n·θ</span>
+    </div>
+  </div>
+
+  <div class="callout"><p><strong>Try this:</strong> tick <em>lock the gap</em>, then drag. Both arrows whirl around the circle as the absolute positions climb — but the <span class="mono">score</span> number never moves. That frozen number <em>is</em> the point of RoPE: the model sees only relative position.</p></div>
+</section>
+
+<!-- MATH -->
+<section id="math">
+  <p class="kp"><span class="n">Why</span> — one line of algebra</p>
+  <h2>Why only the gap survives</h2>
+  <p>A 2D rotation by angle <span class="m">φ</span> is the matrix <span class="m">R(φ)</span>. The only fact we need is the one your eyes already saw in Keypoint 2: <strong>rotating by <span class="m">α</span> then by <span class="m">β</span> is the same as rotating by <span class="m">α+β</span></strong> — angles just add. A consequence: undoing a rotation is rotating backward, so <span class="m">R(α)<sup>⊤</sup> = R(−α)</span>.</p>
+  <div class="mathbox">
+    <span class="lbl">the score after RoPE</span>
+    <div class="eq">⟨ R(<b>m</b>θ)·q ,&nbsp; R(<b>n</b>θ)·k ⟩</div>
+    <div class="step">&nbsp;&nbsp;= qᵀ · R(mθ)ᵀ · R(nθ) · k&nbsp;&nbsp;&nbsp;<span style="color:#5c6680">(move both rotations onto one side)</span></div>
+    <div class="step">&nbsp;&nbsp;= qᵀ · R(−mθ) · R(nθ) · k&nbsp;&nbsp;&nbsp;<span style="color:#5c6680">(transpose = rotate backward)</span></div>
+    <div class="step">&nbsp;&nbsp;= qᵀ · R(<b>(n − m)</b>θ) · k&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#5c6680">(angles add)</span></div>
+  </div>
+  <p>The absolute positions <span class="m">m</span> and <span class="m">n</span> have vanished. The score is a function of <span class="chip">(n − m)</span> alone — a built-in, <strong>relative</strong> position code that the model never had to learn and that keeps working at distances it never saw during training.</p>
+</section>
+
+<!-- TOY -->
+<section id="toy">
+  <p class="kp"><span class="n">Toy example</span> — see it in numbers</p>
+  <h2>Same content, different distances</h2>
+  <p>Take a query and key that point the <em>same</em> way (identical content). With rate <span class="m">θ</span> = 0.4, their score is just <span class="chip">cos((m − n)·θ)</span>. Watch it depend only on the gap — the two highlighted rows have different absolute positions but the same gap, and land on the same score:</p>
+  <table>
+    <tr><th>m</th><th>n</th><th>gap</th><th>(gap)·θ</th><th>score = cos(·)</th></tr>
+    <tr><td>0</td><td>0</td><td>0</td><td class="mono">0.00</td><td class="mono">+1.000</td></tr>
+    <tr><td>3</td><td>4</td><td>−1</td><td class="mono">−0.40</td><td class="mono">+0.921</td></tr>
+    <tr class="hl"><td>3</td><td>5</td><td>−2</td><td class="mono">−0.80</td><td class="mono">+0.697</td></tr>
+    <tr class="hl"><td>10</td><td>12</td><td>−2</td><td class="mono">−0.80</td><td class="mono">+0.697</td></tr>
+    <tr><td>2</td><td>5</td><td>−3</td><td class="mono">−1.20</td><td class="mono">+0.362</td></tr>
+  </table>
+  <p>Identical tokens score highest when they're at the same position and gently fade apart as the gap grows — a soft, automatic "nearby matters more," handed to the model for free by geometry.</p>
+</section>
+
+<!-- KP3 -->
+<section id="kp3">
+  <p class="kp"><span class="n">Keypoint 3</span> — scaling up</p>
+  <h2>Many speeds: a clock with several hands</h2>
+  <p>One rotating pair is a single clock hand — fine for small gaps, but it wraps around and repeats. So RoPE splits the full vector into many 2D pairs and spins each at its <strong>own rate</strong> <span class="m">θ<span class="sub">0</span> &gt; θ<span class="sub">1</span> &gt; θ<span class="sub">2</span> &gt; …</strong>. Fast hands separate neighbouring tokens; slow hands keep marching to encode long distances without wrapping. Like a real clock telling seconds, minutes, and hours at once.</p>
+  <div class="viz">
+    <svg id="v3" width="100%" height="170" viewBox="0 0 680 170" preserveAspectRatio="xMidYMid meet"></svg>
+    <label class="sl">token position <b class="mono" style="color:var(--q)">m = <span id="v3m">8</span></b></label>
+    <input id="v3s" class="q" type="range" min="0" max="60" step="1" value="8" style="max-width:420px">
+    <div class="reads" id="v3read" style="font-size:13.5px"></div>
+  </div>
+  <p>Slide <span class="m">m</span> up: the leftmost hand whirls through many turns while the rightmost barely creeps. Read together, the set of hand-positions is a unique, multi-scale fingerprint of where the token sits — and pairwise it still resolves to pure relative angle, exactly as in Keypoint 2.</p>
+</section>
+
+<!-- CLOSE -->
+<section id="close">
+  <p class="kp">The whole mechanism in four breaths</p>
+  <h2>Recap</h2>
+  <p><strong>1.</strong> Attention scores live in the angle between query and key. <strong>2.</strong> Spin each by position × rate, and that angle becomes the position <em>gap</em>. <strong>3.</strong> Algebra confirms the absolute positions cancel — only <span class="mono">(n−m)</span> remains. <strong>4.</strong> Use many rates so the encoding works from one token away to thousands.</p>
+  <div class="callout note"><p>That's all of RoPE. Everything in the implementations — interleaved vs split-half pairing, partial rotation, the inverse-frequency table — is just <em>bookkeeping</em> for which dimensions form each pair and how fast each one spins. The geometry above is the part that actually makes attention care about position.</p></div>
+</section>
+
+<footer>Geometric intuition for Rotary Position Embedding · play with the three toys, then the algebra reads like a description of what you saw.</footer>
+
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  function E(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e;}
+  function arrow(svg,id,color,w){
+    var d=E('defs',{}); var m=E('marker',{id:'m_'+id,markerWidth:8,markerHeight:8,refX:6.5,refY:4,orient:'auto'});
+    m.appendChild(E('path',{d:'M0,0 L8,4 L0,8 z',fill:color})); d.appendChild(m); svg.appendChild(d);
+    var l=E('line',{id:id,stroke:color,'stroke-width':w||3,'stroke-linecap':'round','marker-end':'url(#m_'+id+')'});
+    svg.appendChild(l); return l;
+  }
+  function setL(l,cx,cy,ang,R){ l.setAttribute('x1',cx);l.setAttribute('y1',cy);
+    l.setAttribute('x2',cx+R*Math.cos(ang)); l.setAttribute('y2',cy-R*Math.sin(ang)); }
+  function base(svg,cx,cy,R){
+    svg.appendChild(E('circle',{cx:cx,cy:cy,r:R,fill:'none',stroke:'#e3ded3'}));
+    svg.appendChild(E('line',{x1:cx-R-10,y1:cy,x2:cx+R+10,y2:cy,stroke:'#e8e2d6'}));
+    svg.appendChild(E('line',{x1:cx,y1:cy-R-10,x2:cx,y2:cy+R+10,stroke:'#e8e2d6'}));
+  }
+
+  /* ---------- VIZ 1 : dot = cos(angle) ---------- */
+  (function(){
+    var svg=document.getElementById('v1'), cx=110,cy=110,R=78;
+    base(svg,cx,cy,R);
+    var arc=E('path',{id:'v1arc',fill:'rgba(122,92,194,.13)',stroke:'#7a5cc2','stroke-width':1}); svg.appendChild(arc);
+    var a=arrow(svg,'v1a','#444',3), b=arrow(svg,'v1b','#7a5cc2',3);
+    var s=document.getElementById('v1s'), ang=document.getElementById('v1ang'),
+        dot=document.getElementById('v1dot'), mark=document.getElementById('v1mark');
+    function up(){
+      var deg=+s.value, r=deg*Math.PI/180;
+      setL(a,cx,cy,0,R); setL(b,cx,cy,r,R);
+      var c=Math.cos(r); ang.textContent=deg; dot.textContent=(c>=0?'+':'')+c.toFixed(2);
+      dot.style.color = c>=0?'#1f8a5b':'#b3402f';
+      mark.style.left=((c+1)/2*100)+'%';
+      // arc wedge from 0 to r
+      var rr=R*0.34, x2=cx+rr*Math.cos(r), y2=cy-rr*Math.sin(r);
+      var large=deg>180?1:0;
+      arc.setAttribute('d','M '+(cx+rr)+' '+cy+' A '+rr+' '+rr+' 0 '+large+' 0 '+x2+' '+y2+' L '+cx+' '+cy+' Z');
+    }
+    s.addEventListener('input',up); up();
+  })();
+
+  /* ---------- VIZ 2 : rotate by position, gap survives ---------- */
+  (function(){
+    var svg=document.getElementById('v2'), cx=120,cy=120,R=92;
+    base(svg,cx,cy,R);
+    var kL=arrow(svg,'v2k','#1f6f8a',3), qL=arrow(svg,'v2q','#c2671a',3.4);
+    var theta=0.4, baseAng=Math.PI/2.4;   // shared start direction
+    var sm=document.getElementById('v2sm'), sn=document.getElementById('v2sn'),
+        lm=document.getElementById('v2m'), ln=document.getElementById('v2n'),
+        gp=document.getElementById('v2gap'), tw=document.getElementById('v2tw'),
+        dt=document.getElementById('v2dot'), lock=document.getElementById('v2lock');
+    var lastM=+sm.value, lastN=+sn.value;
+    function up(src){
+      var m=+sm.value, n=+sn.value;
+      if(lock.checked && src){
+        if(src==='m'){ var dn=m-lastM; n=Math.min(16,Math.max(0,lastN+dn)); sn.value=n; }
+        else { var dm=n-lastN; m=Math.min(16,Math.max(0,lastM+dm)); sm.value=m; }
+      }
+      lastM=m; lastN=n;
+      var aq=baseAng+m*theta, ak=baseAng+n*theta;
+      setL(qL,cx,cy,aq,R); setL(kL,cx,cy,ak,R*0.74);
+      var gap=m-n, twist=gap*theta, c=Math.cos(twist);
+      lm.textContent=m; ln.textContent=n;
+      gp.textContent=(gap>0?'+':'')+gap;
+      tw.textContent=(twist>=0?'+':'')+twist.toFixed(2);
+      dt.textContent=(c>=0?'+':'')+c.toFixed(2);
+      dt.style.color = c>=0?'#1f8a5b':'#b3402f';
+    }
+    sm.addEventListener('input',function(){up('m');});
+    sn.addEventListener('input',function(){up('n');});
+    lock.addEventListener('change',function(){ lastM=+sm.value; lastN=+sn.value; });
+    up();
+  })();
+
+  /* ---------- VIZ 3 : multi-speed clock ---------- */
+  (function(){
+    var svg=document.getElementById('v3');
+    var thetas=[1.0,0.35,0.12,0.04], labels=['fastest','fast','slow','slowest'];
+    var n=thetas.length, gap=680/n, r=46, cy=72;
+    var hands=[];
+    for(var i=0;i<n;i++){
+      var cx=gap*i+gap/2;
+      svg.appendChild(E('circle',{cx:cx,cy:cy,r:r,fill:'#fff',stroke:'#e3ded3'}));
+      svg.appendChild(E('circle',{cx:cx,cy:cy,r:2.5,fill:'#c2671a'}));
+      hands.push(arrow(svg,'h'+i,'#c2671a',2.6));
+      var t1=E('text',{x:cx,y:cy+r+20,'text-anchor':'middle','font-size':12,fill:'#8b909d','font-family':'monospace'}); t1.textContent='θ='+thetas[i]; svg.appendChild(t1);
+      var t2=E('text',{x:cx,y:cy+r+36,'text-anchor':'middle','font-size':11,fill:'#b0b4bd'}); t2.textContent=labels[i]; svg.appendChild(t2);
+      hands[i]._cx=cx;
+    }
+    var s=document.getElementById('v3s'), lab=document.getElementById('v3m'), read=document.getElementById('v3read');
+    function up(){
+      var m=+s.value; lab.textContent=m;
+      var turns=[];
+      for(var i=0;i<n;i++){ var a=m*thetas[i]; setL(hands[i],hands[i]._cx,cy,a,r-7); turns.push((m*thetas[i]/(2*Math.PI)).toFixed(1)); }
+      read.innerHTML='turns made by m='+m+': &nbsp;'+turns.map(function(t,i){return '<b style="color:#c2671a">'+t+'</b>';}).join(' · ')+' &nbsp; (full rotations of each hand)';
+    }
+    s.addEventListener('input',up); up();
+  })();
+})();
+</script>
+</body>
+</html>
