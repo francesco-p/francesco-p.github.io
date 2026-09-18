@@ -3,6 +3,12 @@ title: "Projects"
 description: "Selected side projects"
 ---
 
+## Barbender — Graffiti Letter Lab
+
+Interactive browser tool for constructing graffiti letters from bendable bars, shaping freeform compositions, performing smooth outlines, and exporting printable SVG or PNG artwork.
+
+- 🚀 Live demo: </res/barbender/>
+
 ## Neural Gas Playground
 
 Interactive browser-based playground for exploring the Neural Gas algorithm and how prototypes adapt over time.
